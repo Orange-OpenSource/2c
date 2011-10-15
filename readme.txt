@@ -3,7 +3,8 @@
 Mission statement
 =================
 We want to make writing cross-platform applications easier.
-We want to make those apps more 'je ne sais quoi'; adding a touch of 3D, adding augmented reality, playing videos should be easy.
+We want to make those apps more 'je ne sais quoi'; 
+adding a touch of 3D, adding augmented reality, playing videos should be easy.
 We want to allow you to add this framework as a component (supplimentary view) to your existening app.
 
 
