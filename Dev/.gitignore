@@ -1,0 +1,11 @@
+iOS/Malaks.xcodeproj/project.xcworkspace/
+iOS/Malaks.xcodeproj/xcuserdata/
+
+Qt/malaks-build-desktop*/
+Qt/Project/malaks.pro.user*
+
+Android/Source/bin/
+Android/Source/gen/
+Android/Source/libs/
+Android/Source/obj/
+Android/Workspace/
