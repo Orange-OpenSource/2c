@@ -10,12 +10,14 @@ Getting started
 ===============
 Clone the repo.
 
-Android - Use Eclipse to add all projects in the Dev/
-iOS - Dev/iOS/2c.xcodeproj
-Qt - Dev/Qt/Project/2c.pro
+Android - Import all projects in Dev/ folder into Eclipse, then run ndk-build in Dev/Android/Source folder.
+iOS - Open Dev/iOS/2c.xcodeproj in xCode
+Qt - Open Dev/Qt/Project/2c.pro in Qt Creator
 
 Look at source file Dev/App/Source/SceneSample1.cpp
 for the hook into the first scene that launches.
+
+More detailed instructions and samples coming soon.
 
 
 External components used
