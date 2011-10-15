@@ -1,8 +1,8 @@
-iOS/Malaks.xcodeproj/project.xcworkspace/
-iOS/Malaks.xcodeproj/xcuserdata/
+iOS/*.xcodeproj/project.xcworkspace/
+iOS/*.xcodeproj/xcuserdata/
 
-Qt/malaks-build-desktop*/
-Qt/Project/malaks.pro.user*
+Qt/*-build-desktop*/
+Qt/Project/*.pro.user*
 
 Android/Source/bin/
 Android/Source/gen/
