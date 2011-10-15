@@ -32,6 +32,11 @@ An advertising provider.
 Found in Dev/External/AdMob
 Library file linked to.
 
+Android NDK r5b (Apache 2.0)
+http://developer.android.com/sdk/ndk/
+Android NDK samples used for guidance to set u Android port.
+Source file CCGLViewJNI.java found in Dev/Android/Source/src/com/android2c/ based off hello-gl2 sample.
+
 Facebook iOS SDK (Apache 2.0)
 https://developers.facebook.com/
 Provides login to Facebook API.
@@ -43,6 +48,16 @@ http://www.digip.org/jansson/
 Jansson is a C library for encoding, decoding and manipulating JSON data.
 Found in Dev/External/jansson-2.1
 *Modified - stripped out example files.
+
+libzip (libzip)
+http://nih.at/libzip/
+Used for Android port to open up packaged resources.
+Found in Dev/Android/Source/jni/libzip
+
+libpng (libpng)
+http://libpng.org/
+Contained in Android port for potential use to open png textures.
+Found in Dev/Android/Source/jni/libpng
 
 UIDevice-Hardware (BSD)
 https://github.com/erica/uidevice-extension
