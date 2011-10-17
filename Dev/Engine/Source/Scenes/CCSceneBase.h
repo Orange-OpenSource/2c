@@ -36,6 +36,7 @@ public:
     inline const bool shouldDelete() { return deleteMe; }
 	
     virtual const bool handleControls(const CCGameTime &gameTime);
+    virtual const bool handleBackButton() { return false; }
 	void update(const CCGameTime &gameTime);
     
 protected:

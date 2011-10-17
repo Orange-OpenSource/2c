@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------
  * 2C - Cross Platform 3D Application Framework
  *-----------------------------------------------------------
- * Copyright © 2011 - 2011 France Telecom
+ * Copyright Â© 2011 - 2011 France Telecom
  * This software is distributed under the Apache 2.0 license,
  * see the "license.txt" file for more details.
  *-----------------------------------------------------------
@@ -25,11 +25,13 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include <pthread.h>
+
 #include <math.h>
 #define MAX(x,y)	((x>=y)?x:y)
 #define MIN(x,y)	((x>=y)?y:x)
 
-// Remove for release build
+// CCRelease: Remove for release build
 #define DEBUGON
 //#define PROFILEON
 

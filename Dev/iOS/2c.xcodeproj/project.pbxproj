@@ -72,7 +72,6 @@
 		4A429923143B216F00D189E9 /* CCWidgetBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A42989A143B216F00D189E9 /* CCWidgetBase.cpp */; };
 		4A429924143B216F00D189E9 /* CCWidgetButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A42989C143B216F00D189E9 /* CCWidgetButton.cpp */; };
 		4A429925143B216F00D189E9 /* 3dsloader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A4298A1143B216F00D189E9 /* 3dsloader.cpp */; };
-		4A429926143B216F00D189E9 /* libGoogleAdMobAds.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A4298AB143B216F00D189E9 /* libGoogleAdMobAds.a */; };
 		4A429927143B216F00D189E9 /* README.mdown in Resources */ = {isa = PBXBuildFile; fileRef = 4A4298AD143B216F00D189E9 /* README.mdown */; };
 		4A429928143B216F00D189E9 /* FBDialog.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 4A4298B2143B216F00D189E9 /* FBDialog.bundle */; };
 		4A429929143B216F00D189E9 /* FBDialog.mm in Sources */ = {isa = PBXBuildFile; fileRef = 4A4298B4143B216F00D189E9 /* FBDialog.mm */; };
@@ -103,7 +102,6 @@
 		4A9E9FFE1449A88600F51474 /* f7u12_derp.png in Resources */ = {isa = PBXBuildFile; fileRef = 4A9E9FF31449A88600F51474 /* f7u12_derp.png */; };
 		4A9E9FFF1449A88600F51474 /* f7u12_rage.png in Resources */ = {isa = PBXBuildFile; fileRef = 4A9E9FF41449A88600F51474 /* f7u12_rage.png */; };
 		4A9EA0001449A88600F51474 /* f7u12_troll.png in Resources */ = {isa = PBXBuildFile; fileRef = 4A9E9FF51449A88600F51474 /* f7u12_troll.png */; };
-		4A9EA0011449A88600F51474 /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 4A9E9FF61449A88600F51474 /* icon.png */; };
 		4A9EA0021449A88600F51474 /* CCAppEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A9E9FF81449A88600F51474 /* CCAppEngine.cpp */; };
 		4A9EA0031449A88600F51474 /* SceneSample1.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A9E9FFA1449A88600F51474 /* SceneSample1.cpp */; };
 		4AADF3681123D75D00E6F80A /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AADF3671123D75D00E6F80A /* MediaPlayer.framework */; };
@@ -256,13 +254,6 @@
 		4A42989E143B216F00D189E9 /* CCWidgets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CCWidgets.h; sourceTree = "<group>"; };
 		4A4298A1143B216F00D189E9 /* 3dsloader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = 3dsloader.cpp; sourceTree = "<group>"; };
 		4A4298A2143B216F00D189E9 /* 3dsloader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = 3dsloader.h; sourceTree = "<group>"; };
-		4A4298A5143B216F00D189E9 /* GADBannerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GADBannerView.h; sourceTree = "<group>"; };
-		4A4298A6143B216F00D189E9 /* GADBannerViewDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GADBannerViewDelegate.h; sourceTree = "<group>"; };
-		4A4298A7143B216F00D189E9 /* GADInterstitial.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GADInterstitial.h; sourceTree = "<group>"; };
-		4A4298A8143B216F00D189E9 /* GADInterstitialDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GADInterstitialDelegate.h; sourceTree = "<group>"; };
-		4A4298A9143B216F00D189E9 /* GADRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GADRequest.h; sourceTree = "<group>"; };
-		4A4298AA143B216F00D189E9 /* GADRequestError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GADRequestError.h; sourceTree = "<group>"; };
-		4A4298AB143B216F00D189E9 /* libGoogleAdMobAds.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libGoogleAdMobAds.a; sourceTree = "<group>"; };
 		4A4298AD143B216F00D189E9 /* README.mdown */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.mdown; sourceTree = "<group>"; };
 		4A4298AF143B216F00D189E9 /* facebook-ios-sdk.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = "facebook-ios-sdk.xcodeproj"; sourceTree = "<group>"; };
 		4A4298B2143B216F00D189E9 /* FBDialog.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = FBDialog.bundle; sourceTree = "<group>"; };
@@ -304,7 +295,6 @@
 		4A9E9FF31449A88600F51474 /* f7u12_derp.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = f7u12_derp.png; sourceTree = "<group>"; };
 		4A9E9FF41449A88600F51474 /* f7u12_rage.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = f7u12_rage.png; sourceTree = "<group>"; };
 		4A9E9FF51449A88600F51474 /* f7u12_troll.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = f7u12_troll.png; sourceTree = "<group>"; };
-		4A9E9FF61449A88600F51474 /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
 		4A9E9FF81449A88600F51474 /* CCAppEngine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CCAppEngine.cpp; sourceTree = "<group>"; };
 		4A9E9FF91449A88600F51474 /* CCAppEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CCAppEngine.h; sourceTree = "<group>"; };
 		4A9E9FFA1449A88600F51474 /* SceneSample1.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SceneSample1.cpp; sourceTree = "<group>"; };
@@ -366,7 +356,6 @@
 				4A2732DB114E55A50021E4E9 /* Security.framework in Frameworks */,
 				4A2732DC114E55A50021E4E9 /* SystemConfiguration.framework in Frameworks */,
 				4A2732FF114E56350021E4E9 /* libsqlite3.dylib in Frameworks */,
-				4A429926143B216F00D189E9 /* libGoogleAdMobAds.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -672,7 +661,6 @@
 			isa = PBXGroup;
 			children = (
 				4A4298A0143B216F00D189E9 /* 3dsloader */,
-				4A4298A4143B216F00D189E9 /* AdMob */,
 				4A4298AC143B216F00D189E9 /* facebook-ios-sdk */,
 				4A4298BB143B216F00D189E9 /* jansson-2.1 */,
 				4A4298D1143B216F00D189E9 /* UIDevice-Hardware */,
@@ -690,20 +678,6 @@
 				4A1BE7FC1447B9270017277E /* 3dsvect.h */,
 			);
 			path = 3dsloader;
-			sourceTree = "<group>";
-		};
-		4A4298A4143B216F00D189E9 /* AdMob */ = {
-			isa = PBXGroup;
-			children = (
-				4A4298A5143B216F00D189E9 /* GADBannerView.h */,
-				4A4298A6143B216F00D189E9 /* GADBannerViewDelegate.h */,
-				4A4298A7143B216F00D189E9 /* GADInterstitial.h */,
-				4A4298A8143B216F00D189E9 /* GADInterstitialDelegate.h */,
-				4A4298A9143B216F00D189E9 /* GADRequest.h */,
-				4A4298AA143B216F00D189E9 /* GADRequestError.h */,
-				4A4298AB143B216F00D189E9 /* libGoogleAdMobAds.a */,
-			);
-			path = AdMob;
 			sourceTree = "<group>";
 		};
 		4A4298AC143B216F00D189E9 /* facebook-ios-sdk */ = {
@@ -787,7 +761,6 @@
 				4A9E9FF31449A88600F51474 /* f7u12_derp.png */,
 				4A9E9FF41449A88600F51474 /* f7u12_rage.png */,
 				4A9E9FF51449A88600F51474 /* f7u12_troll.png */,
-				4A9E9FF61449A88600F51474 /* icon.png */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -941,7 +914,6 @@
 				4A9E9FFE1449A88600F51474 /* f7u12_derp.png in Resources */,
 				4A9E9FFF1449A88600F51474 /* f7u12_rage.png in Resources */,
 				4A9EA0001449A88600F51474 /* f7u12_troll.png in Resources */,
-				4A9EA0011449A88600F51474 /* icon.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

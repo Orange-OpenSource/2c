@@ -18,11 +18,14 @@
 
 
 #include "CCGLView.h"
-#include "CCVideoView.h"
 
 #ifdef IOS
 #import "CCViewController.h"
 #import "CCARView.h"
+#endif
+
+#ifndef ANDROID
+#include "CCVideoView.h"
 #endif
 
 class CCWindowController
@@ -37,6 +40,7 @@ public:
     void resume();
     
     void toggleAdverts(const bool toggle);
+    const float getAdvertHeight();
 
     void startVideoView(const char *file);
     void toggleVideoView(const bool toggle);
@@ -59,7 +63,10 @@ protected:
     
 protected:
     CCGLView *glView;
+
+#ifndef ANDROID
     CCVideoView *videoView;
+#endif
 
 #ifdef IOS
     CCARView *arView;

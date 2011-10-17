@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------
  * 2C - Cross Platform 3D Application Framework
  *-----------------------------------------------------------
- * Copyright © 2010 Ð 2011 France Telecom
+ * Copyright Â© 2010 - 2011 France Telecom
  * This software is distributed under the Apache 2.0 license,
  * see the "license.txt" file for more details.
  *-----------------------------------------------------------
@@ -28,7 +28,8 @@ enum ActionTypes
 
 extern "C"
 {
-    JNIEXPORT void JNICALL Java_com_android2c_CCJNI_controlsHandleTouch(JNIEnv *jEnv, jobject jObj, jfloat jX, jfloat jY, jint jActionType, jint jFinger);
+JNIEXPORT void JNICALL Java_com_android2c_CCJNI_controlsHandleTouch(JNIEnv *jEnv, jobject jObj, jfloat jX, jfloat jY, jint jActionType, jint jFinger);
+JNIEXPORT bool JNICALL Java_com_android2c_CCJNI_controlsHandleBackButton(JNIEnv *jEnv, jobject jObj);
 };
 
 JNIEXPORT void JNICALL Java_com_android2c_CCJNI_controlsHandleTouch(JNIEnv *jEnv, jobject jObj, jfloat jX, jfloat jY, jint jActionType, jint jFinger)
@@ -44,6 +45,23 @@ JNIEXPORT void JNICALL Java_com_android2c_CCJNI_controlsHandleTouch(JNIEnv *jEnv
 }
 
 
+JNIEXPORT bool JNICALL Java_com_android2c_CCJNI_controlsHandleBackButton(JNIEnv *jEnv, jobject jObj)
+{
+	if( gEngine != NULL )
+	{
+		for( int i=0; i<gEngine->scenes.length; ++i )
+		{
+			CCSceneBase *scene = gEngine->scenes.list[i];
+			if( scene->handleBackButton() )
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+
 CCDeviceControls::CCDeviceControls()
 {
 }
@@ -51,10 +69,9 @@ CCDeviceControls::CCDeviceControls()
 void CCDeviceControls::touch(CCPoint position, int action, int finger)
 {
 	UITouch *touch;
-	
 	if( action == ACTION_DOWN || action == POINTER_DOWN )
 	{
-		touch = new UITouch();
+		touch = &deviceTouches[finger];
 		touch->pos = position;
 		touchBegin( touch );
 	}
@@ -70,10 +87,8 @@ void CCDeviceControls::touch(CCPoint position, int action, int finger)
 	else if( action == ACTION_UP || action == POINTER_UP )
 	{
 		touch = (UITouch*)screenTouches[finger].usingTouch;
-		if( touch != NULL )
-		{
-			touchEnd( touch );
-		}
+		touchEnd( touch );
+
 	}
 }
 
@@ -103,7 +118,7 @@ void CCDeviceControls::touchEnd(UITouch *touch)
     unTouch( touch );
     bool touchesFinished = true;
 
-    for( uint i = 0; i < numberOfTouches; ++i )
+    for( uint i = 0; i<numberOfTouches; ++i )
     {
     	if( screenTouches[i].usingTouch != NULL )
     	{
@@ -126,16 +141,14 @@ void CCDeviceControls::touchHandle(UITouch *touch)
     position.x *= screenSize.width;
     position.y *= screenSize.height;
 
-    for( uint touchIndex = 0; touchIndex < numberOfTouches; ++touchIndex )
+    for( uint touchIndex = 0; touchIndex<numberOfTouches; ++touchIndex )
     {
 		CCScreenTouches& screenTouch = screenTouches[touchIndex];
 
 		if( screenTouch.usingTouch == NULL || screenTouch.usingTouch == touch )
 		{
 			CCPoint screenPosition = position;
-			// GameThead(Unl/L)ock included to match iOS version, but commented out as
-			// Android version is currently single-threaded
-			// GameThreadLock();
+			GameThreadLock();
 			if( screenTouch.usingTouch != NULL )
 			{
 				screenTouch.delta.x += screenPosition.x - screenTouch.position.x;
@@ -158,8 +171,7 @@ void CCDeviceControls::touchHandle(UITouch *touch)
 			}
 			screenTouch.position = screenPosition;
 			screenTouch.usingTouch = touch;
-			// GameThreadUnlock();
-			
+			GameThreadUnlock();
 			break;
 		}
     }

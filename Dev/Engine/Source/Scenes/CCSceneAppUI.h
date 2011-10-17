@@ -64,6 +64,7 @@ protected:
 
     virtual const bool handleTilesTouch(const CCScreenTouches &touch, const CCTouchAction touchAction);
 
+    virtual const bool touchAllowed(const CCScreenTouches &touch);
     virtual void touchPressed(const CCScreenTouches &touch);
     
     virtual const bool touchMovementAllowed(const CCScreenTouches &touch, CCPoint &touchDelta);

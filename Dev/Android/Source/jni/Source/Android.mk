@@ -9,7 +9,6 @@ LOCAL_C_INCLUDES := \
 				$(LOCAL_PATH)/Rendering \
 				$(LOCAL_PATH)/Tools \
 \
-				$(LOCAL_PATH)/../libpng \
 				$(LOCAL_PATH)/../libzip \
 \
 				$(LOCAL_PATH)/../../../../Engine/Source \
@@ -25,7 +24,7 @@ LOCAL_C_INCLUDES := \
 \
 				$(LOCAL_PATH)/../../../../App/Source/ \
 
-LOCAL_STATIC_LIBRARIES := libzip libpng
+LOCAL_STATIC_LIBRARIES := libzip
 
 # Make all warnings into errors
 LOCAL_CPPFLAGS  := -Werror
@@ -34,18 +33,17 @@ LOCAL_CPPFLAGS  := -Werror
 # This is the default. So no need to turn on
 # LOCAL_CPPFLAGS  += -O0
 
-# Makes macros debugable
+# CCRelease: Makes macros debugable
 LOCAL_CPPFLAGS  += -g3
 
-# Release: We don't need accurate floating point maths, do we?
+# CCRelease: We don't need accurate floating point maths, do we?
 #LOCAL_CPPFLAGS  += -ffast-math
 #LOCAL_CPPFLAGS  += -O3 -funroll-loops -DFPM_ARM
 
 LOCAL_SRC_FILES := \
 				main.cpp \
+                CCJNI.cpp \
                 CCPlatform.cpp \
-                CCFBWebView.cpp \
-                CCVideoView.cpp \
 \
                 Rendering/CCDeviceRenderer.cpp \
                 Rendering/CCTexturePNG.cpp \

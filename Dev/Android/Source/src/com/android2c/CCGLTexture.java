@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------
  * 2C - Cross Platform 3D Application Framework
  *-----------------------------------------------------------
- * Copyright © 2010 Ð 2011 France Telecom
+ * Copyright ï¾© 2010 ï¿ 2011 France Telecom
  * This software is distributed under the Apache 2.0 license,
  * see the "license.txt" file for more details.
  *-----------------------------------------------------------
@@ -29,6 +29,17 @@ import android.opengl.GLUtils;
 public class CCGLTexture
 {
 	static Bitmap bitmap = null;
+	
+	static int NextPowerOfTwo(int x)
+	{
+		x = x - 1;
+		x = x | (x >> 1);
+		x = x | (x >> 2);
+		x = x | (x >> 4);
+		x = x | (x >> 8);
+		x = x | (x >>16);
+		return x + 1;
+	}
 	
 	static public int load(final String filename, final boolean mipmap, final boolean packaged)
 	{
@@ -72,6 +83,19 @@ public class CCGLTexture
         
         if( bitmap != null )
         {
+        	// Re-scale the width to be a power of 2 to avoid any weird stretching issues.
+        	int width = bitmap.getWidth();
+        	int height = bitmap.getHeight();
+        	int widthSquared = NextPowerOfTwo( width );
+        	if( width != widthSquared )
+        	{
+        		float scale = (float)widthSquared/(float)width;
+        		int scaledHeight = (int)( height * scale );
+        		Bitmap scaledBitmap = Bitmap.createScaledBitmap( bitmap, widthSquared, scaledHeight, true );
+        		bitmap.recycle();
+        		bitmap = scaledBitmap;
+        	}
+        	
 			int[] glName = new int[1];
 			
 			GL11 gl = CCGLViewJNI.glContext;

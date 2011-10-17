@@ -13,7 +13,7 @@
  *-----------------------------------------------------------
  */
 
-#define USE_ADMOB
+//#define USE_ADMOB
 
 #ifdef USE_ADMOB
 #import "GADBannerView.h"

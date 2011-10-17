@@ -103,10 +103,8 @@ const bool CCSceneAppUI::handleControls(const CCGameTime &gameTime)
 		const CCScreenTouches &touch = touches[0];
 		
 		// Handles one touch pressed
-		if( touch.usingTouch != NULL && 
-             touches[1].lastTimeReleased > 0.0f &&
-             touch.position.x > 0.0f && touch.position.x < 1.0f &&
-             touch.position.y > 0.0f && touch.position.y < 1.0f )
+		if( touches[1].lastTimeReleased > 0.0f &&
+            touchAllowed( touch ) )
 		{
 			if( controlsUITouch != touch.usingTouch )
 			{
@@ -303,6 +301,16 @@ void CCSceneAppUI::setCameraHeight(const float inHeight)
     cameraWidth = cameraOffset.z * camera->getFrustumSize().height;
     cameraHWidth = cameraWidth * 0.5f;
     cameraHHeight = cameraHeight * 0.5f;
+}
+
+
+const bool CCSceneAppUI::touchAllowed(const CCScreenTouches &touch)
+{
+    return touch.usingTouch != NULL && 
+    touch.position.x > 0.0f && touch.position.x < 1.0f &&
+    touch.position.y > 0.0f && touch.position.y < 1.0f &&
+    touch.startPosition.x > 0.0f && touch.startPosition.x < 1.0f &&
+    touch.startPosition.y > 0.0f && touch.startPosition.y < 1.0f;
 }
 
 

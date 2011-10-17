@@ -15,6 +15,8 @@
 
 #ifdef QT
 #include "CCMainWindow.h"
+#elif ANDROID
+#include "CCJNI.h"
 #endif
 
 
@@ -29,10 +31,10 @@ CCWindowController::CCWindowController()
     instance = this;
     
     glView = NULL;
-    videoView = NULL;
 
 #ifdef IOS
 
+    videoView = NULL;
     arView = NULL;
 
 #endif
@@ -43,12 +45,13 @@ CCWindowController::CCWindowController()
 
 CCWindowController::~CCWindowController()
 {
+
+#ifdef IOS
+
     if( videoView != NULL )
     {
         stopVideoView();
     }
-
-#ifdef IOS
 
     if( arView != NULL )
     {
@@ -181,6 +184,27 @@ void CCWindowController::toggleAdverts(const bool toggle)
 }
 
 
+const float CCWindowController::getAdvertHeight()
+{
+#ifdef IOS
+    return 50.0f/gEngine->renderer->screenSize.height;
+#elif ANDROID
+    
+    const float bannerWidth = 320.0f;
+    const float bannerHeight = 50.0f;
+    const float screenWidth = gEngine->renderer->screenSize.width;
+    const float screenHeight = gEngine->renderer->screenSize.height;
+    
+    float scale = screenWidth / bannerWidth;
+    float scaledHeight = bannerHeight * scale;
+    return scaledHeight / screenHeight;
+    
+#endif
+    
+    return 0.1f;
+}
+
+
 void CCWindowController::startVideoView(const char *file)
 {
     class ThreadCallback : public CCLambdaCallback     
@@ -248,6 +272,10 @@ void CCWindowController::toggleAdvertsNativeThread(const bool toggle)
     
     [viewController toggleAdverts:toggle];
     
+#elif ANDROID
+    
+    CCJNI::AdvertsToggle( toggle );
+    
 #endif
 }
 
@@ -258,14 +286,14 @@ void CCWindowController::startVideoViewNativeThread(const char *file)
     return;
 #endif
     
-    ASSERT( videoView == NULL );
-    
     toggleBackgroundRender( true );
     
     CCText fullFilePath;
     CCFileManager::getFilePath( fullFilePath, file, Resource_Packaged );
     
 #ifdef IOS
+
+    ASSERT( videoView == NULL );
     
     CGRect rect = [[UIScreen mainScreen] bounds];
     videoView = [[CCVideoView alloc] initWithFrame:rect];
@@ -275,7 +303,7 @@ void CCWindowController::startVideoViewNativeThread(const char *file)
     
 #elif defined ANDROID
 
-    CCVideoView::startVideoView( fullFilePath.buffer );
+    CCJNI::VideoViewStart( fullFilePath.buffer );
 
 #elif defined QT
 
@@ -304,7 +332,7 @@ void CCWindowController::toggleVideoViewNativeThread(const bool toggle)
     
 #elif defined ANDROID
     
-    CCVideoView::stopVideoView();
+    CCJNI::VideoViewStop();
     
 #endif
 }
@@ -332,7 +360,7 @@ void CCWindowController::stopVideoViewNativeThread()
 
 #elif defined ANDROID
 
-    CCVideoView::stopVideoView();
+    CCJNI::VideoViewStop();
 
 #endif
 }

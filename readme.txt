@@ -33,7 +33,7 @@ Found in Dev/External/3dsloader
 AdMob SDK
 http://admob.com
 An advertising provider.
-Found in Dev/External/AdMob
+Found in Dev/External/GoogleAdMob
 Library file linked to.
 
 Android NDK r5b (Apache 2.0)
@@ -58,11 +58,6 @@ http://nih.at/libzip/
 Used for Android port to open up packaged resources.
 Found in Dev/Android/Source/jni/libzip
 
-libpng (libpng)
-http://libpng.org/
-Contained in Android port for potential use to open png textures.
-Found in Dev/Android/Source/jni/libpng
-
 UIDevice-Hardware (BSD)
 https://github.com/erica/uidevice-extension
 Describes iOS hardware types.
@@ -75,3 +70,9 @@ RevanTech Bitmap Font Generator (BSD)
 Used to generate font pages.
 Found in Tools/RTBFG
 *Modified - outputs fonts to fill 1024x1024 page.
+
+
+Licence
+=======
+This software is distributed under the Apache 2.0 license,
+see the "license.txt" file for more details.

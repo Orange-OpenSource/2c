@@ -14,7 +14,9 @@
 
 #ifdef IOS
     #import "FBLoginDialog.h"
-#elif defined ANDROID || defined QT
+#elif defined ANDROID
+	#include "CCJNI.h"
+#elif defined QT
     #include "CCFBWebView.h"
 #endif
 
@@ -525,9 +527,13 @@ void CCFBApi::LogOut()
     
     m_userAccessToken.clear();
     
+#elif defined ANDROID
+
+    CCJNI::WebViewClearData();
+
 #elif defined QT
 
-    CCFBWebView::ClearUserData();
+    CCFBWebView::ClearData();
 
 #endif
 
@@ -594,7 +600,7 @@ void CCFBApi::LaunchBrowserOnNativeThread()
     
 #elif defined ANDROID
 
-    CCFBWebView::openWebBrowser();
+    CCJNI::WebViewOpen();
 
 #endif
 }

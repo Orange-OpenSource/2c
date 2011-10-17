@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------
  * 2C - Cross Platform 3D Application Framework
  *-----------------------------------------------------------
- * Copyright © 2010 Ð 2011 France Telecom
+ * Copyright © 2010 - 2011 France Telecom
  * This software is distributed under the Apache 2.0 license,
  * see the "license.txt" file for more details.
  *-----------------------------------------------------------
@@ -14,6 +14,8 @@
  */
 
 package com.android2c;
+
+import android.webkit.CookieManager;
 
 
 // Wrapper for native library
@@ -68,6 +70,8 @@ public class CCJNI
 	
 	// CCDeviceControls
 	public static native void controlsHandleTouch(float x, float y, int actionType, int finger);
+
+	public static native boolean controlsHandleBackButton();
 	
 	
 	// CCDeviceFileManager
@@ -97,27 +101,38 @@ public class CCJNI
  														 String[] headerNames, String[] headerValues, int headerLength);
  	
  	
- 	// CCFBWebView
- 	private void openWebBrowser(String url)
+ 	// CCJNI
+ 	private void advertsToggle(boolean toggle)
+ 	{
+ 		activity.toggleAdverts( toggle );
+ 	}
+ 	
+ 	
+ 	private void webViewOpen(String url)
 	{
 	 	activity.openWebBrowser( url );
  	}
  	
- 	private void closeWebBrowser()
+ 	private void webViewClose()
 	{
 	 	activity.closeWebBrowser();
+ 	}
+ 	
+ 	private void webViewClearData()
+	{
+ 		CookieManager cookieManager = CookieManager.getInstance();
+ 		cookieManager.removeAllCookie();
  	}
 
  	public static native void webViewURLLoaded(String url);
  	
  	
- 	// CCVideoView
-  	private void startVideoView(String file)
+  	private void videoViewStart(String file)
  	{
  	 	activity.startVideoView( file );
   	}
   	
-  	private void stopVideoView()
+  	private void videoViewStop()
  	{
  	 	activity.stopVideoView();
   	}

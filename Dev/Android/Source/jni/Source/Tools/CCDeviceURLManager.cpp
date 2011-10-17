@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------
  * 2C - Cross Platform 3D Application Framework
  *-----------------------------------------------------------
- * Copyright © 2010 Ð 2011 France Telecom
+ * Copyright Â© 2010 - 2011 France Telecom
  * This software is distributed under the Apache 2.0 license,
  * see the "license.txt" file for more details.
  *-----------------------------------------------------------
@@ -67,13 +67,14 @@ JNIEXPORT void JNICALL Java_com_android2c_CCJNI_urlManagerDownloadFinished(JNIEn
 
 CCDeviceURLManager::CCDeviceURLManager()
 {
-	currentURLRequest = NULL;
 }
 
 
 void CCDeviceURLManager::processRequest(CCURLRequest *inRequest)
 {
-	currentURLRequest = inRequest;
+	ASSERT( inRequest != NULL );
+    inRequest->state = CCURLRequest::in_flight;
+	currentRequests.add( inRequest );
 
 	// JNI Java call
 	JNIEnv *env = gView->jniEnv;
@@ -99,31 +100,46 @@ void CCDeviceURLManager::processRequest(CCURLRequest *inRequest)
 }
 
 
+void CCDeviceURLManager::clear()
+{
+    currentRequests.length = 0;
+}
+
+
 void CCDeviceURLManager::downloadFinished(const char *url, const bool success,
 		const char *data, const int dataLength,
 		CCList<CCText> &headerNames, CCList<CCText> &headerValues)
 {
-	// Transfer over the headers
-	for( int i=0; i<headerNames.length; ++i )
+	for( int i=0; i<currentRequests.length; ++i )
 	{
-		currentURLRequest->header.names.add( headerNames.list[i] );
-		currentURLRequest->header.values.add( headerValues.list[i] );
-	}
+		CCURLRequest *currentRequest = currentRequests.list[i];
+		if( CCText::Equals( currentRequest->url.buffer, url ) )
+		{
+			// Transfer over the headers
+			for( int i=0; i<headerNames.length; ++i )
+			{
+				currentRequest->header.names.add( headerNames.list[i] );
+				currentRequest->header.values.add( headerValues.list[i] );
+			}
 
-	if( !success )
-	{
-		DEBUGLOG( "Download of %s failed.", url );
-		currentURLRequest->state = CCURLRequest::failed;
+			if( !success )
+			{
+				DEBUGLOG( "Download of %s failed.", url );
+				currentRequest->state = CCURLRequest::failed;
+			}
+			else
+			{
+				currentRequest->state = CCURLRequest::succeeded;
+				currentRequest->data.set( data, dataLength );
+			}
+
+            currentRequests.remove( currentRequest );
+            break;
+		}
 	}
-	else
-	{
-		currentURLRequest->state = CCURLRequest::succeeded;
-		currentURLRequest->data.set( data, dataLength );
-	}
-	currentURLRequest = NULL;
 }
 
 const bool CCDeviceURLManager::readyToRequest()
 {
-	return currentURLRequest == NULL;
+	return true;
 }

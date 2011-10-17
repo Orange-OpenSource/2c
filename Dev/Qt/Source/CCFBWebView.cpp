@@ -268,7 +268,7 @@ void CCFBWebView::contentsChanged()
 }
 
 
-void CCFBWebView::ClearUserData()
+void CCFBWebView::ClearData()
 {
     if( CCFileManager::doesCachedFileExist( userDataFile ) )
     {

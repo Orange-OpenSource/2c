@@ -169,12 +169,12 @@ const bool CCFileManager::deleteCachedFile(const char *filePath)
         return false;
     }
     
-#elif defined IOS
+#elif defined( IOS ) || defined( ANDROID )
     
     CCText fullFilePath;
     getFilePath( fullFilePath, filePath, Resource_Cached );
     
-    //DEBUGLOG( "CCFileManager::Saving %s \n", fullFilePath.buffer );
+    //DEBUGLOG( "CCFileManager::deleteCachedFile %s \n", fullFilePath.buffer );
     if( remove( fullFilePath.buffer ) != 0 )
     {
         ASSERT( false );

@@ -53,7 +53,7 @@ public slots:
     void contentsChanged();
 
 public:
-    static void ClearUserData();
+    static void ClearData();
 
 private:
     QWidget *m_parentWidget;

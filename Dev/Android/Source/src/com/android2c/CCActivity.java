@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------
  * 2C - Cross Platform 3D Application Framework
  *-----------------------------------------------------------
- * Copyright © 2010 – 2011 France Telecom
+ * Copyright Ôæ© 2010 Ôøê 2011 France Telecom
  * This software is distributed under the Apache 2.0 license,
  * see the "license.txt" file for more details.
  *-----------------------------------------------------------
@@ -16,10 +16,19 @@
 package com.android2c;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.Display;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.WindowManager;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
 import android.widget.RelativeLayout;
+
+//import com.google.ads.*;
 
 
 public class CCActivity extends Activity 
@@ -28,6 +37,8 @@ public class CCActivity extends Activity
     CCGLViewJNI glView = null;
     CCWebViewJNI webView = null;
     CCVideoViewJNI videoView = null;
+    
+    //AdView adView = null;
 
     @Override protected void onCreate(Bundle icicle) 
     {
@@ -39,10 +50,55 @@ public class CCActivity extends Activity
         glView = new CCGLViewJNI( getApplication() );
         layout = new RelativeLayout( this );
         layout.addView( glView );
+        
+        // Admob
+//        if( false )
+//        {
+//	    	// Create ad view
+//	    	adView = new AdView( this, AdSize.BANNER, "a14e9b3ad1bb801" );
+//	    	
+//	    	// Re-position to footer
+//	    	WindowManager windowManager = (WindowManager)getSystemService( Context.WINDOW_SERVICE ); 
+//	        Display display = windowManager.getDefaultDisplay();
+//	        int screenWidth = display.getWidth();
+//	        int screenHeight = display.getHeight();
+//	        int bannerWidth = AdSize.BANNER.getWidth();
+//	        int bannerHeight = AdSize.BANNER.getHeight();
+//	        float scale = (float)screenWidth / (float)bannerWidth;
+//	        int scaledHeight = (int)( (float)bannerHeight * scale );
+//	        int y = screenHeight - scaledHeight;
+//	        
+//	        RelativeLayout.LayoutParams viewParams = new RelativeLayout.LayoutParams( screenWidth, scaledHeight );
+//	        viewParams.topMargin = y;
+//	        viewParams.alignWithParent = true;
+//	    	adView.setLayoutParams( viewParams );
+//	    	
+//	    	layout.addView( adView );
+//
+//	        // Initiate a generic request to load it with an ad
+//	        adView.loadAd( new AdRequest() );
+//	        
+//	        toggleAdverts( false );
+//        }
+        
         setContentView( layout );
     }
+    
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) 
+    {
+        if( keyCode == KeyEvent.KEYCODE_BACK )
+        {
+        	if( CCJNI.controlsHandleBackButton() )
+        	{
+        		return true;
+        	}
+        }
+        return super.onKeyDown(keyCode, event);
+    }
 
-    @Override protected void onPause() 
+    @Override
+    protected void onPause() 
     {
         super.onPause();
         glView.onPause();
@@ -58,7 +114,8 @@ public class CCActivity extends Activity
         }
     }
 
-    @Override protected void onResume() 
+    @Override
+    protected void onResume() 
     {   
         super.onResume();
         glView.onResume();
@@ -67,6 +124,53 @@ public class CCActivity extends Activity
         {
         	webView.toggle( true );
         }
+    }
+    
+    @Override
+    public void onDestroy() 
+    {
+//    	if( adView != null )
+//    	{
+//    		adView.destroy();
+//    	}
+    	super.onDestroy();
+    }
+    
+    
+    public void toggleAdverts(final boolean toggle)
+    {
+//    	runOnUiThread(new Runnable() 
+//    	{
+//		    public void run() 
+//		    {
+//		    	if( adView != null )	
+//		    	{
+//		    		if( toggle )
+//		    		{
+//		    			adView.setVisibility( View.VISIBLE );
+//		    			
+//		    			// Fade the ad in over half of a second.
+////		    	        AlphaAnimation animation = new AlphaAnimation( 0.0f, 1.0f );
+////		    	        animation.setDuration( 500 );
+////		    	        animation.setFillAfter( true );
+////		    	        animation.setInterpolator( new AccelerateInterpolator() );
+////		    	        adView.startAnimation( animation );
+//		    		}
+//		    		else
+//		    		{
+//		    			adView.setVisibility( View.GONE );
+//		    			
+//		    			// Disabled as it keeps the view active for touches
+//		    			// Fade the ad out over half a second.
+////		    	        AlphaAnimation animation = new AlphaAnimation( 1.0f, 0.0f );
+////		    	        animation.setDuration( 500 );
+////		    	        animation.setFillAfter( true );
+////		    	        animation.setInterpolator( new AccelerateInterpolator() );
+////		    	        adView.startAnimation( animation );
+//		    		}
+//		    	}
+//		    }
+//		});
     }
     
     

@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------
  * 2C - Cross Platform 3D Application Framework
  *-----------------------------------------------------------
- * Copyright © 2011 Ğ 2011 France Telecom
+ * Copyright Â© 2011 - 2011 France Telecom
  * This software is distributed under the Apache 2.0 license,
  * see the "license.txt" file for more details.
  *-----------------------------------------------------------
@@ -10,15 +10,18 @@
  */
 
 #include "CCDefines.h"
+#include "CCGLView.h"
 
 
 void GameThreadLock()
 {
+    pthread_mutex_lock( &gView->gameThreadMutex );
 }
 
 
 void GameThreadUnlock()
 {
+    pthread_mutex_unlock( &gView->gameThreadMutex );
 }
 
 
