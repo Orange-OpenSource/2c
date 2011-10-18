@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------
- * 2C - Cross Platform 3D Application Framework
+ * 2c - Cross Platform 3D Application Framework
  *-----------------------------------------------------------
  * Copyright � 2011 - 2011 France Telecom
  * This software is distributed under the Apache 2.0 license,
