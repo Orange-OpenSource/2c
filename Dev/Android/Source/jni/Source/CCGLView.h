@@ -1,15 +1,17 @@
-/*----------------------------------------------------------
-* Copyright © 2011 - 2011 France Telecom
-* This software is distributed under the Apache 2.0 license,
-* see the "license.txt" file for more details.
-*-----------------------------------------------------------
-* File Name   : GIGLView.h
-* Description : OpenGL view handler.
-*
-* Created     : 09/06/11
-* Author(s)   : Ashraf Samy Hegab, Chris Bowers
-*-----------------------------------------------------------
-*/
+/*-----------------------------------------------------------
+ * 2c - Cross Platform 3D Application Framework
+ *-----------------------------------------------------------
+ * Copyright © 2010 - 2011 France Telecom
+ * This software is distributed under the Apache 2.0 license,
+ * see the "license.txt" file for more details.
+ *-----------------------------------------------------------
+ * File Name   : CCGLView.h
+ * Description : OpenGL view handler.
+ *
+ * Created     : 09/06/11
+ * Author(s)   : Ashraf Samy Hegab, Chris Bowers
+ *-----------------------------------------------------------
+ */
 
 #ifndef __CCGLVIEW_H__
 #define __CCGLVIEW_H__
