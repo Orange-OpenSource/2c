@@ -466,36 +466,6 @@ void CCTile3DButton::handleTouchRelease()
 }
 
 
-// Positioning Tiles
-void CCTile3DButton::positionTileY(float &y)
-{
-    y -= collisionBounds.y;
-    translate( 0.0f, y, 0.0f );
-    y -= collisionBounds.y;
-}
-
-
-void CCTile3DButton::positionTileBelow(CCTile3D *fromTile)
-{
-    setPosition( fromTile->getPosition() );
-    translate( 0.0f, -( fromTile->collisionBounds.y + collisionBounds.y ), 0.0f );
-}
-
-
-void CCTile3DButton::positionTileAbove(CCTile3D *fromTile)
-{
-    setPosition( fromTile->getPosition() );
-    translate( 0.0f, fromTile->collisionBounds.y + collisionBounds.y, 0.0f );
-}
-
-
-void CCTile3DButton::positionTileRight(CCTile3D *fromTile)
-{
-    setPosition( fromTile->getPosition() );
-    translate( fromTile->collisionBounds.x + collisionBounds.x, 0.0f, 0.0f );
-}
-
-
 void CCTile3DButton::setTextPressedColourAlpha(const float inAlpha)
 {
     if( textPressedColourBase == NULL )

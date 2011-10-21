@@ -107,9 +107,11 @@ void CCPrimitiveBase::render()
             {
                 // Why would you want to use the same texture twice? you wouldn't.. bad!
                 ASSERT( textureInfo->primaryIndex != textureInfo->secondaryIndex );
+#ifndef QT
                 glActiveTexture( GL_TEXTURE1 );
                 gEngine->textureManager->setTextureIndex( textureInfo->secondaryIndex );
                 glActiveTexture( GL_TEXTURE0 );
+#endif
             }
 		}
 	}

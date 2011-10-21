@@ -95,12 +95,6 @@ public:
         touchDepressRange = range;
     }
 
-    // Positioning Tiles
-    void positionTileY(float &y);
-    virtual void positionTileBelow(CCTile3D *fromTile);
-    void positionTileAbove(CCTile3D *fromTile);
-    void positionTileRight(CCTile3D *fromTile);
-
 public:
     void setTextPressedColourAlpha(const float inAlpha=0.0f);
 

@@ -19,9 +19,8 @@ CCSceneBase::CCSceneBase()
 {
 	enabled = true;
     deleteMe = false;
-	sceneID = 255;
 	
-    activeObjects.allocate( MAX_OBJECTS );
+    objects.allocate( MAX_OBJECTS );
 	
     parentScene = NULL;
 	lifetime = 0.0f;
@@ -32,9 +31,9 @@ void CCSceneBase::destruct()
 {
     childScenes.deleteObjectsAndList();
 
-    while( activeObjects.length > 0 )
+    while( objects.length > 0 )
     {
-        CCSceneObject *object = activeObjects.list[0];
+        CCSceneObject *object = objects.list[0];
         DELETE_OBJECT( object );
     }
     ASSERT( collideables.length == 0 );
@@ -82,7 +81,7 @@ void CCSceneBase::update(const CCGameTime &gameTime)
         CCSceneBase *scene = childScenes.list[i];
         if( scene->shouldDelete() )
         {
-            removeScene( scene );
+            removeChildScene( scene );
             i--;
         }
     }
@@ -92,6 +91,7 @@ void CCSceneBase::update(const CCGameTime &gameTime)
         lifetime += gameTime.real;
 
         updateScene( gameTime );
+        
         // Update our child scenes
         for( int i=0; i<childScenes.length; ++i )
         {
@@ -110,19 +110,19 @@ void CCSceneBase::update(const CCGameTime &gameTime)
 
 void CCSceneBase::updateScene(const CCGameTime &gameTime)
 {
-    for( int i=0; i<activeObjects.length; ++i )
+    for( int i=0; i<objects.length; ++i )
     {
-        if( activeObjects.list[i]->isActive() )
+        CCSceneObject *object = objects.list[i];
+        if( object->isActive() )
         {
-            activeObjects.list[i]->update( gameTime );
+            object->update( gameTime );
         }
-        else if( activeObjects.list[i]->deleteMe > 0 )
+        else if( object->deleteMe > 0 )
         {
-            if( --activeObjects.list[i]->deleteMe == 0 )
+            if( --object->deleteMe == 0 )
             {
-                CCSceneObject *deleteObject = activeObjects.list[i];
-                DELETE_OBJECT( deleteObject );
-                i--;
+                DELETE_OBJECT( object );
+                --i;
             }
         }
     }
@@ -164,9 +164,9 @@ void CCSceneBase::renderObjects(const int pass, const bool alpha)
     CCProfiler profile( "CCSceneBase::renderObjects()" );
 #endif
 
-    for( int i=0; i<activeObjects.length; ++i )
+    for( int i=0; i<objects.length; ++i )
     {
-        CCSceneObject *object = activeObjects.list[i];
+        CCSceneObject *object = objects.list[i];
         if( object->renderPass == pass )
         {
             if( object->isActive() && ( object->octreeRender == false ) )
@@ -209,8 +209,8 @@ void CCSceneBase::addObject(CCSceneObject *object)
 {
     ASSERT( object->inScene == NULL );
     object->inScene = this;
-    activeObjects.add( object );
-    ASSERT( activeObjects.length < MAX_OBJECTS );
+    objects.add( object );
+    ASSERT( objects.length < MAX_OBJECTS );
 }
 
 
@@ -221,7 +221,7 @@ void CCSceneBase::removeObject(CCSceneObject* object)
     ASSERT( object->inScene == this );
 
     object->inScene = NULL;
-    const bool removed = activeObjects.remove( object );
+    const bool removed = objects.remove( object );
     if( removed == false )
     {
         ASSERT( removed );
@@ -250,7 +250,7 @@ void CCSceneBase::setParent(CCSceneBase *inParent)
 }
 
 
-void CCSceneBase::addScene(CCSceneBase *inScene)
+void CCSceneBase::addChildScene(CCSceneBase *inScene)
 {
     inScene->setParent( this );
     childScenes.add( inScene );
@@ -258,7 +258,7 @@ void CCSceneBase::addScene(CCSceneBase *inScene)
 }
 
 
-void CCSceneBase::removeScene(CCSceneBase *inScene)
+void CCSceneBase::removeChildScene(CCSceneBase *inScene)
 {
     if( childScenes.remove( inScene ) )
     {

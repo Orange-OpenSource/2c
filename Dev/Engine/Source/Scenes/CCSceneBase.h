@@ -30,7 +30,6 @@ public:
 	virtual void setup() {};
 	virtual void restart() {}
 	
-	inline const uint getID() { return sceneID; }
     void deleteLater();
     void deleteLinkedScenesLater();
     inline const bool shouldDelete() { return deleteMe; }
@@ -64,8 +63,8 @@ public:
     void removeCollideable(CCSceneCollideable *collideable);
     
     void setParent(CCSceneBase *inParent);
-    void addScene(CCSceneBase *inScene);
-    void removeScene(CCSceneBase *inScene);
+    void addChildScene(CCSceneBase *inScene);
+    void removeChildScene(CCSceneBase *inScene);
     void linkScene(CCSceneBase *inScene);
     void unlinkScene(CCSceneBase *inScene);
 
@@ -85,15 +84,14 @@ protected:
     void requestDownload(const char *url, const char *token);
     virtual void dataDownloaded(CCURLRequest *reply, const char *token);
 
-protected:
-    uint sceneID;
-    bool deleteMe;
-
 public:
     bool enabled;
+    
+protected:
+    bool deleteMe;
 
 protected:
-    CCList<CCSceneObject> activeObjects;
+    CCList<CCSceneObject> objects;
     CCList<CCSceneCollideable> collideables;
     CCDestructList<CCWidgetBase> widgets;
 

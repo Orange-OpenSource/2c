@@ -68,3 +68,32 @@ void CCTile3D::translate(const float x, const float y, const float z)
 
     CCOctreeRefreshObject( this );
 }
+
+// Positioning Tiles
+void CCTile3D::positionTileY(float &y)
+{
+    y -= collisionBounds.y;
+    translate( 0.0f, y, 0.0f );
+    y -= collisionBounds.y;
+}
+
+
+void CCTile3D::positionTileBelow(CCTile3D *fromTile)
+{
+    setPosition( fromTile->getPosition() );
+    translate( 0.0f, -( fromTile->collisionBounds.y + collisionBounds.y ), 0.0f );
+}
+
+
+void CCTile3D::positionTileAbove(CCTile3D *fromTile)
+{
+    setPosition( fromTile->getPosition() );
+    translate( 0.0f, fromTile->collisionBounds.y + collisionBounds.y, 0.0f );
+}
+
+
+void CCTile3D::positionTileRight(CCTile3D *fromTile)
+{
+    setPosition( fromTile->getPosition() );
+    translate( fromTile->collisionBounds.x + collisionBounds.x, 0.0f, 0.0f );
+}

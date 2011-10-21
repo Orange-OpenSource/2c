@@ -267,10 +267,12 @@ const bool CCRenderer::setShader(const char *name)
 //                    glUniform1i( currentShader->uniforms[TEXTURE_DIFFUSE], 0 );
 //                }
                 
+#ifndef QT
                 if( currentShader->uniforms[TEXTURE_ENV] != -1 )
                 {
                     glUniform1i( currentShader->uniforms[TEXTURE_ENV], 1 );
                 }
+#endif
                 
                 return true;
             }

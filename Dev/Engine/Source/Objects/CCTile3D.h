@@ -89,6 +89,12 @@ public:
     virtual void dirtyModelMatrix();
     virtual void setPositionXYZ(const float x, const float y, const float z);
     virtual void translate(const float x, const float y, const float z);
+    
+    // Positioning Tiles
+    void positionTileY(float &y);
+    virtual void positionTileBelow(CCTile3D *fromTile);
+    void positionTileAbove(CCTile3D *fromTile);
+    void positionTileRight(CCTile3D *fromTile);
 
     // Objects which move along with this tile, but contain handle their own collisions
     CCList<CCSceneObject> attachments;
