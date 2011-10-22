@@ -274,8 +274,9 @@ static inline const float CCVector3Magnitude(const CCVector3 &vector, const bool
 	return sqrtf( CCVector3LengthSquared( vector ) ); 
 }
 
-static inline const float CCVector3Distance(CCVector3 &difference, const CCVector3 &from, const CCVector3 &to, const bool squared=true)
+static inline const float CCVector3Distance(const CCVector3 &from, const CCVector3 &to, const bool squared)
 {	
+    CCVector3 &difference = vectorResult;
 	difference = to;
 	difference.sub( from );
 	difference.mul( 0.5f );
@@ -285,7 +286,7 @@ static inline const float CCVector3Distance(CCVector3 &difference, const CCVecto
 
 static inline const float CCVector3DistanceCheck(const CCVector3 &from, const CCVector3 &to, const bool squared=true)
 {
-	return CCVector3Distance( vectorResult, from, to, squared );
+	return CCVector3Distance( from, to, squared );
 }
 
 static inline const float CCVector3DistanceCheck2D(const CCVector3 &from, const CCVector3 &to, const bool squared=true)
@@ -315,19 +316,19 @@ static inline void CCVector3Normalize(CCVector3 &vector)
 	vector.z *= oneOverMagnitude;
 }
 
-static inline CCVector3 CCVector3MakeWithStartAndEndPoints(const CCVector3 *start, const CCVector3 *end)
+static inline CCVector3 CCVector3Direction(const CCVector3 &start, const CCVector3 &end)
 {
-	vectorResult.x = end->x - start->x;
-	vectorResult.y = end->y - start->y;
-	vectorResult.z = end->z - start->z;
+	vectorResult.x = end.x - start.x;
+	vectorResult.y = end.y - start.y;
+	vectorResult.z = end.z - start.z;
 	CCVector3Normalize( vectorResult );
 	return vectorResult;
 }
 
-static inline CCVector3 CalculateSurfaceNormal(const CCVector3 *v1, const CCVector3 *v2, const CCVector3 *v3)
+static inline CCVector3 CalculateSurfaceNormal(const CCVector3 &v1, const CCVector3 &v2, const CCVector3 &v3)
 {
-	const CCVector3 u = CCVector3MakeWithStartAndEndPoints( v2, v1 );
-	const CCVector3 v = CCVector3MakeWithStartAndEndPoints( v3, v1 );
+	const CCVector3 u = CCVector3Direction( v2, v1 );
+	const CCVector3 v = CCVector3Direction( v3, v1 );
 	
 	vectorResult.x = ( u.y * v.z ) - ( u.z * v.y );
 	vectorResult.y = ( u.z * v.x ) - ( u.x * v.z );

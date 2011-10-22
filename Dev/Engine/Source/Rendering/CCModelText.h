@@ -66,7 +66,8 @@ public:
     const CCText& getText() { return primitive->text; }
     const float getWidth() { return primitive->getWidth(); }
     
-    void setText(const char *text, const float height=-1.0f, const char *font=NULL);
+    void setup(const char *text, const float height, const char *font=NULL);
+    void setText(const char *text);
     void setHeight(const float height);
     void setCentered(const bool centered);
 	void setColour(const CCColour &inColour);

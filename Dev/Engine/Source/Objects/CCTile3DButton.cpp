@@ -28,7 +28,7 @@ CCTile3DButton::CCTile3DButton(CCSceneBase *scene, const float width, const floa
     
     if( text )
     {
-        textModel->setText( text, height );
+        textModel->setup( text, height );
     }
 }
 
@@ -51,7 +51,7 @@ CCTile3DButton::CCTile3DButton(CCSceneBase *scene, const char *text, const float
 {
     construct( scene );
     
-    textModel->setText( text, height );
+    textModel->setup( text, height );
     
     const float width = textModel->getWidth();
     

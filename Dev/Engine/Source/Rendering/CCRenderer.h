@@ -116,6 +116,9 @@ public:
     
     inline const CCShader* getShader() { return currentShader; }
     const bool setShader(const char *name);
+    
+    inline const int getBackBufferWidth() { return backBufferWidth; }
+    inline const int getBackBufferHeight() { return backBufferHeight; }
 
 protected:
     int backBufferWidth, backBufferHeight;

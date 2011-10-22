@@ -69,6 +69,7 @@ void CCTile3D::translate(const float x, const float y, const float z)
     CCOctreeRefreshObject( this );
 }
 
+
 // Positioning Tiles
 void CCTile3D::positionTileY(float &y)
 {

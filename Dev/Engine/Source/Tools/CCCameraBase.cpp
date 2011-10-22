@@ -49,12 +49,12 @@ void CCCameraBase::setupViewport(const float x, const float y, const float width
 {
     const float invY = ( 1.0f-height ) - y;
     
-    const float screenWidth = gEngine->renderer->screenSize.width;
-    const float screenHeight = gEngine->renderer->screenSize.height;
-    const float definedWidth = width * screenWidth;
-    const float definedHeight = height * screenHeight;
-    viewport[0] = x * screenWidth;
-    viewport[1] = invY * screenHeight;
+    const float backBufferWidth = gEngine->renderer->getBackBufferWidth();
+    const float backBufferHeight = gEngine->renderer->getBackBufferHeight();
+    const float definedWidth = width * backBufferWidth;
+    const float definedHeight = height * backBufferHeight;
+    viewport[0] = x * backBufferWidth;
+    viewport[1] = invY * backBufferHeight;
     viewport[2] = definedWidth;
     viewport[3] = definedHeight;
 

@@ -41,7 +41,7 @@ void CCModelText::destruct()
 }
 
 
-void CCModelText::setText(const char *text, const float height, const char *font)
+void CCModelText::setup(const char *text, const float height, const char *font)
 {
     if( primitive == NULL )
     {
@@ -68,6 +68,13 @@ void CCModelText::setText(const char *text, const float height, const char *font
     {
         setFont( font );
     }
+}
+
+
+void CCModelText::setText(const char *text)
+{
+    ASSERT( primitive != NULL );
+    primitive->setup( text );
 }
 
 

@@ -164,11 +164,17 @@ public:
     }
 
     
-    void setup(CCVector3 *inCurrent, const CCVector3 target)
+    void setup(CCVector3 *inCurrent, const CCVector3 target, CCLambdaCallback *inCallback=NULL)
     {
         x.setup( &inCurrent->x, target.x );
         y.setup( &inCurrent->y, target.y );
         z.setup( &inCurrent->z, target.z );
+        
+        onInterpolated.deleteObjects();
+        if( inCallback != NULL )
+        {
+            onInterpolated.add( inCallback );
+        }
     }
     
     void setup(CCVector3 *inCurrent, const float target)
@@ -191,6 +197,15 @@ public:
         bool updating = x.update( deltaSpeed );
         updating |= y.update( deltaSpeed );
         updating |= z.update( deltaSpeed );
+        
+        if( onInterpolated.length > 0 )
+        {
+            if( updating == false )
+            {
+                LAMBDA_EMIT_ONCE( onInterpolated );
+            }
+        }
+        
         return updating;
     }
     

@@ -43,6 +43,14 @@
 		
 		// Get the layer
 		CAEAGLLayer *eaglLayer = (CAEAGLLayer*)self.layer;
+        
+        // Set contentScale Factor to 2, to use high resolution
+        if( false && [[UIScreen mainScreen] respondsToSelector:@selector( scale )] && [[UIScreen mainScreen] scale] == 2.0 ) 
+        {
+            self.contentScaleFactor = 2.0f;
+            eaglLayer.contentsScale = 2.0f;
+        }
+        
 		eaglLayer.opaque = true;
 		eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
 										[NSNumber numberWithBool:false], kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, NULL];
