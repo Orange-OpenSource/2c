@@ -178,10 +178,9 @@ void CCSceneCollideable::setHCollisionBounds(const float hWidth, const float hHe
 	collisionBounds.y = hHeight;
 	collisionBounds.z = hDepth;
     
-    // Used for moving the object, the maximum movement is just under (1.99f) the size of the bounding box
 	collisionBoundsLength.x = hWidth > hDepth ? hWidth : hDepth;
-    collisionBoundsLength.x *= 1.99f;
-    collisionBoundsLength.y = hHeight * 1.99f;
+    collisionBoundsLength.x *= 2.0f;
+    collisionBoundsLength.y = hHeight * 2.0f;
 	inverseBoundsLength.x = 1.0f / collisionBoundsLength.x;
 	inverseBoundsLength.y = 1.0f / collisionBoundsLength.y;
     

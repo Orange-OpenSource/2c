@@ -24,10 +24,10 @@ CCTexturePNG::~CCTexturePNG()
 }
 
 #include <QImageReader>
-const bool CCTexturePNG::load(const char *name, const CCResourceType resourceType, const bool generateMipMap)
+const bool CCTexturePNG::load(const char *path, const CCResourceType resourceType, const bool generateMipMap)
 {
     QString completeFilename = QtRootPath();
-    completeFilename.append( name );
+    completeFilename.append( path );
 
     //qDebug() << QImageReader::supportedImageFormats ();
 
@@ -95,11 +95,12 @@ const bool CCTexturePNG::load(const char *name, const CCResourceType resourceTyp
         allocatedWidth = imageWidth = image.width();
         allocatedHeight = imageHeight = image.height();
 
+        const uint components = ( bpp >> 3 );
+
         // Shuffle image data if format is one we don't support
         uint rowBytes = image.bytesPerLine();
         if( format == GL_BGRA )
         {
-            uint components = ( bpp>>3 );
             uint imgWide = rowBytes / components;
             uint num = imgWide * imageHeight;
             uint32_t *p = (uint32_t*)pixels;	// quint32?
@@ -128,6 +129,9 @@ const bool CCTexturePNG::load(const char *name, const CCResourceType resourceTyp
                 }
             }
         }
+
+        // How much space is the texture?
+        allocatedBytes = allocatedWidth * allocatedHeight * components;
 
         glGenTextures( 1, &glName );
         gEngine->textureManager->bindTexture( glName );

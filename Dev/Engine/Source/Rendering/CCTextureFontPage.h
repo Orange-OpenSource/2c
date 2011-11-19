@@ -19,11 +19,9 @@
 
 #include "CCTextureBase.h"
 
-class CCTextureFontPage : public CCTextureBase
+class CCTextureFontPage
 {
 public:
-	typedef CCTextureBase super;
-    
     inline const char* getName() const { return name; }
     const float getWidth(const char *text, const uint length, const float size) const;
     const float getHeight(const char *text, const uint length, const float size) const;
@@ -38,20 +36,20 @@ public:
     void view() const;
 
 protected:
-    virtual void bindTexturePage() const;
+    virtual void bindTexturePage() const = 0;
 
     typedef struct
     {
         CCPoint start, end;
         CCSize size;
-    } Letters;
-    const Letters* getLetter(const char character) const;
+    } Letter;
+    const Letter* getLetter(const char character) const;
     
 protected:
     const char *name;
     
     enum { num_letters = 256 };
-    Letters letters[num_letters];
+    Letter letters[num_letters];
 };
 
 

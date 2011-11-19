@@ -139,10 +139,10 @@ void CCRenderHorizontalSquare(const CCVector3 &start, const CCVector3 &end)
 {
     const float vertices[] = 
 	{
-		start.x, start.y, start.z,	// Top left
-		end.x, start.y, start.z,	// Top right
-		start.x, end.y, end.z,		// Bottom left
-		end.x, end.y, end.z,		// Bottom right
+		start.x,    start.y,    start.z,	// Top left
+		end.x,      start.y,    start.z,	// Top right
+		start.x,    end.y,      end.z,		// Bottom left
+		end.x,      end.y,      end.z,		// Bottom right
     };
 	
 	// draw the square

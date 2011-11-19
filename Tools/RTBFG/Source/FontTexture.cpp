@@ -133,12 +133,17 @@ void FontTexture::buildTexture(QImage &img)
     const float heightScale = 1.0f / img.height();
     const float scaledBlockHeight = step * heightScale;
     int letterIndex = 0;
+
     for(int y = 0; y < 16; y++)
     {
         for(int x = 0; x < 16; x++)
         {
             // Make the current character
-            QChar curChar = QChar( (unsigned char) letterIndex );
+            QChar curChar = QChar( letterIndex );
+            if( letterIndex == 0 )
+            {
+                curChar = QChar( (unsigned char)'£' );
+            }
             QString curString = QString( curChar );
 
             // Paint all the characters

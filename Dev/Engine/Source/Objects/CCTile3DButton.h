@@ -96,14 +96,7 @@ public:
     }
 
 public:
-    void setTextPressedColourAlpha(const float inAlpha=0.0f);
-
     CCModelText *textModel;
-protected:
-    // CCText colour pressed interpolation
-    CCColour *textPressedColourBase;
-    CCColour *textPressedColourTarget;
-    CCInterpolatorLinearColour *textPressedColourInterpolator;
 
 protected:
     bool renderDepth;

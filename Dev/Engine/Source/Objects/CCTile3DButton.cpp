@@ -20,6 +20,7 @@ CCTile3DButton::CCTile3DButton(CCSceneBase *scene)
     construct( scene );
 }
 
+
 CCTile3DButton::CCTile3DButton(CCSceneBase *scene, const float width, const float height, const char *text)
 {
     construct( scene );
@@ -28,7 +29,7 @@ CCTile3DButton::CCTile3DButton(CCSceneBase *scene, const float width, const floa
     
     if( text )
     {
-        textModel->setup( text, height );
+        textModel->setText( text, height );
     }
 }
 
@@ -46,12 +47,11 @@ CCTile3DButton::CCTile3DButton(CCSceneBase *scene, const float width, const char
 }
 
 
-
 CCTile3DButton::CCTile3DButton(CCSceneBase *scene, const char *text, const float height, const bool centered)
 {
     construct( scene );
     
-    textModel->setup( text, height );
+    textModel->setText( text, height );
     
     const float width = textModel->getWidth();
     
@@ -87,8 +87,6 @@ void CCTile3DButton::construct(CCSceneBase *scene)
     baseSquare = NULL;
     
     textModel = new CCModelText( this );
-    textPressedColourBase = textPressedColourTarget = NULL;
-    textPressedColourInterpolator = NULL;
     
     allowTouchRotation( false );
     touchRotationMagnitude = 0.0f;
@@ -112,10 +110,6 @@ void CCTile3DButton::construct(CCSceneBase *scene)
 
 void CCTile3DButton::destruct()
 {
-    DELETE_POINTER( textPressedColourInterpolator );
-    DELETE_POINTER( textPressedColourBase );
-    DELETE_POINTER( textPressedColourTarget );
-
     onPress.deleteObjectsAndList();
     onRelease.deleteObjectsAndList();
     onLoss.deleteObjectsAndList();
@@ -183,11 +177,6 @@ void CCTile3DButton::update(const CCGameTime &gameTime)
         {
             dirtyModelMatrix();
         }
-
-        if( textPressedColourInterpolator != NULL )
-        {
-            textPressedColourInterpolator->update( gameTime.delta );
-        }
     }
 
     if( touchRotationAllowed )
@@ -219,7 +208,7 @@ void CCTile3DButton::update(const CCGameTime &gameTime)
 
     if( textModel != NULL )
     {
-        textModel->colourInterpolatorUpdate( gameTime.delta * 2.0f );
+        textModel->colourInterpolator.update( gameTime.delta );
     }
 }
 
@@ -408,11 +397,6 @@ void CCTile3DButton::touchActionPressed(const float x, const float y, const CCTo
         {
             touchDepressInterpolator.pushV3( &touchDepressPosition, CCVector3(), true );
         }
-
-        if( textPressedColourInterpolator != NULL )
-        {
-            textPressedColourInterpolator->setup( textModel->getColour(), *textPressedColourTarget );
-        }
     }
 
     if( touchAction > touch_pressed && touchAction < touch_released )
@@ -457,32 +441,5 @@ void CCTile3DButton::handleTouchRelease()
     if( touchDepressRange > 0.0f )
     {
         touchDepressInterpolator.pushV3( &touchDepressPosition, CCVector3(), true );
-
-        if( textPressedColourInterpolator != NULL )
-        {
-            textPressedColourInterpolator->setTarget( textPressedColourBase );
-        }
-    }
-}
-
-
-void CCTile3DButton::setTextPressedColourAlpha(const float inAlpha)
-{
-    if( textPressedColourBase == NULL )
-    {
-        textPressedColourBase = new CCColour();
-    }
-    *textPressedColourBase = *textModel->getColour();
-
-    if( textPressedColourTarget == NULL )
-    {
-        textPressedColourTarget = new CCColour();
-    }
-    *textPressedColourTarget = *textPressedColourBase;
-    textPressedColourTarget->alpha = inAlpha;
-
-    if( textPressedColourInterpolator == NULL )
-    {
-        textPressedColourInterpolator = new CCInterpolatorLinearColour( textModel->getColour(), *textPressedColourBase );
     }
 }

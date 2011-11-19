@@ -6,7 +6,7 @@
  * see the "license.txt" file for more details.
  *-----------------------------------------------------------
  * File Name   : CCControls.h
- * Description : Cross platform controls representation.
+ * Description : Cross platform controls interface.
  *
  * Created     : 01/03/10
  * Author(s)   : Ashraf Samy Hegab

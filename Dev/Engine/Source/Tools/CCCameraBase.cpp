@@ -73,7 +73,7 @@ void CCCameraBase::setupViewport(const float x, const float y, const float width
 
 void CCCameraBase::refreshViewport()
 {
-    setupViewport( cameraX, cameraY, cameraWidth, cameraHeight );
+    setupViewport( this );
 }
 
 

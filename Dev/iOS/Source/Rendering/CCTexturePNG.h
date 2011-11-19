@@ -28,7 +28,7 @@ public:
 	virtual ~CCTexturePNG();
 
 	// CCTextureBase
-	virtual const bool load(const char *name, const CCResourceType resourceType, const bool generateMipMap);
+	virtual const bool load(const char *path, const CCResourceType resourceType, const bool generateMipMap);
 	virtual const bool createGLTexture();
 
 private:

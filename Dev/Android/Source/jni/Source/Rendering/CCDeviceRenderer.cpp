@@ -193,6 +193,10 @@ void CCDeviceRenderer::refreshScreenSize()
 {
 	screenSize.width = gView->getWidth();
 	screenSize.height = gView->getHeight();
+
+	// On Android we always use the same back buffer as our view
+    backBufferWidth = screenSize.width;
+    backBufferHeight = screenSize.height;
 }
 
 

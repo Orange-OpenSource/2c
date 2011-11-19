@@ -186,7 +186,7 @@ const bool CCTextureManager::loadTexture(CCTextureHandle &textureHandle)
                 if( longestHandle != NULL )
                 {
                     totalTexturesLoaded--;
-                    totalTextureSpace -= longestHandle->texture->getAllocatedWidth() * longestHandle->texture->getAllocatedHeight() * 4;
+                    totalTextureSpace -= longestHandle->texture->getBytes();
                     delete longestHandle->texture;
                     longestHandle->texture = NULL;
                     //DEBUGLOG( "CCTextureManager::Textures Loaded %i %i \n\n", totalTexturesLoaded, totalTextureSpace );

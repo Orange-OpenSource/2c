@@ -96,13 +96,13 @@ static void jniReleaseRawData()
 }
 
 
-const bool CCTexturePNG::load(const char *name, const CCResourceType resourceType, const bool generateMipMap)
+const bool CCTexturePNG::load(const char *path, const CCResourceType resourceType, const bool generateMipMap)
 {
 #if defined PROFILEON
     CCProfiler profile( "CCTexturePNG::load()" );
 #endif
 
-	CCText filename = name;
+	CCText filename = path;
 	filename.stripDirectory();
 	filename.toLowercase();
 
@@ -111,6 +111,10 @@ const bool CCTexturePNG::load(const char *name, const CCResourceType resourceTyp
 	{
 		allocatedWidth = imageWidth = jniGetWidth();
 		allocatedHeight = imageHeight = jniGetHeight();
+
+		// TODO: pretend it's always 4 bytes on Android, look into getting actual pixel size data
+		allocatedBytes = allocatedWidth * allocatedHeight * 4;
+
 		jniReleaseRawData();
 		return true;
 	}

@@ -105,6 +105,9 @@ const bool CCDeviceRenderer::loadShader(CCShader *shader)
 void CCDeviceRenderer::refreshScreenSize()
 {
     screenSize = CCSize( gView->rect().width(), gView->rect().height() );
+
+    backBufferWidth = screenSize.width;
+    backBufferHeight = screenSize.height;
 }
 
 

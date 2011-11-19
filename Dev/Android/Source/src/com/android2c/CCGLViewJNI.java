@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------
  * 2c - Cross Platform 3D Application Framework
  *-----------------------------------------------------------
- * Copyright © 2010 Ð 2011 France Telecom
+ * Copyright ï¾© 2010 ï¿ 2011 France Telecom
  * This software is distributed under the Apache 2.0 license,
  * see the "license.txt" file for more details.
  *-----------------------------------------------------------
@@ -69,7 +69,7 @@ class CCGLViewJNI extends GLSurfaceView
     {
     	int action = event.getAction() & MotionEvent.ACTION_MASK;
     	int index = ( event.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK ) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
-    	int finger = event.getPointerId(index);
+    	int finger = event.getPointerId( index );
     	float x = event.getX();
     	float y = event.getY();
     	

@@ -25,18 +25,18 @@ CCTextureFontPageFile::~CCTextureFontPageFile()
 }
 
 
-const bool CCTextureFontPageFile::load(const char *name, const CCResourceType resourceType, const bool generateMipMap)
+const bool CCTextureFontPageFile::load(const char *path, const CCResourceType resourceType, const bool generateMipMap)
 {
-    CCText textureFilename( name );
-    textureFilename += ".png";
-    texturePageIndex = gEngine->textureManager->assignTextureIndex( textureFilename.buffer, resourceType, true, generateMipMap );
+    CCText textureFile( path );
+    textureFile += ".png";
+    texturePageIndex = gEngine->textureManager->assignTextureIndex( textureFile.buffer, resourceType, true, generateMipMap );
     
-    CCText filename( name );
-    filename += ".data";
+    CCText dataFile( path );
+    dataFile += ".data";
     
 	// Load the descriptor file
     char *fileData = NULL;
-    CCFileManager::getPackagedFile( filename.buffer, &fileData );
+    CCFileManager::getPackagedFile( dataFile.buffer, &fileData );
     CCText textData( fileData );
     FREE_POINTER( fileData );
     
@@ -50,7 +50,7 @@ const bool CCTextureFontPageFile::load(const char *name, const CCResourceType re
         CCList<char> *letterDataSplit = rawLetterData.split( "," );
         ASSERT( letterDataSplit->length == 4 );
         
-        Letters &letter = letters[i];
+        Letter &letter = letters[i];
         letter.start.x = (float)atof( letterDataSplit->list[0] );
         letter.start.y = (float)atof( letterDataSplit->list[1] );
         letter.end.x = (float)atof( letterDataSplit->list[2] );

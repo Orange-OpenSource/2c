@@ -6,7 +6,7 @@
  * see the "license.txt" file for more details.
  *-----------------------------------------------------------
  * File Name   : CCGameEngine.h
- * Description : Handles the game loop and managers.
+ * Description : Handles the engine loop and feature managers.
  *
  * Created     : 01/03/10
  * Author(s)   : Ashraf Samy Hegab

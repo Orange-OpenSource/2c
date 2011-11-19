@@ -16,16 +16,10 @@
 package com.android2c;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.Display;
 import android.view.KeyEvent;
-import android.view.View;
-import android.view.WindowManager;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AlphaAnimation;
 import android.widget.RelativeLayout;
 
 //import com.google.ads.*;

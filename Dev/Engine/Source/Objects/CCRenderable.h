@@ -26,9 +26,12 @@ public:
 
     // CCBaseType
     virtual void destruct();
-
+    
     virtual void dirtyModelMatrix();
     virtual void dirtyWorldMatrix();
+    
+    virtual void refreshModelMatrix();
+    virtual void render(const bool alpha) = 0;
 
     inline const CCVector3 getPosition() const { return position; }
     void setPosition(const CCVector3 &vector);
@@ -46,9 +49,7 @@ public:
     void rotateY(const float y);
     void rotateZ(const float z);
 
-    virtual void refreshModelMatrix();
-    virtual void render(const bool alpha) = 0;
-
+public:
     bool shouldRender;
     CCMatrix modelMatrix;
     bool updateModelMatrix;

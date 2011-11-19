@@ -30,7 +30,7 @@ public:
     // PrimitiveBase
     virtual void renderVertices(const bool textured);
 
-	void setup(const char *inText);
+	void setText(const char *inText);
     
     void setFont(const char *font);
     
@@ -58,30 +58,24 @@ public:
     CCModelText(CCSceneCollideable *inParent=NULL);
     virtual void destruct();
 
-    void setParent(CCSceneCollideable *inParent)
-    {
-        parent = inParent;
-    }
+    void setParent(CCSceneCollideable *inParent);
     
     const CCText& getText() { return primitive->text; }
     const float getWidth() { return primitive->getWidth(); }
     
-    void setup(const char *text, const float height, const char *font=NULL);
-    void setText(const char *text);
+    void setText(const char *text, const float height=-1.0f, const char *font=NULL);
     void setHeight(const float height);
     void setCentered(const bool centered);
 	void setColour(const CCColour &inColour);
     
     void setFont(const char *font);
-
-    void colourInterpolatorUpdate(const float delta);
     
 protected:
     CCPrimitiveText *primitive;
     CCSceneCollideable *parent;
     
 public:
-    CCInterpolatorLinearColour textColourInterpolator;
+    CCInterpolatorLinearColour colourInterpolator;
 };
 
 

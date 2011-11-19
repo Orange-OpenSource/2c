@@ -26,7 +26,7 @@ const float CCTextureFontPage::getWidth(const char *text, const uint length, con
         }
         else
         {
-            const Letters *letter = getLetter( text[i] );
+            const Letter *letter = getLetter( text[i] );
             if( letter != NULL )
             {
                 totalWidth += letter->size.width * size;
@@ -43,7 +43,7 @@ const float CCTextureFontPage::getHeight(const char *text, const uint length, co
 	float maxHeight = 0.0f;
 	for( uint i=0; i<length; ++i )
 	{
-        const Letters *letter = getLetter( text[i] );
+        const Letter *letter = getLetter( text[i] );
 		if( letter != NULL )
 		{
             maxHeight = MAX( maxHeight, letter->size.height * size );
@@ -72,7 +72,7 @@ void CCTextureFontPage::renderText(const char *text, const uint length,
 	uint numberOfLines = 0;
 	for( uint i=0; i<length; ++i )
 	{
-        const Letters *letter = getLetter( text[i] );
+        const Letter *letter = getLetter( text[i] );
 		if( letter != NULL )
 		{
             charSize[i].x = letter->size.width * size;
@@ -115,7 +115,7 @@ void CCTextureFontPage::renderText(const char *text, const uint length,
 	uint lineNumber = 0;
 	for( uint i=0; i<length; ++i )
 	{
-		const Letters *letter = getLetter( text[i] );
+		const Letter *letter = getLetter( text[i] );
 		if( letter != NULL )
 		{
 			// Calculate end point
@@ -164,10 +164,9 @@ void CCTextureFontPage::renderText3D(const char *text, const uint length,
 
     // Find out our width so we can center the text
     int lineIndex = 0;
-    #define MAX_LINES 10
     
-    CCPoint lineSize[MAX_LINES];
-    static CCPoint charSize[MAX_LINES][MAX_TEXT_LENGTH];
+    CCPoint lineSize[MAX_TEXT_LINES];
+    static CCPoint charSize[MAX_TEXT_LINES][MAX_TEXT_LENGTH];
     int characterIndex = 0;
     for( uint i=0; i<length; ++i )
     {
@@ -176,10 +175,11 @@ void CCTextureFontPage::renderText3D(const char *text, const uint length,
         {
             lineIndex++;
             characterIndex = 0;
+            ASSERT( lineIndex < MAX_TEXT_LINES );
         }
         else
         {
-            const Letters *letter = getLetter( character );
+            const Letter *letter = getLetter( character );
             if( letter != NULL )
             {
                 CCPoint &size = charSize[lineIndex][characterIndex];
@@ -222,7 +222,7 @@ void CCTextureFontPage::renderText3D(const char *text, const uint length,
         }
         else
         {
-            const Letters *letter = getLetter( character );
+            const Letter *letter = getLetter( character );
             if( letter != NULL )
             {
                 CCPoint &size = charSize[lineIndex][characterIndex];
@@ -264,14 +264,7 @@ void CCTextureFontPage::view() const
 }
 
 
-
-void CCTextureFontPage::bindTexturePage() const
-{
-	gEngine->textureManager->bindTexture( glName );
-}
-
-
-const CCTextureFontPage::Letters* CCTextureFontPage::getLetter(const char character) const
+const CCTextureFontPage::Letter* CCTextureFontPage::getLetter(const char character) const
 {
 	if( character >= 0 )
     {

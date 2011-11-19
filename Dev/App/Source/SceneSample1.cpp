@@ -27,23 +27,32 @@ SceneSample1::SceneSample1()
 // Called after our constructor is called
 void SceneSample1::setup()
 {
-    // Set our virtual camera width to be 100
-    // This means that the width of the view will be 100
-    setCameraWidth( 100.0f );
+    // Set our virtual camera width to be 320
+    // This means that the width of the view will be 320
+    setCameraWidth( 320.0f );
     
     // Create a tile
     {
         CCTile3DButton *tile = new CCTile3DButton( this,            // Pass in this scene
                                                    "Hello World",   // Tell it to say 'Hello World'
-                                                   20.0f,           // Specify the height of the text
+                                                   64.0f,           // Specify the height of the text
                                                    true );          // Request the text to be centered
-        
+
         // Set the colour of the text model to be white
         tile->textModel->setColour( CCColour() );
-        
+
         // Add the tile to our list of touchable tiles, to allow for user interaction
         addTile( tile );
     }
+
+//    {
+//        CCTile3DButton *tile = new CCTile3DButton( this,                            // Pass in this scene
+//                                                   320.0f,                          // Specify the width of the tile
+//                                                   "Resources/background.png" );    // Texture to load
+//        
+//        // Add the tile to our list of touchable tiles, to allow for user interaction
+//        addTile( tile );
+//    }
 
     // refresh the scene range
     refreshCameraView();

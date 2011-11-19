@@ -118,5 +118,3 @@ void VectDotProduct(p3d_type *p_vector1, p3d_type *p_vector2, p3d_type *p_normal
     p_normal->y=(p_vector1->z * p_vector2->x) - (p_vector1->x * p_vector2->z);
     p_normal->z=(p_vector1->x * p_vector2->y) - (p_vector1->y * p_vector2->x);
 }
-
-

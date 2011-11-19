@@ -27,7 +27,7 @@ public:
 	CCTextureFontPageFile(const char *inName);
 	virtual ~CCTextureFontPageFile();
 
-    virtual const bool load(const char *name, const CCResourceType resourceType, const bool generateMipMap);
+    virtual const bool load(const char *path, const CCResourceType resourceType, const bool generateMipMap);
 
 protected:
 	virtual void bindTexturePage() const;

@@ -237,29 +237,32 @@ const bool CCInterpolatorCurvesV3::update(const float delta)
 
 const bool CCInterpolatorLinearColour::update(const float delta)
 {
-    if( updating && current != NULL )
+    if( current != NULL )
     {
-        if( current->toTarget( target, delta * speed ) )
+        if( updating )
         {
-            return true;
-        }
-        else
-        {
-            updating = false;
-        }
-    }
-    else 
-    {
-        ASSERT( current->equals( target ) );
-        if( onInterpolated.length > 0 )
-        {
-            LAMBDA_SIGNAL pendingCallbacks;
-            for( int i=0; i<onInterpolated.length; ++i )
+            if( current->toTarget( target, delta * speed ) )
             {
-                pendingCallbacks.add( onInterpolated.list[i] );
+                return true;
             }
-            onInterpolated.length = 0;
-            LAMBDA_EMIT_ONCE( pendingCallbacks );
+            else
+            {
+                updating = false;
+            }
+        }
+        else 
+        {
+            ASSERT( current->equals( target ) );
+            if( onInterpolated.length > 0 )
+            {
+                LAMBDA_SIGNAL pendingCallbacks;
+                for( int i=0; i<onInterpolated.length; ++i )
+                {
+                    pendingCallbacks.add( onInterpolated.list[i] );
+                }
+                onInterpolated.length = 0;
+                LAMBDA_EMIT_ONCE( pendingCallbacks );
+            }
         }
     }
     return false;

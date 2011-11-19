@@ -17,8 +17,27 @@
 
 CCModelText::CCModelText(CCSceneCollideable *inParent)
 {
+    primitive = NULL;
+    parent = NULL;
+    setParent( inParent );
+    
+    shader = "alphacolour";
+    
+    colourInterpolator.setDuration( 0.5f );
+}
+
+
+void CCModelText::destruct()
+{
+    super::destruct();
+}
+
+
+void CCModelText::setParent(CCSceneCollideable *inParent)
+{
+    ASSERT( parent == NULL );
     parent = inParent;
-    if( parent != NULL )
+    if( inParent != NULL )
     {
         if( parent->model == NULL )
         {
@@ -29,19 +48,10 @@ CCModelText::CCModelText(CCSceneCollideable *inParent)
             parent->model->addModel( this );
         }
     }
-    primitive = NULL;
-    
-    shader = "alphacolour";
 }
 
 
-void CCModelText::destruct()
-{
-    super::destruct();
-}
-
-
-void CCModelText::setup(const char *text, const float height, const char *font)
+void CCModelText::setText(const char *text, const float height, const char *font)
 {
     if( primitive == NULL )
     {
@@ -52,7 +62,7 @@ void CCModelText::setup(const char *text, const float height, const char *font)
     }
     else
     {
-        primitive->setup( text );
+        primitive->setText( text );
     }
     
     if( height != -1.0f )
@@ -60,21 +70,14 @@ void CCModelText::setup(const char *text, const float height, const char *font)
         setHeight( height );
     }
     
-    if( font == NULL )
-    {
-        setFont( "HelveticaNeueLight" );
-    }
-    else
+    if( font != NULL )
     {
         setFont( font );
     }
-}
-
-
-void CCModelText::setText(const char *text)
-{
-    ASSERT( primitive != NULL );
-    primitive->setup( text );
+    else
+    {
+        setFont( "HelveticaNeueLight" );
+    }
 }
 
 
@@ -101,7 +104,7 @@ void CCModelText::setCentered(const bool centered)
 void CCModelText::setColour(const CCColour &inColour)
 {
     super::setColour( inColour );
-    textColourInterpolator.setup( colour, *colour );
+    colourInterpolator.setup( colour, *colour );
 }
 
 
@@ -111,22 +114,13 @@ void CCModelText::setFont(const char *font)
 }
 
 
-void CCModelText::colourInterpolatorUpdate(const float delta)
-{
-    if( primitive != NULL )
-    {
-        textColourInterpolator.update( delta );
-    }
-}
-
-
 
 // CCPrimitiveText
 CCPrimitiveText::CCPrimitiveText(const char *inText, const float inHeight)
 {	
-    setup( inText );
-    height = inHeight;
-    centered = true;
+    setText( inText );
+    setHeight( inHeight );
+    setCentered( true );
 }
 
 
@@ -149,7 +143,7 @@ void CCPrimitiveText::renderVertices(const bool textured)
 }
 
 
-void CCPrimitiveText::setup(const char *inText)
+void CCPrimitiveText::setText(const char *inText)
 {
     text = inText;
 }

@@ -41,7 +41,7 @@ static uint32 NextPowerOfTwo(uint32 x)
 
 #define USE_CG
 
-const bool CCTexturePNG::load(const char *name, const CCResourceType resourceType, const bool generateMipMap) 
+const bool CCTexturePNG::load(const char *path, const CCResourceType resourceType, const bool generateMipMap) 
 {	
     CCText fullFilePath;
     if( resourceType == Resource_Cached )
@@ -53,7 +53,7 @@ const bool CCTexturePNG::load(const char *name, const CCResourceType resourceTyp
         fullFilePath = [[[NSBundle mainBundle] resourcePath] UTF8String];
     }
     
-    CCText filename( name );
+    CCText filename( path );
     filename.stripDirectory();
     
     fullFilePath += "/";
@@ -63,7 +63,7 @@ const bool CCTexturePNG::load(const char *name, const CCResourceType resourceTyp
 #ifdef USE_CG
     
     // Use CG routines to load texture...
-	const bool isPNG = strstr( name, ".png" ) != NULL;
+	const bool isPNG = strstr( path, ".png" ) != NULL;
     
 	CGDataProviderRef cgDataProviderRef = CGDataProviderCreateWithFilename( fullFilePath.buffer );
 	if( cgDataProviderRef != NULL )
@@ -139,13 +139,13 @@ const bool CCTexturePNG::load(const char *name, const CCResourceType resourceTyp
         
 		allocatedWidth = imageWidth = CGImageGetWidth( image );
 		allocatedHeight = imageHeight = CGImageGetHeight( image );
+        uint32 components = ( bpp >> 3 );
 		
 		// Shuffle image data if format is one we don't support
 		uint rowBytes = CGImageGetBytesPerRow( image );
 		static bool BGRASupport = extensionSupported( "GL_IMG_texture_format_BGRA8888" );
 		if( format == GL_BGRA )
 		{
-			uint components = (bpp>>3);
 			uint imgWide = rowBytes / components;
 			uint num = imgWide * imageHeight;
 			uint32_t *p = (uint32_t*)pixels;
@@ -224,8 +224,9 @@ const bool CCTexturePNG::load(const char *name, const CCResourceType resourceTyp
 			}
             
 			internal = format = GL_RGB;
-			rowBytes -= (rowBytes>>2);
+			rowBytes -= ( rowBytes >> 2 );
 			bpp = 24;
+            components = ( bpp >> 3 );
 		}
         
         // Fix power of two issues
@@ -237,8 +238,7 @@ const bool CCTexturePNG::load(const char *name, const CCResourceType resourceTyp
 			allocatedHeight = NextPowerOfTwo( imageHeight );
 			if( imageWidth != allocatedWidth || imageHeight != allocatedHeight )
 			{
-				uint32 components = (bpp>>3);
-				GLuint dstBytes = allocatedWidth * components;
+                GLuint dstBytes = allocatedWidth * components;
                 tempBuffer = (GLubyte*)malloc( dstBytes * allocatedHeight );
 				
 				for( uint32 y=0; y<imageHeight; ++y )
@@ -250,6 +250,9 @@ const bool CCTexturePNG::load(const char *name, const CCResourceType resourceTyp
 				rowBytes = dstBytes;
 			}
 		}
+        
+        // How much space is the texture?
+        allocatedBytes = allocatedWidth * allocatedHeight * components;
         
 		// Stuff pixels into an OpenGL texture
 		glGenTextures( 1, &glName );
@@ -301,26 +304,32 @@ const bool CCTexturePNG::load(const char *name, const CCResourceType resourceTyp
     ASSERT( uiImage != NULL );
     if( uiImage != NULL )
     {
-        CCCmageRef image = uiImage.CCCmage;
+        CGImageRef image = uiImage.CGImage;
         
         // Get Image size
-        textureWidth = imageWidth = CCCmageGetWidth( image );
-        textureHeight = imageHeight = CCCmageGetHeight( image );
+        allocatedWidth = imageWidth = CGImageGetWidth( image );
+        allocatedHeight = imageHeight = CGImageGetHeight( image );
         
         // Allocate memory for image
         void *imageData = (GLubyte*)calloc( imageHeight * imageWidth * 4, sizeof( GLubyte ) );
         
         CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
         
-        CGBitmapInfo imgInfo = CCCmageGetBitmapInfo( image );
-        size_t bpp = CCCmageGetBitsPerPixel( image );
+        CGBitmapInfo imgInfo = CGImageGetBitmapInfo( image );
+        size_t bpp = CGImageGetBitsPerPixel( image );
         //ASSERT( imgInfo != 0 );
         //ASSERT( bpp == 32 );
+        
+        uint32 components = ( bpp >> 3 );
         
         GLenum format;
         if( bpp == 32 )
         {
             format = GL_RGBA;
+        }
+        else if( bpp == 24 )
+        {
+            format = GL_RGB;
         }
         else
         {
@@ -328,7 +337,7 @@ const bool CCTexturePNG::load(const char *name, const CCResourceType resourceTyp
         }
         
         CGContextRef imgContext = CGBitmapContextCreate( imageData, imageWidth, imageHeight, 8, 4 * imageWidth, colorSpace, 
-                                                         kCCCmageAlphaPremultipliedLast | kCGBitmapByteOrder32Big );
+                                                         kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big );
         CGColorSpaceRelease( colorSpace );
         
         CGContextClearRect( imgContext, CGRectMake( 0, 0, imageWidth, imageHeight ) );
@@ -338,16 +347,15 @@ const bool CCTexturePNG::load(const char *name, const CCResourceType resourceTyp
 		static bool limitedNPOT = extensionSupported( "GL_APPLE_texture_2D_limited_npot" );
 		if( !limitedNPOT )
 		{
-            textureWidth = NextPowerOfTwo( imageWidth );
-			textureHeight = NextPowerOfTwo( imageHeight );
-			if( imageWidth != textureWidth || imageHeight != textureHeight )
+            allocatedWidth = NextPowerOfTwo( imageWidth );
+			allocatedHeight = NextPowerOfTwo( imageHeight );
+			if( imageWidth != allocatedWidth || imageHeight != allocatedHeight )
 			{
-                uint rowBytes = CCCmageGetBytesPerRow( image );
+                uint rowBytes = CGImageGetBytesPerRow( image );
                 GLubyte *pixels = (GLubyte*)imageData;
                 
-				uint32 components = (bpp>>3);
-				GLuint dstBytes = textureWidth * components;
-				GLubyte *temp = (GLubyte*)malloc( dstBytes * textureHeight );
+				GLuint dstBytes = allocatedWidth * components;
+				GLubyte *temp = (GLubyte*)malloc( dstBytes * allocatedHeight );
 				
 				for( uint32 y=0; y<imageHeight; ++y )
                 {
@@ -369,7 +377,7 @@ const bool CCTexturePNG::load(const char *name, const CCResourceType resourceTyp
         //glTexParameteri( GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE );
         
         // Generate texture in opengl
-        glTexImage2D( GL_TEXTURE_2D, 0, format, textureWidth, textureHeight, 0, format, GL_UNSIGNED_BYTE, imageData );
+        glTexImage2D( GL_TEXTURE_2D, 0, format, allocatedWidth, allocatedHeight, 0, format, GL_UNSIGNED_BYTE, imageData );
         
         // Release context
         CGContextRelease( imgContext );

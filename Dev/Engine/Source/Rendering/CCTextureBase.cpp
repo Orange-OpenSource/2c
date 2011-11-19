@@ -27,9 +27,9 @@ CCTextureBase::~CCTextureBase()
 }
 
 
-const bool CCTextureBase::loadAndCreate(const char *name, const CCResourceType resourceType, const bool generateMipMap)
+const bool CCTextureBase::loadAndCreate(const char *path, const CCResourceType resourceType, const bool generateMipMap)
 {
-    if( !load( name, resourceType, generateMipMap ) || !createGLTexture() )
+    if( !load( path, resourceType, generateMipMap ) || !createGLTexture() )
 	{
 		return false;
 	}

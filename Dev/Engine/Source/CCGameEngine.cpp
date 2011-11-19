@@ -64,7 +64,7 @@ static int zCompare(const void *a, const void *b)
     {
         if( objectA->drawOrder == 200 && objectB->drawOrder == 200 )
         {
-            const CCVector3& cameraPosition = gEngine->currentCamera->getRotatedPosition();
+            const CCVector3 &cameraPosition = gEngine->currentCamera->getRotatedPosition();
             const CCVector3 *positionA = objectA->positionPtr;
             const CCVector3 *positionB = objectB->positionPtr;
             const float distanceA = CCVector3DistanceCheck( *positionA, cameraPosition, true );

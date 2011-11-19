@@ -177,8 +177,8 @@ void CCMatrixRotate(CCMatrix &result, float angle, float x, float y, float z)
     float sinAngle, cosAngle;
     float mag = sqrtf(x * x + y * y + z * z);
 
-    sinAngle = sinf ( angle * CC_PI / 180.0f );
-    cosAngle = cosf ( angle * CC_PI / 180.0f );
+    sinAngle = sinf( angle * CC_PI / 180.0f );
+    cosAngle = cosf( angle * CC_PI / 180.0f );
     if ( mag > 0.0f )
     {
         float xx, yy, zz, xy, yz, zx, xs, ys, zs;

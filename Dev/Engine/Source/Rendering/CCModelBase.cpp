@@ -72,9 +72,9 @@ void CCModelBase::render(const bool alpha)
                 }
 
                 CCDefaultTexCoords();
+                gEngine->textureManager->setTextureIndex( 0 );
                 for( int i=0; i<primitives.length; ++i )
                 {
-                    gEngine->textureManager->setTextureIndex( 0 );
                     primitives.list[i]->renderOutline();
                 }
 

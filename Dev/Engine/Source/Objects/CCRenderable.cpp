@@ -42,6 +42,39 @@ void CCRenderable::dirtyWorldMatrix()
 }
 
 
+void CCRenderable::refreshModelMatrix()
+{
+	if( updateModelMatrix )
+	{
+		CCMatrixLoadIdentity( modelMatrix );	
+        CCMatrixTranslate( modelMatrix, position.x, position.y, position.z );
+			
+		if( scale != NULL )
+		{	
+			CCMatrixScale( modelMatrix, scale->x, scale->y, scale->z );
+		}
+		
+		if( rotation.x != 0.0f )
+		{
+            CCMatrixRotate( modelMatrix, rotation.x, 1.0f, 0.0f, 0.0f );
+		}
+		
+		if( rotation.y != 0.0f )
+		{
+            CCMatrixRotate( modelMatrix, rotation.y, 0.0f, 1.0f, 0.0f );
+		}
+		
+		if( rotation.z != 0.0f )
+		{
+            CCMatrixRotate( modelMatrix, rotation.z, 0.0f, 0.0f, 1.0f );
+		}
+			
+		updateModelMatrix = false;
+		dirtyWorldMatrix();
+	}
+}
+
+
 void CCRenderable::setPosition(const CCVector3 &vector)
 {
     setPositionXYZ( vector.x, vector.y, vector.z );
@@ -125,37 +158,4 @@ void CCRenderable::rotateZ(const float z)
 	rotation.z += z;
     CCClampRotation( rotation.z );
     rotationUpdated();
-}
-
-
-void CCRenderable::refreshModelMatrix()
-{
-	if( updateModelMatrix )
-	{
-		CCMatrixLoadIdentity( modelMatrix );	
-        CCMatrixTranslate( modelMatrix, position.x, position.y, position.z );
-			
-		if( scale != NULL )
-		{	
-			CCMatrixScale( modelMatrix, scale->x, scale->y, scale->z );
-		}
-		
-		if( rotation.x != 0.0f )
-		{
-            CCMatrixRotate( modelMatrix, rotation.x, 1.0f, 0.0f, 0.0f );
-		}
-		
-		if( rotation.y != 0.0f )
-		{
-            CCMatrixRotate( modelMatrix, rotation.y, 0.0f, 1.0f, 0.0f );
-		}
-		
-		if( rotation.z != 0.0f )
-		{
-            CCMatrixRotate( modelMatrix, rotation.z, 0.0f, 0.0f, 1.0f );
-		}
-			
-		updateModelMatrix = false;
-		dirtyWorldMatrix();
-	}
 }

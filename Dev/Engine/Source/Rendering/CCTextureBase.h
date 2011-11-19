@@ -27,8 +27,8 @@ public:
     CCTextureBase();
     virtual ~CCTextureBase();
 
-    const bool loadAndCreate(const char *name, const CCResourceType resourceType, const bool generateMipMap);
-    virtual const bool load(const char *name, const CCResourceType resourceType, const bool generateMipMap) = 0;
+    const bool loadAndCreate(const char *path, const CCResourceType resourceType, const bool generateMipMap);
+    virtual const bool load(const char *path, const CCResourceType resourceType, const bool generateMipMap) = 0;
 
     virtual const bool createGLTexture();
     
@@ -37,6 +37,7 @@ public:
     
     const float getAllocatedWidth() const { return (float)allocatedWidth; }
     const float getAllocatedHeight() const { return (float)allocatedHeight; }
+    const int getBytes() { return allocatedBytes; }
 
 protected:
     static const bool extensionSupported(const char* extension);
@@ -47,6 +48,7 @@ public:
 protected:
     uint32_t imageWidth, imageHeight;
     uint32_t allocatedWidth, allocatedHeight;
+    uint32_t allocatedBytes;
 };
 
 
