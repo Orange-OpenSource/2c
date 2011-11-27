@@ -121,12 +121,5 @@ void CCSpritesPage::setUVs(CCPrimitiveSquareUVs **uvs, const char *spriteName)
 
 void CCSpriteInfo::setUVs(CCPrimitiveSquareUVs **uvs)
 {
-	if( *uvs == NULL )
-	{
-		*uvs = new CCPrimitiveSquareUVs( x1, y1, x2, y2 );
-	}
-	else
-	{
-		(*uvs)->set( x1, y1, x2, y2 );
-	}
+	CCPrimitiveSquareUVs::Setup( uvs, x1, y1, x2, y2 );
 }

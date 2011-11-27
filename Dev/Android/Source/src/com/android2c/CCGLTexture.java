@@ -30,14 +30,17 @@ public class CCGLTexture
 {
 	static Bitmap bitmap = null;
 	
+	// On Android we always scaled our images to be square sizes
+	static int scaledHeight = 0;
+	
 	static int NextPowerOfTwo(int x)
 	{
 		x = x - 1;
-		x = x | (x >> 1);
-		x = x | (x >> 2);
-		x = x | (x >> 4);
-		x = x | (x >> 8);
-		x = x | (x >>16);
+		x = x | ( x >> 1 );
+		x = x | ( x >> 2 );
+		x = x | ( x >> 4 );
+		x = x | ( x >> 8 );
+		x = x | ( x >>16 );
 		return x + 1;
 	}
 	
@@ -81,47 +84,55 @@ public class CCGLTexture
 	        }
 		}
         
-        if( bitmap != null )
+        if( bitmap == null )
+        {
+        	return 0;
+        }
+        else
         {
         	// Re-scale the width to be a power of 2 to avoid any weird stretching issues.
         	int width = bitmap.getWidth();
-        	int height = bitmap.getHeight();
+        	int height = scaledHeight = bitmap.getHeight();
         	int widthSquared = NextPowerOfTwo( width );
-        	if( width != widthSquared )
+        	int heightSquared = NextPowerOfTwo( height );
+        	
+        	// Always re-scale as, a few devices have trouble using the provided textures
+        	//if( width != widthSquared || height != heightSquared )
         	{
         		float scale = (float)widthSquared/(float)width;
-        		int scaledHeight = (int)( height * scale );
-        		Bitmap scaledBitmap = Bitmap.createScaledBitmap( bitmap, widthSquared, scaledHeight, true );
+        		scaledHeight = (int)( height * scale );
+        		heightSquared = NextPowerOfTwo( scaledHeight );
+        		Bitmap scaledBitmap = Bitmap.createScaledBitmap( bitmap, widthSquared, heightSquared, true );
         		bitmap.recycle();
         		bitmap = scaledBitmap;
         	}
         	
 			int[] glName = new int[1];
 			
+			//GL11 gl = CCGLViewJNI.glContext;
 			GL11 gl = CCGLViewJNI.glContext;
 	        gl.glGenTextures( 1, glName, 0 );
 	
 	        gl.glBindTexture( GL10.GL_TEXTURE_2D, glName[0] );
 
-	        gl.glTexParameteri( GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR );
+	       	gl.glTexParameterf( GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR );
 	        if( false && mipmap )
 	        {
-	        	gl.glTexParameteri( GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR );
-		        gl.glTexParameteri( GL11.GL_TEXTURE_2D, GL11.GL_GENERATE_MIPMAP, GL11.GL_TRUE );
+	        	gl.glTexParameteri( GL10.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR );
+		        gl.glTexParameteri( GL10.GL_TEXTURE_2D, GL11.GL_GENERATE_MIPMAP, GL11.GL_TRUE );
 	        }
 	        else
 	        {
-	        	gl.glTexParameteri( GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR );
+	        	gl.glTexParameterf( GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_LINEAR );
 	        }
 	        
 	        GLUtils.texImage2D( GL11.GL_TEXTURE_2D, 0, bitmap, 0 );
 	        
 	        gl.glBindTexture( GL10.GL_TEXTURE_2D, 0 );
 	        
+	        //CCGLViewJNI.checkGLError( "Load Texture", gl );
 	        return glName[0];
         }
-        
-		return 0;
 	}
 	
 	static public int getWidth()
@@ -132,6 +143,11 @@ public class CCGLTexture
 	static public int getHeight()
 	{
 		return bitmap.getHeight();
+	}
+	
+	static public int getScaledHeight()
+	{
+		return scaledHeight;
 	}
 
     static public void releaseRawData()

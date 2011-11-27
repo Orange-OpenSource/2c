@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------
  * 2c - Cross Platform 3D Application Framework
  *-----------------------------------------------------------
- * Copyright © 2010 - 2011 France Telecom
+ * Copyright ï¿½ 2010 - 2011 France Telecom
  * This software is distributed under the Apache 2.0 license,
  * see the "license.txt" file for more details.
  *-----------------------------------------------------------
@@ -15,6 +15,7 @@
 
 package com.android2c;
 
+import android.util.Log;
 import android.webkit.CookieManager;
 
 
@@ -46,6 +47,11 @@ public class CCJNI
 	public static native void onSurfaceChanged(int width, int height);
 	public static native void onDrawFrame();
 	
+	private void Assert(final String file, final int line, final String message)
+	{
+        Log.e( CCJNI.library, String.format( "%s: Assert: %i %s", line, message ) );
+	}
+	
 	// CCGLTexture
 	private int textureLoad(final String filename, final boolean mipmap, final boolean packaged)
 	{
@@ -60,6 +66,11 @@ public class CCJNI
 	private int textureGetHeight()
 	{
 		return CCGLTexture.getHeight();
+	}
+	
+	private int textureGetScaledHeight()
+	{
+		return CCGLTexture.getScaledHeight();
 	}
 	
 	private void textureReleaseRawData()

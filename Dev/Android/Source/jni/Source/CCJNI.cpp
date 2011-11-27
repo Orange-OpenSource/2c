@@ -16,6 +16,25 @@
 #include "CCFBApi.h"
 
 
+void CCJNI::Assert(const char *file, const int line, const char *message)
+{
+	// JNI Java call
+	JNIEnv *env = gView->jniEnv;
+	jobject obj = gView->jniObj;
+	jclass jniClass = env->FindClass( "com/android2c/CCJNI" );
+	ASSERT_MESSAGE( jniClass != 0, "Could not find Java class." );
+
+	// Get the method ID of our method "urlRequest", which takes one parameter of type string, and returns void
+	static jmethodID mid = env->GetMethodID( jniClass, "Assert", "(Ljava/lang/String;ILjava/lang/String;)V" );
+	ASSERT( mid != 0 );
+
+	// Call the function
+	jstring jFile = env->NewStringUTF( file );
+	jstring jMessage = env->NewStringUTF( message );
+	env->CallVoidMethod( obj, mid, jFile, line, jMessage );
+}
+
+
 void CCJNI::AdvertsToggle(const bool toggle)
 {
 	// JNI Java call

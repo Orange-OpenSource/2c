@@ -79,6 +79,23 @@ static int jniGetHeight()
 }
 
 
+static int jniGetScaledHeight()
+{
+	// JNI Java call
+	JNIEnv *jEnv = gView->jniEnv;
+	jobject jObj = gView->jniObj;
+
+	jclass jniClass = jEnv->FindClass( "com/android2c/CCJNI" );
+	ASSERT_MESSAGE( jniClass != 0, "Could not find Java class." );
+
+	static jmethodID mid = jEnv->GetMethodID( jniClass, "textureGetScaledHeight", "()I" );
+	ASSERT( mid != 0 );
+
+	// Call the function
+	return jEnv->CallIntMethod( jObj, mid );
+}
+
+
 static void jniReleaseRawData()
 {
 	// JNI Java call
@@ -110,7 +127,8 @@ const bool CCTexturePNG::load(const char *path, const CCResourceType resourceTyp
 	if( glName > 0 )
 	{
 		allocatedWidth = imageWidth = jniGetWidth();
-		allocatedHeight = imageHeight = jniGetHeight();
+		allocatedHeight = jniGetHeight();
+		imageHeight = jniGetScaledHeight();
 
 		// TODO: pretend it's always 4 bytes on Android, look into getting actual pixel size data
 		allocatedBytes = allocatedWidth * allocatedHeight * 4;

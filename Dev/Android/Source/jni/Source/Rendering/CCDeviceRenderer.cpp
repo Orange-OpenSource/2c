@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------
  * 2c - Cross Platform 3D Application Framework
  *-----------------------------------------------------------
- * Copyright © 2011 Ð 2011 France Telecom
+ * Copyright ï¾© 2011 ï¿ 2011 France Telecom
  * This software is distributed under the Apache 2.0 license,
  * see the "license.txt" file for more details.
  *-----------------------------------------------------------
@@ -48,7 +48,7 @@ static const bool compileShader(GLuint *shader, GLenum type, const char *path)
 	DEBUG_OPENGL();
 
 #ifdef DEBUGON
-	GLint logLength;
+	GLint logLength = 0;
 	glGetShaderiv( *shader, GL_INFO_LOG_LENGTH, &logLength );
 	if( logLength > 0 )
 	{

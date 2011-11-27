@@ -19,6 +19,18 @@
 
 struct CCPrimitiveSquareUVs
 {
+	static void Setup(CCPrimitiveSquareUVs **uvs, const float x1, const float y1, const float x2, const float y2)
+	{
+		if( *uvs == NULL )
+		{
+			*uvs = new CCPrimitiveSquareUVs( x1, y1, x2, y2 );
+		}
+		else
+		{
+			(*uvs)->set( x1, y1, x2, y2 );
+		}
+	}
+
 	CCPrimitiveSquareUVs(const float x1, const float y1, const float x2, const float y2)
 	{
 		set( x1, y1, x2, y2 );

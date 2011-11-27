@@ -36,6 +36,8 @@ void CCPrimitiveSquare::destruct()
 // CCPrimitiveBase
 void CCPrimitiveSquare::adjustTextureUVs()
 {
+	// We scale the textures to be square on Android
+#ifndef ANDROID
     const int textureHandleIndex = textureInfo->primaryIndex;
     CCTextureHandle *textureHandle = gEngine->textureManager->getTextureHandle( textureHandleIndex );
     const CCTextureBase *texture = textureHandle->texture;
@@ -56,16 +58,10 @@ void CCPrimitiveSquare::adjustTextureUVs()
         }
         else
         {
-            if( customUVs == NULL )
-            {
-                customUVs = new CCPrimitiveSquareUVs( 0.0f, 0.0f, width / allocatedWidth, height / allocatedHeight );
-            }
-            else
-            {
-                customUVs->set( 0.0f, 0.0f, width / allocatedWidth, height / allocatedHeight );
-            }
+        	CCPrimitiveSquareUVs::Setup( &customUVs, 0.0f, 0.0f, width / allocatedWidth, height / allocatedHeight );
         }
     }
+#endif
 }
 
 

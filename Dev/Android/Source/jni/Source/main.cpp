@@ -45,7 +45,7 @@ JNIEXPORT void JNICALL Java_com_android2c_CCJNI_onSurfaceChanged(JNIEnv *jEnv, j
 	printGLString( "Renderer", GL_RENDERER );
 	printGLString( "Extensions", GL_EXTENSIONS );
 #endif
-	
+
 	if( windowController != NULL )
 	{
 		windowController->shutdown();

@@ -31,7 +31,7 @@ LOCAL_CPPFLAGS  := -Werror
 
 # Reduce compilation time and make debugging produce the expected results.
 # This is the default. So no need to turn on
-# LOCAL_CPPFLAGS  += -O0
+#LOCAL_CPPFLAGS  += -O0
 
 # CCRelease: Makes macros debugable
 LOCAL_CPPFLAGS  += -g3

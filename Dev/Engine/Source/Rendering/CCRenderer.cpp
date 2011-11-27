@@ -168,13 +168,13 @@ void CCRenderer::setupOpenGL()
     //currentShader->program->enableAttributeArray( ATTRIB_COLOR );
     currentShader->program->enableAttributeArray( ATTRIB_TEXCOORD );
 
-    currentShader->program->enableAttributeArray( ATTRIB_NORMAL );
+    //currentShader->program->enableAttributeArray( ATTRIB_NORMAL );
 #else
 	glEnableVertexAttribArray( ATTRIB_VERTEX );
 	//glEnableVertexAttribArray( ATTRIB_COLOR );
 	glEnableVertexAttribArray( ATTRIB_TEXCOORD );
 
-	glEnableVertexAttribArray( ATTRIB_NORMAL );
+	//glEnableVertexAttribArray( ATTRIB_NORMAL );
 #endif
 	DEBUG_OPENGL();
 
@@ -188,7 +188,8 @@ void CCRenderer::setupOpenGL()
     DEBUG_OPENGL();
 	
     // GL_TEXTURE_2D is not a valid argument to glEnable in OpenGL ES 2.0
-    // glEnable( GL_TEXTURE_2D );
+    //glEnable( GL_TEXTURE_2D );
+
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
     glEnable( GL_BLEND );
     DEBUG_OPENGL();

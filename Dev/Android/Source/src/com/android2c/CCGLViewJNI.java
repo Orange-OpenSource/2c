@@ -103,7 +103,17 @@ class CCGLViewJNI extends GLSurfaceView
     }
     
     
-    private static void checkEglError(String prompt, EGL10 egl)
+    static void checkGLError(String prompt, GL10 gl)
+    {
+        int error;
+        while( ( error = gl.glGetError() ) != 0 ) 
+        {
+            Log.e( CCJNI.library, String.format( "%s: EGL error: 0x%x", prompt, error ) );
+        }
+    }
+    
+    
+    static void checkEglError(String prompt, EGL10 egl)
     {
         int error;
         while( ( error = egl.eglGetError() ) != EGL10.EGL_SUCCESS ) 

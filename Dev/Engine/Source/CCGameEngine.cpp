@@ -93,6 +93,7 @@ void CCGameEngine::setupGameThread()
     
     textureManager = new CCTextureManager();
     textureManager->load();
+    DEBUG_OPENGL();
     textureManager->loadFont( "HelveticaNeueLight" );
     //textureManager->loadFont( "HelveticaNeueBold" );
     DEBUG_OPENGL();
@@ -219,6 +220,7 @@ const bool CCGameEngine::updateTime()
 const bool CCGameEngine::updateNativeThread()
 {	
     // Run callbacks
+	if( nativeThreadCallbacks.length > 0 )
     {
         GameThreadLock();
         for( int i=0; i<nativeThreadCallbacks.length; ++i )
@@ -229,7 +231,7 @@ const bool CCGameEngine::updateNativeThread()
         nativeThreadCallbacks.length = 0;
         GameThreadUnlock();
     }
-    
+
     urlManager->updateNativeThread();
 	return false;
 }
