@@ -58,6 +58,12 @@ http://nih.at/libzip/
 Used for Android port to open up packaged resources.
 Found in Dev/Android/Source/jni/libzip
 
+ObjLoader
+http://nccastaff.bournemouth.ac.uk/jmacey/RobTheBloke/www/
+Loads the obj model format.
+Found in Dev/External/ObjLoader
+*Modified - stripped down tutorial 3 and provided hooks into engine's cross platform file loader.
+
 UIDevice-Hardware (BSD)
 https://github.com/erica/uidevice-extension
 Describes iOS hardware types.

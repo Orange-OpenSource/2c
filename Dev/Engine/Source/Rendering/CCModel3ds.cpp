@@ -252,6 +252,6 @@ void CCPrimitive3ds::renderVertices(const bool textured)
 	GLVertexPointer( 3, GL_FLOAT, 0, vertices );
     CCSetVertexAttribute( ATTRIB_NORMAL, 3, GL_FLOAT, 0, normals, true );
     CCSetTexCoords( textureUVs != NULL ? textureUVs : modelUVs );
-	//SetNormals( normals );
+
 	glDrawArrays( GL_TRIANGLES, 0, vertexCount );
 }

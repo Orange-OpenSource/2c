@@ -21,6 +21,7 @@ LOCAL_C_INCLUDES := \
 \
 				$(LOCAL_PATH)/../../../../External/3dsloader \
 				$(LOCAL_PATH)/../../../../External/jansson-2.1/src \
+				$(LOCAL_PATH)/../../../../External/ObjLoader3 \
 \
 				$(LOCAL_PATH)/../../../../App/Source/ \
 
@@ -69,6 +70,7 @@ LOCAL_SRC_FILES := \
                 ../../../../Engine/Source/Rendering/CCMatrix.cpp \
                 ../../../../Engine/Source/Rendering/CCModel3ds.cpp \
                 ../../../../Engine/Source/Rendering/CCModelBase.cpp \
+                ../../../../Engine/Source/Rendering/CCModelObj.cpp \
                 ../../../../Engine/Source/Rendering/CCModelText.cpp \
                 ../../../../Engine/Source/Rendering/CCPrimitiveBase.cpp \
                 ../../../../Engine/Source/Rendering/CCPrimitiveCube.cpp \
@@ -117,6 +119,8 @@ LOCAL_SRC_FILES := \
                 ../../../../External/jansson-2.1/src/strbuffer.c \
                 ../../../../External/jansson-2.1/src/utf.c \
                 ../../../../External/jansson-2.1/src/value.c \
+\
+                ../../../../External/ObjLoader3/ObjLoader.cpp \
 \
 \
                 ../../../../App/Source/CCAppEngine.cpp \

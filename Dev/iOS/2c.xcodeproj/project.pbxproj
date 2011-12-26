@@ -90,6 +90,8 @@
 		4A42993A143B216F00D189E9 /* value.c in Sources */ = {isa = PBXBuildFile; fileRef = 4A4298D0143B216F00D189E9 /* value.c */; };
 		4A42993B143B216F00D189E9 /* UIDevice-Hardware.mm in Sources */ = {isa = PBXBuildFile; fileRef = 4A4298D3143B216F00D189E9 /* UIDevice-Hardware.mm */; };
 		4A4552E51441038D008E65DF /* CCWindowController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A4552E31441038D008E65DF /* CCWindowController.cpp */; };
+		4A53571F14A872EC00C1B2B3 /* ObjLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A53571D14A872EC00C1B2B3 /* ObjLoader.cpp */; };
+		4A53572314A8730900C1B2B3 /* CCModelObj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A53572114A8730900C1B2B3 /* CCModelObj.cpp */; };
 		4A54074310E69BC100AA5510 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A54074210E69BC100AA5510 /* QuartzCore.framework */; };
 		4A5407D310E69C5C00AA5510 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A5407D210E69C5C00AA5510 /* UIKit.framework */; };
 		4A54081610E69C8400AA5510 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A54081510E69C8400AA5510 /* Foundation.framework */; };
@@ -280,6 +282,10 @@
 		4A4298D3143B216F00D189E9 /* UIDevice-Hardware.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = "UIDevice-Hardware.mm"; sourceTree = "<group>"; };
 		4A4552E31441038D008E65DF /* CCWindowController.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; path = CCWindowController.cpp; sourceTree = "<group>"; };
 		4A4552E41441038D008E65DF /* CCWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CCWindowController.h; sourceTree = "<group>"; };
+		4A53571D14A872EC00C1B2B3 /* ObjLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ObjLoader.cpp; sourceTree = "<group>"; };
+		4A53571E14A872EC00C1B2B3 /* ObjLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjLoader.h; sourceTree = "<group>"; };
+		4A53572114A8730900C1B2B3 /* CCModelObj.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CCModelObj.cpp; sourceTree = "<group>"; };
+		4A53572214A8730900C1B2B3 /* CCModelObj.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CCModelObj.h; sourceTree = "<group>"; };
 		4A54074210E69BC100AA5510 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = /System/Library/Frameworks/QuartzCore.framework; sourceTree = "<absolute>"; };
 		4A5407D210E69C5C00AA5510 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		4A54081510E69C8400AA5510 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
@@ -549,6 +555,8 @@
 				4A429856143B216F00D189E9 /* CCModel3ds.h */,
 				4A429857143B216F00D189E9 /* CCModelBase.cpp */,
 				4A429858143B216F00D189E9 /* CCModelBase.h */,
+				4A53572114A8730900C1B2B3 /* CCModelObj.cpp */,
+				4A53572214A8730900C1B2B3 /* CCModelObj.h */,
 				4A429859143B216F00D189E9 /* CCModelText.cpp */,
 				4A42985A143B216F00D189E9 /* CCModelText.h */,
 				4A42985B143B216F00D189E9 /* CCPrimitiveBase.cpp */,
@@ -647,6 +655,7 @@
 				4A4298A0143B216F00D189E9 /* 3dsloader */,
 				4A4298AC143B216F00D189E9 /* facebook-ios-sdk */,
 				4A4298BB143B216F00D189E9 /* jansson-2.1 */,
+				4A53571C14A872EC00C1B2B3 /* ObjLoader3 */,
 				4A4298D1143B216F00D189E9 /* UIDevice-Hardware */,
 			);
 			name = External;
@@ -736,6 +745,15 @@
 				4A4298D3143B216F00D189E9 /* UIDevice-Hardware.mm */,
 			);
 			path = "UIDevice-Hardware";
+			sourceTree = "<group>";
+		};
+		4A53571C14A872EC00C1B2B3 /* ObjLoader3 */ = {
+			isa = PBXGroup;
+			children = (
+				4A53571D14A872EC00C1B2B3 /* ObjLoader.cpp */,
+				4A53571E14A872EC00C1B2B3 /* ObjLoader.h */,
+			);
+			path = ObjLoader3;
 			sourceTree = "<group>";
 		};
 		4A9E9FF11449A88600F51474 /* Resources */ = {
@@ -980,6 +998,8 @@
 				4A1BE7FD1447B9270017277E /* 3dsvect.cpp in Sources */,
 				4A9EA0021449A88600F51474 /* CCAppEngine.cpp in Sources */,
 				4A9EA0031449A88600F51474 /* SceneSample1.cpp in Sources */,
+				4A53571F14A872EC00C1B2B3 /* ObjLoader.cpp in Sources */,
+				4A53572314A8730900C1B2B3 /* CCModelObj.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

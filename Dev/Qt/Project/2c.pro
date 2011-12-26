@@ -91,6 +91,8 @@ SOURCES 	+=  \
                 ../../External/jansson-2.1/src/utf.c \
                 ../../External/jansson-2.1/src/value.c \
 \
+                ../../External/ObjLoader3/ObjLoader.cpp \
+\
 \
                 ../../App/Source/CCAppEngine.cpp \
                 ../../App/Source/SceneSample1.cpp \
@@ -109,6 +111,7 @@ INCLUDEPATH     +=  ../Source \
 \
                     ../../External/3dsloader \
                     ../../External/jansson-2.1/src \
+                    ../../External/ObjLoader3 \
 \
                     ../../App/Source \
 
@@ -144,6 +147,7 @@ HEADERS  	+= \
                 ../../Engine/Source/Rendering/CCMatrix.h \
                 ../../Engine/Source/Rendering/CCModel3ds.h \
                 ../../Engine/Source/Rendering/CCModelBase.h \
+                ../../Engine/Source/Rendering/CCModelObj.h \
                 ../../Engine/Source/Rendering/CCModelText.h \
                 ../../Engine/Source/Rendering/CCPrimitiveBase.h \
                 ../../Engine/Source/Rendering/CCPrimitiveCube.h \
