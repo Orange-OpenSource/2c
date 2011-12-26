@@ -274,7 +274,7 @@ static inline const float CCVector3Magnitude(const CCVector3 &vector, const bool
 	return sqrtf( CCVector3LengthSquared( vector ) ); 
 }
 
-static inline const float CCVector3Distance(const CCVector3 &from, const CCVector3 &to, const bool squared)
+static inline const float CCVector3Distance(const CCVector3 &from, const CCVector3 &to, const bool squared=true)
 {	
     CCVector3 &difference = vectorResult;
 	difference = to;
@@ -282,11 +282,6 @@ static inline const float CCVector3Distance(const CCVector3 &from, const CCVecto
 	difference.mul( 0.5f );
 	
 	return CCVector3Magnitude( difference, squared );
-}
-
-static inline const float CCVector3DistanceCheck(const CCVector3 &from, const CCVector3 &to, const bool squared=true)
-{
-	return CCVector3Distance( from, to, squared );
 }
 
 static inline const float CCVector3DistanceCheck2D(const CCVector3 &from, const CCVector3 &to, const bool squared=true)

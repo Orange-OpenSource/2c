@@ -67,8 +67,8 @@ static int zCompare(const void *a, const void *b)
             const CCVector3 &cameraPosition = gEngine->currentCamera->getRotatedPosition();
             const CCVector3 *positionA = objectA->positionPtr;
             const CCVector3 *positionB = objectB->positionPtr;
-            const float distanceA = CCVector3DistanceCheck( *positionA, cameraPosition, true );
-            const float distanceB = CCVector3DistanceCheck( *positionB, cameraPosition, true );
+            const float distanceA = CCVector3Distance( *positionA, cameraPosition, true );
+            const float distanceB = CCVector3Distance( *positionB, cameraPosition, true );
             
             // If A is smaller than B, swap
             return distanceB - distanceA;

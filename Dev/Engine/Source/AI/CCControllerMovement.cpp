@@ -126,7 +126,7 @@ void CCControllerMovement::applyVelocity(const float delta, const float movement
         position.y += velocityY;
         position.z += velocityZ;
 
-        const float distance = CCVector3DistanceCheck( position, positionTarget );
+        const float distance = CCVector3Distance( position, positionTarget );
         if( distance < 1.0f )
         {
             position = positionTarget;
