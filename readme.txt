@@ -15,6 +15,7 @@ Clone the repo.
 Android - Import all projects in Dev/ folder into Eclipse, then run ndk-build in Dev/Android/Source folder.
 iOS - Open Dev/iOS/2c.xcodeproj in xCode
 Qt - Open Dev/Qt/Project/2c.pro in Qt Creator
+WebGL - Visit https://github.com/orangelabsuk/2cwebgl
 
 Look at source file Dev/App/Source/SceneSample1.cpp
 for the hook into the first scene that launches.
