@@ -108,7 +108,7 @@ void CCURLManager::updateNativeThread()
                     continue;
                 }
                 
-                if( currentRequest->cacheCheck )
+                if( currentRequest->checkCache )
                 {
                     if( currentRequest->cacheChecked == false )
                     {
@@ -194,8 +194,8 @@ void CCURLManager::flushPendingRequests()
 void CCURLManager::requestURL(const char *url,
                               CCURLCallback *inCallback,
                               const int priority,
-                              const char *cacheFilename,
-                              const bool cacheCheck,
+                              const char *cacheFile,
+                              const bool checkCache,
                               const float timeout)
 {
     ASSERT( priority >= 0 && priority <= 2 );
@@ -215,7 +215,7 @@ void CCURLManager::requestURL(const char *url,
         if( CCText::Equals( request->url.buffer, url ) )
         {
             // TODO: Ignore possible clashes with different cache filenames for now..
-            if( cacheCheck == request->cacheCheck )
+            if( checkCache == request->checkCache )
             {
                 urlRequest = request;
                 break;
@@ -228,12 +228,12 @@ void CCURLManager::requestURL(const char *url,
         urlRequest = new CCURLRequest();
         urlRequest->url.set( url );
         urlRequest->priority = priority;
-        urlRequest->cacheCheck = cacheCheck;
+        urlRequest->checkCache = checkCache;
         urlRequest->timeout = gEngine->gameTime.lifetime + timeout;
         
-        if( cacheFilename != NULL )
+        if( cacheFile != NULL )
         {
-            urlRequest->cacheFile = cacheFilename;
+            urlRequest->cacheFile = cacheFile;
         }
 
         // If our priority is 0 push it to the back
@@ -338,7 +338,7 @@ void CCURLManager::requestURL(const char *url,
     }
     
     // Is this request already cached?
-    if( urlRequest->cacheCheck )
+    if( urlRequest->checkCache )
     {
         if( gEngine->gameTime.lifetime >= urlRequest->timeout )
         {

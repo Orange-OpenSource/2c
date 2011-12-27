@@ -44,7 +44,7 @@ struct CCURLRequest
 	{
         state = CCURLRequest::not_started;
         priority = 0;
-        cacheCheck = true;
+        checkCache = true;
         cacheChecked = false;
         timeout = 0.0f;
         timeRequested = -1.0f;
@@ -60,7 +60,7 @@ struct CCURLRequest
     LAMBDA_SIGNAL onComplete;   // The on complete callback
     RequestState state;         // The state of the request
     CCText cacheFile;             // Cache the reply?
-    bool cacheCheck;            // Should we check the cahce?
+    bool checkCache;            // Should we check the cahce?
     bool cacheChecked;          // Have we checked the cache?
     float timeout;              // The time we can process this request
     float timeRequested;        // The time when the request can be and was made
@@ -86,8 +86,8 @@ public:
     void requestURL(const char *url,                    // The URL to request
                     CCURLCallback *inCallback=NULL,     // The on complete callback
                     const int priority=0,               // The priority
-                    const char *cacheFilename=NULL,     // The file to save the result to
-                    const bool cacheCheck=true,         // Check for existing cache file?
+                    const char *cacheFile=NULL,         // The file to save the result to
+                    const bool checkCache=true,         // Check for existing cache file?
                     const float timeout=0.0f);          // Length of time to wait before requesting
 
 protected:

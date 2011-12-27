@@ -56,9 +56,7 @@ void CCData::set(const char *data, const uint inLength)
             }
             
             // 32 byte aligned
-            length = ( round( length / 32 ) + 1 ) * 32;
-
-            bufferSize = sizeof( char ) * length;
+            bufferSize = ( round( length / 32 ) + 1 ) * 32;
             buffer = (char*)malloc( bufferSize );
         }
         memcpy( buffer, data, inLength );
