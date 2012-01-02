@@ -135,7 +135,7 @@ const bool CCWidgetButton::handleControls(const CCScreenTouches &screenTouch, co
 }
 
 
-const bool CCWidgetButton::update(const CCGameTime &gameTime)
+const bool CCWidgetButton::update(const CCTime &gameTime)
 {
 	if( super::update( gameTime ) )
 	{

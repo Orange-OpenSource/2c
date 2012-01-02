@@ -298,12 +298,12 @@ public:
                         else
 #endif
                         {
-                            GameThreadLock();
+                            CCEngineThreadLock();
                             if( CCFileManager::saveCachedFile( filename.buffer, reply->data.buffer, reply->data.length ) )
                             {
                                 saved = true;
                             }
-                            GameThreadUnlock();
+                            CCEngineThreadUnlock();
                         }
                         break;
                     }
@@ -326,12 +326,12 @@ public:
                             }
                             else
                             {
-                                GameThreadLock();
+                                CCEngineThreadLock();
                                 if( CCFileManager::saveCachedFile( filename.buffer, reply->data.buffer, reply->data.length ) )
                                 {
                                     saved = true;
                                 }
-                                GameThreadUnlock();
+                                CCEngineThreadUnlock();
                             }
                             break;
                         }
@@ -616,7 +616,7 @@ void CCFBApi::onBrowserClosed()
     {
         if( m_userAccessToken.length > 0 )
         {
-            LAMBDA_RUN_GAMETHREAD(
+            LAMBDA_RUN_ENGINETHREAD(
                 gEngine->urlManager->setDomainTimeOut( "facebook.com", 1.0f );
                 m_onSuccess->run();
                 m_onSuccess = NULL;

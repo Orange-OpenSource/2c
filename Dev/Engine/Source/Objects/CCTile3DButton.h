@@ -40,7 +40,7 @@ public:
 	virtual void refreshModelMatrix();
 
 	// CCSceneObject
-	virtual void update(const CCGameTime &gameTime);
+	virtual void update(const CCTime &gameTime);
     virtual void renderModels(const bool alpha);
 
     virtual void setupBase(const float width, const float height);

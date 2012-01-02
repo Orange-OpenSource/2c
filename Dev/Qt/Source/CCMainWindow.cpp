@@ -10,7 +10,7 @@
  */
 
 #include "CCMainWindow.h"
-#include "CCWindowController.h"
+#include "CCViewManager.h"
 
 
 CCMainWindow *CCMainWindow::instance = NULL;
@@ -20,14 +20,14 @@ CCMainWindow::CCMainWindow(QWidget *parent)
     : QMainWindow( parent )
 {
     instance = this;
-    windowController = new CCWindowController();
+    viewManager = new CCViewManager();
     setWindowTitle( "2c" );
 }
 
 
 CCMainWindow::~CCMainWindow()
 {
-    windowController->shutdown();
+    viewManager->shutdown();
     children.deleteObjectsAndList();
 }
 
@@ -36,7 +36,7 @@ void CCMainWindow::resizeEvent(QResizeEvent *event)
 {
     if( children.length == 0 )
     {
-        windowController->startup();
+        viewManager->startup();
         //children.add( gView );
         return;
     }

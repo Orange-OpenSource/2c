@@ -37,9 +37,9 @@
 		
 		runningGame = paused = false;
         
-        pthread_mutexattr_init( &gameThreadMutexType );
-        pthread_mutexattr_settype( &gameThreadMutexType, PTHREAD_MUTEX_RECURSIVE );
-		pthread_mutex_init( &gameThreadMutex, &gameThreadMutexType );
+        pthread_mutexattr_init( &engineThreadMutexType );
+        pthread_mutexattr_settype( &engineThreadMutexType, PTHREAD_MUTEX_RECURSIVE );
+		pthread_mutex_init( &engineThreadMutex, &engineThreadMutexType );
 		
 		// Get the layer
 		CAEAGLLayer *eaglLayer = (CAEAGLLayer*)self.layer;
@@ -66,8 +66,8 @@
 -(void)dealloc 
 {	
     ASSERT( runningGame == false );
-	pthread_mutex_destroy( &gameThreadMutex );
-    pthread_mutexattr_destroy( &gameThreadMutexType );
+	pthread_mutex_destroy( &engineThreadMutex );
+    pthread_mutexattr_destroy( &engineThreadMutexType );
 	
     [super dealloc];
 }
@@ -98,12 +98,12 @@ static inline void refreshReleasePool(NSAutoreleasePool **pool, uint *count, con
 void* PosixGameThread(void* data)
 {	
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	gEngine->setupGameThread();
+	gEngine->setupEngineThread();
 	[pool release];
 	pool = [[NSAutoreleasePool alloc] init];
 	
 	CCGLView *view = (CCGLView*)data;
-	view->gameThreadRunning = true;
+	view->engineThreadRunning = true;
 	view->runningGame = true;
 	usleep( 0 );
 
@@ -117,14 +117,14 @@ void* PosixGameThread(void* data)
 		}
 		else
 		{
-			gEngine->updateGameThread();
+			gEngine->updateEngineThread();
 		}
 		
 		refreshReleasePool( &pool, &poolRefreshCounter, 1000 );
 	} while( view->runningGame );
 	[pool release];
 	
-	view->gameThreadRunning = false;
+	view->engineThreadRunning = false;
 	return NULL;
 }
 
@@ -185,11 +185,11 @@ void createThread(void *(*start_routine)(void*), void *__restrict arg, int prior
 	
 	// Start the updating of native OS thread
 	[updateTimer invalidate];
-	updateTimer = [NSTimer scheduledTimerWithTimeInterval:0.25f target:self selector:@selector( updateNativeOSThread ) userInfo:NULL repeats:true];
+	updateTimer = [NSTimer scheduledTimerWithTimeInterval:0.25f target:self selector:@selector( updateNativeThread ) userInfo:NULL repeats:true];
 }
 
 
--(void)updateNativeOSThread
+-(void)updateNativeThread
 {
 	if( runningGame )
 	{	

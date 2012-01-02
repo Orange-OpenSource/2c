@@ -26,7 +26,7 @@ public:
     virtual void destruct();
 
     // CCSceneObject
-    void update(const CCGameTime &gameTime);
+    void update(const CCTime &gameTime);
 
     // Tile3D
     virtual const uint handleProjectedTouch(const CCCameraProjectionResults &cameraProjectionResults,

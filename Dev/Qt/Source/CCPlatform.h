@@ -43,8 +43,8 @@
 #define GL_BGRA         0x80E1
 
 
-extern void GameThreadLock();
-extern void GameThreadUnlock();
+extern void CCEngineThreadLock();
+extern void CCEngineThreadUnlock();
 
 
 const QString QtRootPath();

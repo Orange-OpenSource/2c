@@ -11,7 +11,7 @@
 
 #import "CCDefines.h"
 #import "CCAppDelegate.h"
-#import "CCWindowController.h"
+#import "CCViewManager.h"
 
 
 @implementation CCAppDelegate
@@ -22,7 +22,7 @@
 	self = [super init];
 	if( self != NULL )
 	{
-        self->windowController = new CCWindowController();
+        self->viewManager = new CCViewManager();
 	}
 	
 	return self;
@@ -31,32 +31,32 @@
 
 -(void)applicationDidFinishLaunching:(UIApplication*)application
 {
-    windowController->startup();
+    viewManager->startup();
 }
 
 
 -(void)dealloc 
 {	
-    delete windowController;
+    delete viewManager;
 	[super dealloc];
 }
 
 
 -(void)applicationWillTerminate:(UIApplication*)application
 {
-    windowController->shutdown();
+    viewManager->shutdown();
 }
 
 
 -(void)applicationWillResignActive:(UIApplication*)application
 {
-    windowController->pause();
+    viewManager->pause();
 }
 
 
 -(void)applicationDidBecomeActive:(UIApplication*)application
 {
-    windowController->resume();
+    viewManager->resume();
 }
 
 

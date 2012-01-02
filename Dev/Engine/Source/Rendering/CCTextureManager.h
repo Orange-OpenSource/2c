@@ -62,7 +62,10 @@ public:
                                   const bool alwaysResident, const bool mipmap);
     const bool loadTexture(CCTextureHandle &textureHandle);
 	
+    // Used for direct OpenGL access binding
 	void bindTexture(const uint glName=0);
+    
+    // Used for assignging textures
 	const bool setTextureIndex(const int textureIndex);
 	
     CCTextureHandle* getTextureHandle(const int handleIndex);

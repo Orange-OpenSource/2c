@@ -78,7 +78,7 @@ public:
     CCURLManager();
     ~CCURLManager();
     
-    void updateGameThread();
+    void updateEngineThread();
     void updateNativeThread();
     
     void flushPendingRequests();

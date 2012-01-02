@@ -60,7 +60,7 @@ void CCSceneBase::deleteLinkedScenesLater()
 }
 
 
-const bool CCSceneBase::handleControls(const CCGameTime &gameTime)
+const bool CCSceneBase::handleControls(const CCTime &gameTime)
 {
     for( int i=0; i<childScenes.length; ++i )
     {
@@ -73,7 +73,7 @@ const bool CCSceneBase::handleControls(const CCGameTime &gameTime)
 }
 
 
-void CCSceneBase::update(const CCGameTime &gameTime)
+void CCSceneBase::update(const CCTime &gameTime)
 {
     // Remove any redundant scenes
     for( int i=0; i<childScenes.length; ++i )
@@ -108,7 +108,7 @@ void CCSceneBase::update(const CCGameTime &gameTime)
 }
 
 
-void CCSceneBase::updateScene(const CCGameTime &gameTime)
+void CCSceneBase::updateScene(const CCTime &gameTime)
 {
     for( int i=0; i<objects.length; ++i )
     {
@@ -134,7 +134,7 @@ void CCSceneBase::updateScene(const CCGameTime &gameTime)
 }
 
 
-void CCSceneBase::updateCamera(const CCGameTime &gameTime)
+void CCSceneBase::updateCamera(const CCTime &gameTime)
 {
     
 }

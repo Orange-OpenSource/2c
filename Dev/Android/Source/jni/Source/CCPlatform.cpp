@@ -13,15 +13,15 @@
 #include "CCGLView.h"
 
 
-void GameThreadLock()
+void CCEngineThreadLock()
 {
-    pthread_mutex_lock( &gView->gameThreadMutex );
+    pthread_mutex_lock( &gView->engineThreadMutex );
 }
 
 
-void GameThreadUnlock()
+void CCEngineThreadUnlock()
 {
-    pthread_mutex_unlock( &gView->gameThreadMutex );
+    pthread_mutex_unlock( &gView->engineThreadMutex );
 }
 
 

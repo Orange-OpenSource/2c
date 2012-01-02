@@ -20,7 +20,7 @@
 #include <QtGui/QMainWindow>
 
 #include "CCDefines.h"
-class CCWindowController;
+class CCViewManager;
 
 class MainWindowChild
 {
@@ -49,7 +49,7 @@ private:
 
 public:
     static CCMainWindow *instance;
-    CCWindowController *windowController;
+    CCViewManager *viewManager;
 };
 
 #endif // __CCMAINWINDOW_H__

@@ -139,7 +139,7 @@ void CCTextureFontPage::renderText(const char *text, const uint length,
 				texCoords[6] = letter->end.x;
 				texCoords[7] = letter->end.y;
 			
-				CCRenderSquare( currentStart, currentEnd );
+				CCRenderSquare2D( currentStart, currentEnd, false );
                 currentStart.x += charSize[i].x;
 			}
 		}
@@ -240,7 +240,7 @@ void CCTextureFontPage::renderText3D(const char *text, const uint length,
                 texCoords[6] = letter->end.x;
                 texCoords[7] = letter->end.y;
 
-                CCRenderHorizontalSquare( currentStart, currentEnd );
+                CCRenderSquare( currentStart, currentEnd );
                 currentStart.x += size.x;
                 characterIndex++;
             }
@@ -258,7 +258,7 @@ void CCTextureFontPage::view() const
     const CCPoint start = CCPoint( 0.0f, 0.4f );
     const CCPoint end = CCPoint( start.x, start.y );
 	
-	CCRenderSquare( start, end );
+	CCRenderSquare2D( start, end, false );
 	
 	gEngine->textureManager->setTextureIndex( 0 );
 }

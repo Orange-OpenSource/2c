@@ -96,7 +96,7 @@ bool CCMatrixInvert(const float m[16], float invOut[16])
 
 // Render functions
 //-----------------
-void CCRenderSquare(const CCPoint &start, const CCPoint &end, const bool outline)
+void CCRenderSquare2D(const CCPoint &start, const CCPoint &end, const bool outline)
 {
 #if defined PROFILEON
     CCProfiler profile( "CCRenderSquare()" );
@@ -135,7 +135,7 @@ void CCRenderSquare(const CCPoint &start, const CCPoint &end, const bool outline
 }
 
 
-void CCRenderHorizontalSquare(const CCVector3 &start, const CCVector3 &end)
+void CCRenderSquare(const CCVector3 &start, const CCVector3 &end)
 {
     const float vertices[] = 
 	{
@@ -152,7 +152,7 @@ void CCRenderHorizontalSquare(const CCVector3 &start, const CCVector3 &end)
 }
 
 
-void CCRenderVerticalSquare(const CCVector3 &start, const CCVector3 &end)
+void CCRenderSquareYAxisAligned(const CCVector3 &start, const CCVector3 &end)
 {
     const float vertices[] = 
 	{
@@ -183,7 +183,7 @@ void CCRenderRectanglePoint(const CCPoint &position, const float &sizeX, const f
 	end.x = position.x + sizeX;
 	end.y = position.y + sizeY;
 	
-	CCRenderSquare( start, end, outline );
+	CCRenderSquare2D( start, end, outline );
 }
 
 

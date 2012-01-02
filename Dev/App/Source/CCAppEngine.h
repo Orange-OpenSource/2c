@@ -17,20 +17,20 @@
 #define __CCAPPENGINE_H__
 
 
-#include "CCGameEngine.h"
+#include "CCEngine.h"
 
 #include "CCScenes.h"
 #include "CCObjects.h"
 #include "CCWidgets.h"
 
 
-class CCAppEngine : public CCGameEngine
+class CCAppEngine : public CCEngine
 {
 public:
-    typedef CCGameEngine super;
+    typedef CCEngine super;
 
 protected:
-    virtual void startGame();
+    virtual void start();
 };
 
 

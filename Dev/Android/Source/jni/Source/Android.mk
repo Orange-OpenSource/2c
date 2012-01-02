@@ -53,8 +53,8 @@ LOCAL_SRC_FILES := \
                 Tools/CCDeviceFileManager.cpp \
                 Tools/CCDeviceURLManager.cpp \
 \
-                ../../../../Engine/Source/CCGameEngine.cpp \
-                ../../../../Engine/Source/CCWindowController.cpp \
+                ../../../../Engine/Source/CCEngine.cpp \
+                ../../../../Engine/Source/CCViewManager.cpp \
 \
                 ../../../../Engine/Source/AI/CCControllerMovement.cpp \
                 ../../../../Engine/Source/AI/CCInterpolators.cpp \

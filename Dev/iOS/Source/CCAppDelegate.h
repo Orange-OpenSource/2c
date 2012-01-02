@@ -13,11 +13,11 @@
  *-----------------------------------------------------------
  */
 
-class CCWindowController;
+class CCViewManager;
 
 @interface CCAppDelegate : NSObject <UIApplicationDelegate> 
 {
-    CCWindowController *windowController;
+    CCViewManager *viewManager;
 }
 
 @end

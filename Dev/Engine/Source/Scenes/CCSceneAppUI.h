@@ -28,11 +28,11 @@ public:
     
     // CCSceneBase
 	virtual void setup();
-    virtual const bool handleControls(const CCGameTime &gameTime);
+    virtual const bool handleControls(const CCTime &gameTime);
     
 protected:
-	virtual void updateScene(const CCGameTime &gameTime);
-    virtual void updateCamera(const CCGameTime &gameTime);
+	virtual void updateScene(const CCTime &gameTime);
+    virtual void updateCamera(const CCTime &gameTime);
     
 public:
     virtual const bool render(const CCCameraBase *inCamera, const int pass, const bool alpha);
@@ -43,10 +43,6 @@ public:
     
     virtual void beginOrientationUpdate();
     virtual void finishOrientationUpdate();
-
-protected:
-    void setCameraWidth(const float inWidth);
-    void setCameraHeight(const float inHeight);
 
 public:
     void addTile(CCTile3D *inTile)
@@ -62,16 +58,21 @@ public:
 protected:
     virtual void cameraUpdated() {}
 
-    virtual const bool handleTilesTouch(const CCScreenTouches &touch, const CCTouchAction touchAction);
-
     virtual const bool touchAllowed(const CCScreenTouches &touch);
-    virtual void touchPressed(const CCScreenTouches &touch);
+    virtual const bool handleTwoTouches(const CCScreenTouches &touch1, const CCScreenTouches &touch2);
+    virtual const bool handleThreeTouches(const CCScreenTouches &touch1, 
+                                          const CCScreenTouches &touch2, 
+                                          const CCScreenTouches &touch3);
     
+    virtual void touchPressed(const CCScreenTouches &touch);
     virtual const bool touchMovementAllowed(const CCScreenTouches &touch, CCPoint &touchDelta);
     virtual const bool touchMoving(const CCScreenTouches &touch, const CCPoint &touchDelta);
     virtual const bool touchReleased(const CCScreenTouches &touch);
 
+    virtual const bool handleTilesTouch(const CCScreenTouches &touch, const CCTouchAction touchAction);
+
     virtual const bool touchCameraMoving(const CCScreenTouches &touch, const float x, const float y);
+    virtual const bool touchCameraZooming(const float amount);
     virtual const bool touchCameraRotating(const float x, const float y);
     virtual const bool touchReleaseSwipe(const CCScreenTouches &touch);
     
@@ -82,13 +83,10 @@ public:
     virtual void lockCameraView();
     
 protected:
-    CCCameraBase *camera;
-    CCVector3 cameraLookAt;
-    CCVector3 cameraOffset;
+    CCCameraAppUI *camera;
     bool cameraScrolling;
-    float sceneTopY, sceneBottomY;    // The top and bottom in relation to the center of the camera
-    float cameraWidth, cameraHeight;
-    float cameraHWidth, cameraHHeight;
+    float sceneLeft, sceneRight;
+    float sceneTop, sceneBottom;    // The top and bottom in relation to the center of the camera
 
     LAMBDA_SIGNAL orientationCallback;
     bool updatingOrientation;

@@ -153,7 +153,7 @@ void CCTile3DButton::refreshModelMatrix()
 
 
 // CCSceneObject
-void CCTile3DButton::update(const CCGameTime &gameTime)
+void CCTile3DButton::update(const CCTime &gameTime)
 {
     super::update( gameTime );
 

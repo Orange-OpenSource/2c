@@ -353,10 +353,22 @@ void XMLNode::formatTag()
     bool inString = false;
     for( uint i=0; i<m_TagSize; ++i )
     {
-        if ((m_Start[i]=='\\')&&(inString))         { ++i; }
-        else if ((m_Start[i]=='\"')&&(inString))    { m_Start[i] = 0; inString = false; }
-        else if ((m_Start[i]=='\"'))                { inString = true; }
-        else if ((m_Start[i]==' ')&&(!inString))    { m_Start[i] = 0; }
+        if( ( m_Start[i] == '\\' ) && ( inString ) )
+        { 
+            ++i; 
+        }
+        else if( ( m_Start[i] == '\"' ) && ( inString ) ) 
+        {
+            m_Start[i] = 0; inString = false; 
+        }
+        else if( m_Start[i] == '\"' )                
+        {
+            inString = true; 
+        }
+        else if( ( m_Start[i]==' ' )&&( !inString ) )
+        {
+            m_Start[i] = 0;
+        }
     }
 }
 

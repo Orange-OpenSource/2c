@@ -17,8 +17,8 @@
 #include "CCDeviceControls.h"
 #include "CCDeviceURLManager.h"
 
-#include "CCWindowController.h"
-static CCWindowController *windowController = NULL;
+#include "CCViewManager.h"
+static CCViewManager *viewManager = NULL;
 
 #include <jni.h>
 
@@ -46,15 +46,15 @@ JNIEXPORT void JNICALL Java_com_android2c_CCJNI_onSurfaceChanged(JNIEnv *jEnv, j
 	printGLString( "Extensions", GL_EXTENSIONS );
 #endif
 
-	if( windowController != NULL )
+	if( viewManager != NULL )
 	{
-		windowController->shutdown();
-		delete windowController;
+		viewManager->shutdown();
+		delete viewManager;
 	}
-	windowController = new CCWindowController();
+	viewManager = new CCViewManager();
 
 	// Get the window controller to create the glView
-	windowController->startup();
+	viewManager->startup();
 
 	// Then feed it in it's appropriate settings here
 	gView->jniEnv = jEnv;
@@ -68,10 +68,10 @@ JNIEXPORT void JNICALL Java_com_android2c_CCJNI_onSurfaceChanged(JNIEnv *jEnv, j
 
 	gEngine = new CCAppEngine();
 	gEngine->setupNativeThread();
-	gEngine->setupGameThread();
+	gEngine->setupEngineThread();
 
 	gView->runningGame = true;
-	gView->gameThreadRunning = true;
+	gView->engineThreadRunning = true;
 
 #if defined PROFILEON
     CCProfiler::open();
@@ -87,7 +87,7 @@ JNIEXPORT void JNICALL Java_com_android2c_CCJNI_onDrawFrame(JNIEnv *jEnv, jobjec
 		gView->jniObj = jObj;
 
 		gEngine->updateNativeThread();
-		gEngine->updateGameThread();
+		gEngine->updateEngineThread();
 	}
 
 #if defined PROFILEON

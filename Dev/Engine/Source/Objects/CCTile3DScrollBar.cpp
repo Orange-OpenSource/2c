@@ -28,7 +28,7 @@ void CCTile3DScrollBar::destruct()
 }
 
 
-void CCTile3DScrollBar::update(const CCGameTime &gameTime)
+void CCTile3DScrollBar::update(const CCTime &gameTime)
 {
     super::update( gameTime );
 }

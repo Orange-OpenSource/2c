@@ -111,7 +111,7 @@ void CCDeviceControls::touchHandle(NSSet* touches, CCGLView *view)
 					screenPosition.y = 1.0f - screenPosition.y;
 				}
                 
-				GameThreadLock();
+				CCEngineThreadLock();
 				if( screenTouch.usingTouch != NULL )
 				{
 					screenTouch.delta.x += screenPosition.x - screenTouch.position.x;
@@ -134,7 +134,7 @@ void CCDeviceControls::touchHandle(NSSet* touches, CCGLView *view)
 				}
 				screenTouch.position = screenPosition;
 				screenTouch.usingTouch = touch;
-				GameThreadUnlock();
+				CCEngineThreadUnlock();
 				
 				break;
 			}

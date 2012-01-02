@@ -27,7 +27,7 @@ public:
 	
 	// CCWidgetBase
     virtual const bool handleControls(const CCScreenTouches &screenTouch, const bool released=true);
-    virtual const bool update(const CCGameTime &gameTime);
+    virtual const bool update(const CCTime &gameTime);
 	virtual const bool render(const bool foreground);
 	virtual void refreshDimensions();
 	

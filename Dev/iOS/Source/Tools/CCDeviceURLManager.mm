@@ -188,10 +188,10 @@ const bool CCDeviceURLManager::readyToRequest()
 #endif
     
 	// Copy over the recieved data
-	GameThreadLock();
+	CCEngineThreadLock();
 	packet->request->state = CCURLRequest::failed;
     packet->request->data.set( (char*)[packet->data bytes], [packet->data length] );
-	GameThreadUnlock();
+	CCEngineThreadUnlock();
     
     // Clear
     currentRequests.remove( packet );
@@ -222,10 +222,11 @@ const bool CCDeviceURLManager::readyToRequest()
 	// Copy over the recieved data
     if( packet->request->state == CCURLRequest::in_flight )
     {
-        GameThreadLock();
+        CCEngineThreadLock();
         packet->request->state = CCURLRequest::succeeded;
-        packet->request->data.set( (char*)[packet->data bytes], [packet->data length] );
-        GameThreadUnlock();
+        uint length = [packet->data length];
+        packet->request->data.set( (char*)[packet->data bytes], length );
+        CCEngineThreadUnlock();
         
         currentRequests.remove( packet );
         delete packet;

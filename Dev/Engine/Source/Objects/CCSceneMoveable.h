@@ -21,7 +21,7 @@ public:
 	CCSceneMoveable();
 	
 	// CCSceneObject
-    virtual void update(const CCGameTime &gameTime);
+    virtual void update(const CCTime &gameTime);
 	
 	// CCSceneCollideable
 	virtual CCSceneCollideable* requestCollisionReport(CCSceneCollideable *collidedWith);

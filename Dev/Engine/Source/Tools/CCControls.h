@@ -77,7 +77,7 @@ public:
 	void render();
 	
 	// Synchronizes the controls
-	void update(const CCGameTime &gameTime);
+	void update(const CCTime &gameTime);
     
 protected:
    	void unTouch(void *touch);

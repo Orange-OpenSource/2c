@@ -178,6 +178,22 @@ public:
         freeList();
     }
     
+    void resize(const int size)
+    {
+        // If it's too small
+        while( length < size )
+        {
+            add( new T() );
+        }
+    
+        // If it's too big
+        for( int i=size; i<length; ++i )
+        {
+            delete list[i];
+        }
+        length = size;
+    }
+    
     void copy(CCList<T> &other)
     {
         for( int i=0; i<other.length; ++i )

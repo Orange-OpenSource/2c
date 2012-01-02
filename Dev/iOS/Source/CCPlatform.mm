@@ -14,17 +14,17 @@
 
 #import <pthread.h>
 
-void GameThreadLock()
+void CCEngineThreadLock()
 {
 //    pthread_t threadID = pthread_self();
 //    DEBUGLOG( "Locked thread %i \n", threadID );
-    pthread_mutex_lock( &gView->gameThreadMutex );
+    pthread_mutex_lock( &gView->engineThreadMutex );
 }
 
 
-void GameThreadUnlock()
+void CCEngineThreadUnlock()
 {
 //    pthread_t threadID = pthread_self();
 //    DEBUGLOG( "Unlocked thread %i \n", threadID );
-    pthread_mutex_unlock( &gView->gameThreadMutex );
+    pthread_mutex_unlock( &gView->engineThreadMutex );
 }

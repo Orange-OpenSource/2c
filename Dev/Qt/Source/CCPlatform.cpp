@@ -13,12 +13,12 @@
 #include "CCBaseTypes.h"
 
 
-void GameThreadLock()
+void CCEngineThreadLock()
 {
 }
 
 
-void GameThreadUnlock()
+void CCEngineThreadUnlock()
 {
 }
 

@@ -170,7 +170,7 @@ void CCDeviceControls::touchHandle(QList<QTouchEvent::TouchPoint> touches)
             UITouch *uiTouch = (UITouch*)screenTouch.usingTouch;
             if( uiTouch == NULL || uiTouch->touchID == touchID )
             {
-                GameThreadLock();
+                CCEngineThreadLock();
 
                 QPointF qPosition = touchPoint.pos();
                 CCPoint position( qPosition.x(), qPosition.y() );
@@ -224,7 +224,7 @@ void CCDeviceControls::touchHandle(QList<QTouchEvent::TouchPoint> touches)
 
                 screenTouch.position = position;
 
-                GameThreadUnlock();
+                CCEngineThreadUnlock();
                 break;
             }
         }

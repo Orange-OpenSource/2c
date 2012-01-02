@@ -48,7 +48,7 @@ public:
     void setupViewport(const float x1=0.0f, const float y1=0.0f, const float x2=1.0f, const float y2=1.0f);
     void refreshViewport();
     void setViewport();
-	virtual void setupPerspective();
+    void setNearFar(const float zNear, const float zFar);
 	
     const bool project3D(float x, float y);
     void project3DY(CCVector3 *result, float x, float y, float offset=-1.0f);
@@ -72,11 +72,6 @@ public:
 	
 	// Update lookAt and offset
     const bool setLookAt(const CCVector3 &lookAtTarget, const CCVector3 &offsetTarget);
-    virtual const bool interpolateLookAt(const CCVector3 &lookAtTarget, const CCVector3 &offsetTarget, const float delta, float speed)
-    {
-        return false;
-    }
-	
 	const CCVector3& getLookAt() { return lookAt; }
     
     inline const CCSize& getFrustumSize() { return frustumSize; }
@@ -104,6 +99,7 @@ public:
 
     void updateControls();
 	
+    const CCVector3& getOffset() { return offset; }
     virtual void setOffset(const CCVector3 &offsetTarget);
 protected:
 	void updateOffset(const CCVector3 &offsetTarget);
@@ -116,7 +112,7 @@ protected:
 	void updateVisibleObjects();
     
     // glu-based camera functionality
-	void GluPerspective(float fovy, float aspect, float zNear, float zFar);
+	void GluPerspective(float fovy, float aspect);
     
     // Orient camera matrix to look at
     void GluLookAt(CCMatrix &modelViewMatrix, 
@@ -136,7 +132,7 @@ public:
 	bool enabled;
     float aspectRatio;
     int viewport[4];
-    float cameraX, cameraY, cameraWidth, cameraHeight, invCameraWidth, invCameraHeight;
+    float cameraX, cameraY, cameraW, cameraH, invCameraW, invCameraH;
 	CCMatrix projectionMatrix;
     
     CCCameraProjectionResults projection;
@@ -149,6 +145,8 @@ protected:
     uint index;
     bool updating;
 	bool updateFOV;
+	
+    float zNear, zFar;
 	
 	CCVector3 offset;
 	CCVector3 position;

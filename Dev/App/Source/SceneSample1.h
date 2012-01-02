@@ -25,8 +25,8 @@ public:
 	virtual void destruct();
     
 protected:
-	virtual void updateScene(const CCGameTime &gameTime);
-    virtual void updateCamera(const CCGameTime &gameTime);
+	virtual void updateScene(const CCTime &gameTime);
+    virtual void updateCamera(const CCTime &gameTime);
     
 public:
 	virtual void renderOctreeObject(CCSceneObject *object, const CCCameraBase *inCamera, const int pass, const bool alpha);

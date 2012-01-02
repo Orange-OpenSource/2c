@@ -22,8 +22,7 @@ public:
     
     virtual void update();
 
-    // Modify the offset target z to fit the fov
-	virtual const bool interpolateLookAt(const CCVector3 &lookAtTarget, const CCVector3 &offsetTarget, const float delta, float speed);
+	virtual const bool interpolateCamera(const float delta, const float speed);
     
     inline const CCInterpolatorCurveV3<CCInterpolatorX3Curve>& getLookAtInterpolator() { return lookAtInterpolator; }
     
@@ -37,5 +36,14 @@ protected:
     
     CCInterpolatorCurveV3<CCInterpolatorX3Curve> lookAtInterpolator;
     CCInterpolatorCurveV3<CCInterpolatorCurve> offsetInterpolator;
+    
+public:
+    void setCameraWidth(const float inWidth);
+    void setCameraHeight(const float inHeight);
+    void refreshCameraSize();
+    
+    CCVector3 targetOffset;
+    CCVector3 targetLookAt;
+    float cameraWidth, cameraHeight, cameraHWidth, cameraHHeight;
 };
 

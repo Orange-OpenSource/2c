@@ -31,19 +31,19 @@ public:
     	jniEnv = NULL;
     	jniObj = NULL;
 
-    	pthread_mutexattr_init( &gameThreadMutexType );
-		pthread_mutexattr_settype( &gameThreadMutexType, PTHREAD_MUTEX_RECURSIVE );
-		pthread_mutex_init( &gameThreadMutex, &gameThreadMutexType );
+    	pthread_mutexattr_init( &engineThreadMutexType );
+		pthread_mutexattr_settype( &engineThreadMutexType, PTHREAD_MUTEX_RECURSIVE );
+		pthread_mutex_init( &engineThreadMutex, &engineThreadMutexType );
 
     	width = height = 0.0f;
-    	runningGame = paused = gameThreadRunning = false;
+    	runningGame = paused = engineThreadRunning = false;
     }
 
     ~CCGLView()
     {
         ASSERT( runningGame == false );
-    	pthread_mutex_destroy( &gameThreadMutex );
-        pthread_mutexattr_destroy( &gameThreadMutexType );
+    	pthread_mutex_destroy( &engineThreadMutex );
+        pthread_mutexattr_destroy( &engineThreadMutexType );
     }
 
     void resizeView(const float inWidth, const float inHeight)
@@ -56,12 +56,12 @@ public:
     const float getHeight() { return height; }
 
 public:
-    bool runningGame, paused, gameThreadRunning;
+    bool runningGame, paused, engineThreadRunning;
     JNIEnv *jniEnv;
     jobject jniObj;
 
-    pthread_mutex_t gameThreadMutex;
-	pthread_mutexattr_t gameThreadMutexType;
+    pthread_mutex_t engineThreadMutex;
+	pthread_mutexattr_t engineThreadMutexType;
 
 protected:
     float width, height;

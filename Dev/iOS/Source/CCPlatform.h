@@ -60,8 +60,8 @@ typedef	unsigned int uint;
 //#define MIN(x,y)	((x>=y)?y:x)
 //#endif
 
-extern void GameThreadLock();
-extern void GameThreadUnlock();
+extern void CCEngineThreadLock();
+extern void CCEngineThreadUnlock();
 
 
 #endif // __CCPLATFORM_H__

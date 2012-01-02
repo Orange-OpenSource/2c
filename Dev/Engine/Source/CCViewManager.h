@@ -5,7 +5,7 @@
  * This software is distributed under the Apache 2.0 license,
  * see the "license.txt" file for more details.
  *-----------------------------------------------------------
- * File Name   : CCWindowController.h
+ * File Name   : CCViewManager.h
  * Description : Controls the different app views.
  *
  * Created     : 30/08/11
@@ -13,8 +13,8 @@
  *-----------------------------------------------------------
  */
 
-#ifndef __CCWINDOWCONTROLLER_H__
-#define __CCWINDOWCONTROLLER_H__
+#ifndef __CCVIEWMANAGER_H__
+#define __CCVIEWMANAGER_H__
 
 
 #include "CCGLView.h"
@@ -28,11 +28,11 @@
 #include "CCVideoView.h"
 #endif
 
-class CCWindowController
+class CCViewManager
 {
 public:
-	CCWindowController();
-    ~CCWindowController();
+	CCViewManager();
+    ~CCViewManager();
     
     void startup();
     void shutdown();
@@ -77,9 +77,9 @@ protected:
     bool opaqueOpenGLRendering;
     
 public:
-    static CCWindowController *instance;
+    static CCViewManager *instance;
 };
 
 
-#endif // __CCWINDOWCONTROLLER_H__
+#endif // __CCVIEWMANAGER_H__
 

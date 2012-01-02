@@ -96,7 +96,7 @@ const bool CCWidgetBase::handleControls(const CCScreenTouches &screenTouch, cons
 }
 
 
-const bool CCWidgetBase::update(const CCGameTime &gameTime)
+const bool CCWidgetBase::update(const CCTime &gameTime)
 {	
 	if( enabled )
 	{

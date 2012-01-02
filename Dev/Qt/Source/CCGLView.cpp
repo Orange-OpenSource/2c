@@ -35,7 +35,7 @@ CCGLView::CCGLView(QWidget *parent) :
     handlingTouchEvent = false;
 
     gView = this;
-    runningGame = paused = gameThreadRunning = false;
+    runningGame = paused = engineThreadRunning = false;
 
     //setAutoBufferSwap(false);
     //doneCurrent();
@@ -55,9 +55,9 @@ void CCGLView::initializeGL()
 
     gEngine = new CCAppEngine();
     gEngine->setupNativeThread();
-    gEngine->setupGameThread();
+    gEngine->setupEngineThread();
     runningGame = true;
-    gameThreadRunning = true;
+    engineThreadRunning = true;
 }
 
 
@@ -96,7 +96,7 @@ void CCGLView::paintGL()
         }
         else
         {
-            gEngine->updateGameThread();
+            gEngine->updateEngineThread();
         }
 
         // Queue another update

@@ -5,21 +5,21 @@
  * This software is distributed under the Apache 2.0 license,
  * see the "license.txt" file for more details.
  *-----------------------------------------------------------
- * File Name   : CCGameEngine.h
- * Description : Handles the engine loop and feature managers.
+ * File Name   : CCEngine.h
+ * Description : Handles the update and render loop and feature managers.
  *
  * Created     : 01/03/10
  * Author(s)   : Ashraf Samy Hegab
  *-----------------------------------------------------------
  */
 
-#ifndef __CCGAMEENCCNE_H__
-#define __CCGAMEENCCNE_H__
+#ifndef __CCENGINE_H__
+#define __CCENGINE_H__
 
 
-struct CCGameTime
+struct CCTime
 {
-	CCGameTime()
+	CCTime()
 	{
 		real = 0.0f;
 		delta = 0.0f;
@@ -45,15 +45,15 @@ struct CCGameTime
 class CCSceneBase;
 class CCSceneCollideable;
 
-class CCGameEngine
+class CCEngine
 {
 public:
-	CCGameEngine();
-	~CCGameEngine();
+	CCEngine();
+	~CCEngine();
 	
 public:
 	virtual void setupNativeThread();
-    virtual void setupGameThread();
+    virtual void setupEngineThread();
 	
     void addCamera(CCCameraBase *camera, const int index=-1);
 	const bool removeCamera(CCCameraBase *camera);
@@ -65,18 +65,18 @@ public:
 	virtual const bool updateTime();
     
 	virtual const bool updateNativeThread();
-	void updateGameThread();
+	virtual void updateEngineThread();
     
 protected:
-	virtual void startGame() = 0;
-	virtual void updateGame();
-	void render();
+	virtual void start() = 0;
+	virtual void updateLoop();
+	void renderLoop();
     
-	// Finishes a job on the game thread
+	// Finishes a job on the engine thread
 	virtual void finishJobs();
     
 public:
-    virtual void restartGame();
+    virtual void restart();
 	
 	void addCollideable(CCSceneCollideable* collideable);
 	void removeCollideable(CCSceneCollideable* collideable);
@@ -85,7 +85,7 @@ public:
     
     // Run on another thread
     void runOnNativeThread(CCLambdaCallback *lambdaCallback);
-    void runOnGameThread(CCLambdaCallback *lambdaCallback);
+    void runOnEngineThread(CCLambdaCallback *lambdaCallback);
 	
 public:
 	CCRenderer *renderer;
@@ -103,13 +103,13 @@ public:
     // Engine level controls used for timers and such
     CCDestructList<CCUpdater> updaters;
 	
-	CCGameTime gameTime;
+	CCTime gameTime;
 	uint renderFlags;
 	float fpsLimit;
 	
 protected:
     CCList<CCLambdaCallback> nativeThreadCallbacks;
-    CCList<CCLambdaCallback> gameThreadCallbacks;
+    CCList<CCLambdaCallback> engineThreadCallbacks;
 };
 
 
@@ -120,11 +120,11 @@ LAMBDA_UNSAFE( ThreadCallback,                                      \
 gEngine->runOnNativeThread( new ThreadCallback() );
 
 
-#define LAMBDA_RUN_GAMETHREAD(FUNCTION_CALL)                        \
+#define LAMBDA_RUN_ENGINETHREAD(FUNCTION_CALL)                      \
 LAMBDA_UNSAFE( ThreadCallback,                                      \
    FUNCTION_CALL                                                    \
 )                                                                   \
-gEngine->runOnGameThread( new ThreadCallback() );                   \
+gEngine->runOnEngineThread( new ThreadCallback() );                 \
 
 #define LAMBDA_CONNECT_NATIVETHREAD(EVENT, FUNCTION_CALL)           \
 LAMBDA_UNSAFE( EventCallback,                                       \
@@ -136,14 +136,14 @@ LAMBDA_UNSAFE( EventCallback,                                       \
 EVENT = new EventCallback();
 
 
-#define LAMBDA_CONNECT_GAMETHREAD(EVENT, FUNCTION_CALL)             \
+#define LAMBDA_CONNECT_ENGINETHREAD(EVENT, FUNCTION_CALL)           \
 LAMBDA_UNSAFE( EventCallback,                                       \
     LAMBDA_UNSAFE( ThreadCallback,                                  \
         FUNCTION_CALL                                               \
     )                                                               \
-    gEngine->runOnGameThread( new ThreadCallback() );               \
+    gEngine->runOnEngineThread( new ThreadCallback() );             \
 )                                                                   \
 EVENT = new EventCallback();
 
 
-#endif // __CCGAMEENCCNE_H__
+#endif // __CCENGINE_H__

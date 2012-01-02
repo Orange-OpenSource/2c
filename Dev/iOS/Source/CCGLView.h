@@ -25,9 +25,9 @@ extern CCGLView *gView;
 @interface CCGLView : UIView 
 {	
 @public
-	bool runningGame, paused, gameThreadRunning;
-	pthread_mutex_t gameThreadMutex;
-    pthread_mutexattr_t gameThreadMutexType;
+	bool runningGame, paused, engineThreadRunning;
+	pthread_mutex_t engineThreadMutex;
+    pthread_mutexattr_t engineThreadMutexType;
 	
 	NSTimer *updateTimer;
 }
@@ -36,7 +36,7 @@ extern CCGLView *gView;
 
 -(void)setup;
 
--(void)updateNativeOSThread;
+-(void)updateNativeThread;
 
 @end
 

@@ -159,7 +159,7 @@ const bool CCSceneObject::shouldCollide(CCSceneCollideable *collideWith, const b
 }
 
 
-void CCSceneObject::update(const CCGameTime &gameTime)
+void CCSceneObject::update(const CCTime &gameTime)
 {
     for( int i=0; i<updaters.length; ++i )
     {

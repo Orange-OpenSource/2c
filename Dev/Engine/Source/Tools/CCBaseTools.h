@@ -118,8 +118,8 @@ inline void RemoveFlag(uint &source, const uint flag)
 }
 
 
-extern void GameThreadLock();
-extern void GameThreadUnlock();
+extern void CCEngineThreadLock();
+extern void CCEngineThreadUnlock();
 
 
 #endif // __GLOBALTOOLS_H__

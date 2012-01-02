@@ -5,12 +5,12 @@
  * This software is distributed under the Apache 2.0 license,
  * see the "license.txt" file for more details.
  *-----------------------------------------------------------
- * File Name   : CCWindowController.cpp
+ * File Name   : CCViewManager.cpp
  *-----------------------------------------------------------
  */
 
 #include "CCDefines.h"
-#include "CCWindowController.h"
+#include "CCViewManager.h"
 #include "CCFileManager.h"
 
 #ifdef QT
@@ -23,10 +23,10 @@
 CCGLView *gView = NULL;
 CCAppEngine *gEngine = NULL;
 
-CCWindowController *CCWindowController::instance = NULL;
+CCViewManager *CCViewManager::instance = NULL;
 
 
-CCWindowController::CCWindowController()
+CCViewManager::CCViewManager()
 {
     instance = this;
     
@@ -43,7 +43,7 @@ CCWindowController::CCWindowController()
 }
 
 
-CCWindowController::~CCWindowController()
+CCViewManager::~CCViewManager()
 {
 
 #ifdef IOS
@@ -73,7 +73,7 @@ CCWindowController::~CCWindowController()
 }
 
 
-void CCWindowController::startup()
+void CCViewManager::startup()
 {
 #ifdef IOS
     // Create a full screen window
@@ -115,16 +115,16 @@ void CCWindowController::startup()
 }
 
 
-void CCWindowController::shutdown()
+void CCViewManager::shutdown()
 {
     glView->runningGame = false;
 
     // Qt isn't multi-threaded yet, on Android this get's called from the rendering thread.
 #ifndef IOS
-    glView->gameThreadRunning = false;
+    glView->engineThreadRunning = false;
 #endif
 
-    while( glView->gameThreadRunning )
+    while( glView->engineThreadRunning )
     {
         usleep( 0 );
     }
@@ -146,7 +146,7 @@ void CCWindowController::shutdown()
 }
 
 
-void CCWindowController::pause()
+void CCViewManager::pause()
 {
     if( glView != NULL )
     {
@@ -155,7 +155,7 @@ void CCWindowController::pause()
 }
 
 
-void CCWindowController::resume()
+void CCViewManager::resume()
 {
     if( glView != NULL )
     {
@@ -164,7 +164,7 @@ void CCWindowController::resume()
 }
 
 
-void CCWindowController::toggleAdverts(const bool toggle)
+void CCViewManager::toggleAdverts(const bool toggle)
 {
     class ThreadCallback : public CCLambdaCallback     
     {
@@ -175,7 +175,7 @@ void CCWindowController::toggleAdverts(const bool toggle)
         }
         void run()
         {
-            CCWindowController::instance->toggleAdvertsNativeThread( toggle );
+            CCViewManager::instance->toggleAdvertsNativeThread( toggle );
         }                        
     private:
         bool toggle;
@@ -184,7 +184,7 @@ void CCWindowController::toggleAdverts(const bool toggle)
 }
 
 
-const float CCWindowController::getAdvertHeight()
+const float CCViewManager::getAdvertHeight()
 {
 #ifdef IOS
     return 50.0f/gEngine->renderer->screenSize.height;
@@ -205,7 +205,7 @@ const float CCWindowController::getAdvertHeight()
 }
 
 
-void CCWindowController::startVideoView(const char *file)
+void CCViewManager::startVideoView(const char *file)
 {
     class ThreadCallback : public CCLambdaCallback     
     {
@@ -216,7 +216,7 @@ void CCWindowController::startVideoView(const char *file)
         }
         void run()
         {
-            CCWindowController::instance->startVideoViewNativeThread( this->file.buffer );
+            CCViewManager::instance->startVideoViewNativeThread( this->file.buffer );
         }                        
     private:
         CCText file;
@@ -225,7 +225,7 @@ void CCWindowController::startVideoView(const char *file)
 }
 
 
-void CCWindowController::toggleVideoView(const bool toggle)
+void CCViewManager::toggleVideoView(const bool toggle)
 {
     class ThreadCallback : public CCLambdaCallback     
     {
@@ -236,7 +236,7 @@ void CCWindowController::toggleVideoView(const bool toggle)
         }
         void run()
         {
-            CCWindowController::instance->toggleVideoViewNativeThread( toggle );
+            CCViewManager::instance->toggleVideoViewNativeThread( toggle );
         }                        
     private:
         bool toggle;
@@ -245,28 +245,28 @@ void CCWindowController::toggleVideoView(const bool toggle)
 }
 
 
-void CCWindowController::stopVideoView()
+void CCViewManager::stopVideoView()
 {
-    LAMBDA_UNSAFE( ThreadCallback, CCWindowController::instance->stopVideoViewNativeThread(); );
+    LAMBDA_UNSAFE( ThreadCallback, CCViewManager::instance->stopVideoViewNativeThread(); );
     gEngine->runOnNativeThread( new ThreadCallback() );
 }
 
 
-void CCWindowController::startARView()
+void CCViewManager::startARView()
 {
-    LAMBDA_UNSAFE( ThreadCallback, CCWindowController::instance->startARViewNativeThread(); );
+    LAMBDA_UNSAFE( ThreadCallback, CCViewManager::instance->startARViewNativeThread(); );
     gEngine->runOnNativeThread( new ThreadCallback() );
 }
 
 
-void CCWindowController::stopARView()
+void CCViewManager::stopARView()
 {
-    LAMBDA_UNSAFE( ThreadCallback, CCWindowController::instance->stopARViewNativeThread(); );
+    LAMBDA_UNSAFE( ThreadCallback, CCViewManager::instance->stopARViewNativeThread(); );
     gEngine->runOnNativeThread( new ThreadCallback() );
 }
 
 
-void CCWindowController::toggleAdvertsNativeThread(const bool toggle)
+void CCViewManager::toggleAdvertsNativeThread(const bool toggle)
 {
 #ifdef IOS
     
@@ -280,7 +280,7 @@ void CCWindowController::toggleAdvertsNativeThread(const bool toggle)
 }
 
 
-void CCWindowController::startVideoViewNativeThread(const char *file)
+void CCViewManager::startVideoViewNativeThread(const char *file)
 {
 #ifdef QT
     return;
@@ -316,7 +316,7 @@ void CCWindowController::startVideoViewNativeThread(const char *file)
 }
 
 
-void CCWindowController::toggleVideoViewNativeThread(const bool toggle)
+void CCViewManager::toggleVideoViewNativeThread(const bool toggle)
 {
 #ifdef IOS
     
@@ -339,7 +339,7 @@ void CCWindowController::toggleVideoViewNativeThread(const bool toggle)
 
 
 
-void CCWindowController::stopVideoViewNativeThread()
+void CCViewManager::stopVideoViewNativeThread()
 {
 #ifdef IOS
 
@@ -366,7 +366,7 @@ void CCWindowController::stopVideoViewNativeThread()
 }
 
 
-void CCWindowController::startARViewNativeThread()
+void CCViewManager::startARViewNativeThread()
 {
 #ifdef IOS
     
@@ -382,7 +382,7 @@ void CCWindowController::startARViewNativeThread()
 }
 
 
-void CCWindowController::stopARViewNativeThread()
+void CCViewManager::stopARViewNativeThread()
 {
 #ifdef IOS
     
@@ -401,7 +401,7 @@ void CCWindowController::stopARViewNativeThread()
 }
 
 
-void CCWindowController::toggleBackgroundRender(const bool toggle)
+void CCViewManager::toggleBackgroundRender(const bool toggle)
 {
     if( opaqueOpenGLRendering == toggle )
     {

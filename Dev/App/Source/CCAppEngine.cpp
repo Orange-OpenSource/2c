@@ -13,10 +13,10 @@
 #include "Samples.h"
 
 
-void CCAppEngine::startGame()
+void CCAppEngine::start()
 {
     addScene( new SceneSample1() );
     
-    //AddFlag( gEngine->renderFlags, collision_box );
+    AddFlag( gEngine->renderFlags, collision_box );
     //AddFlag( gEngine->renderFlags, render_collisionTrees );
 }

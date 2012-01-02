@@ -29,7 +29,7 @@ CCSceneMoveable::CCSceneMoveable()
 
 
 // CCSceneObject
-void CCSceneMoveable::update(const CCGameTime &gameTime)
+void CCSceneMoveable::update(const CCTime &gameTime)
 {
 	super::update( gameTime );
 	

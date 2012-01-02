@@ -23,6 +23,8 @@ CCCameraBase::CCCameraBase()
     index = 0;
     updating = true;
     updateFOV = false;
+    zNear = 1.0f;
+    zFar = 3000.0f;
     
     visiblesList = NULL;
 	
@@ -41,7 +43,7 @@ CCCameraBase::CCCameraBase()
 
 void CCCameraBase::setupViewport(const CCCameraBase *inCamera)
 {
-    setupViewport( inCamera->cameraX, inCamera->cameraY, inCamera->cameraWidth, inCamera->cameraHeight );
+    setupViewport( inCamera->cameraX, inCamera->cameraY, inCamera->cameraW, inCamera->cameraH );
 }
 
 
@@ -60,14 +62,14 @@ void CCCameraBase::setupViewport(const float x, const float y, const float width
 
     cameraX = x;
     cameraY = y;
-    cameraWidth = width;
-    cameraHeight = height;
-    invCameraWidth = 1.0f / cameraWidth;
-    invCameraHeight = 1.0f / cameraHeight;
+    cameraW = width;
+    cameraH = height;
+    invCameraW = 1.0f / cameraW;
+    invCameraH = 1.0f / cameraH;
     
     aspectRatio = definedWidth / definedHeight;
     
-    setupPerspective();
+    GluPerspective( 60.0f, aspectRatio );
 }
 
 
@@ -84,9 +86,11 @@ void CCCameraBase::setViewport()
 }
 
 
-void CCCameraBase::setupPerspective()
+void CCCameraBase::setNearFar(const float zNear, const float zFar)
 {	
-	GluPerspective( 60.0f, aspectRatio, 1.0f, 3000.0f );
+    this->zNear = zNear;
+    this->zFar = zFar;
+    GluPerspective( 60.0f, aspectRatio );
 }
 
 
@@ -257,21 +261,21 @@ void CCCameraBase::updateControls()
 #endif
         
         cameraTouch.startPosition.x -= cameraX;
-        cameraTouch.startPosition.x *= invCameraWidth;
+        cameraTouch.startPosition.x *= invCameraW;
         cameraTouch.startPosition.y -= cameraY;
-        cameraTouch.startPosition.y *= invCameraHeight;
+        cameraTouch.startPosition.y *= invCameraH;
 
         cameraTouch.position.x -= cameraX;
-        cameraTouch.position.x *= invCameraWidth;
+        cameraTouch.position.x *= invCameraW;
         cameraTouch.position.y -= cameraY;
-        cameraTouch.position.y *= invCameraHeight;
+        cameraTouch.position.y *= invCameraH;
 
-        cameraTouch.delta.x *= invCameraWidth;
-        cameraTouch.delta.y *= invCameraHeight;
-        cameraTouch.totalDelta.x *= invCameraWidth;
-        cameraTouch.totalDelta.y *= invCameraHeight;
-        cameraTouch.lastTotalDelta.x *= invCameraWidth;
-        cameraTouch.lastTotalDelta.y *= invCameraHeight;
+        cameraTouch.delta.x *= invCameraW;
+        cameraTouch.delta.y *= invCameraH;
+        cameraTouch.totalDelta.x *= invCameraW;
+        cameraTouch.totalDelta.y *= invCameraH;
+        cameraTouch.lastTotalDelta.x *= invCameraW;
+        cameraTouch.lastTotalDelta.y *= invCameraH;
     }
 }
 
@@ -362,7 +366,7 @@ void CCCameraBase::incrementRotationZ(const float increment)
 
 
 // glu based camera functionality
-void CCCameraBase::GluPerspective(float fovy, float aspect, float zNear, float zFar)
+void CCCameraBase::GluPerspective(float fovy, float aspect)
 {	
     frustumMax.y = zNear * tanf( fovy * CC_PI / 360.0f );
 	frustumMin.y = -frustumMax.y;

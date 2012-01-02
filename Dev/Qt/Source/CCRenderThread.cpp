@@ -33,12 +33,12 @@ void QGLRenderThread::run()
 
     gEngine = new CCAppEngine();
     gEngine->setupNativeThread();
-    gEngine->setupGameThread();
+    gEngine->setupEngineThread();
 
     do
     {
         gEngine->updateNativeThread();
-        gEngine->updateGameThread();
+        gEngine->updateEngineThread();
 
         glView->swapBuffers();
     } while( glView->runningGame );

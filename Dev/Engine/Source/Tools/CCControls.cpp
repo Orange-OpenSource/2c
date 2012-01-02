@@ -54,7 +54,7 @@ void CCControls::render()
 }
 
 
-void CCControls::update(const CCGameTime &gameTime)
+void CCControls::update(const CCTime &gameTime)
 {
 	for( uint i=0; i<numberOfTouches; ++i )
 	{
@@ -101,12 +101,12 @@ void CCControls::unTouch(void *touch)
         CCScreenTouches &screenTouch = screenTouches[i];
 		if( screenTouch.usingTouch == uiTouch )
         {
-            GameThreadLock();
+            CCEngineThreadLock();
             screenTouch.lastTouch = uiTouch;
 			
 			screenTouch.lastTimeReleased = 0.0f;
 			screenTouch.lastTotalDelta = screenTouch.totalDelta;
-            GameThreadUnlock();
+            CCEngineThreadUnlock();
 		}
 	}
 }

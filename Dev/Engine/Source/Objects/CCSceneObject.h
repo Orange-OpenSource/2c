@@ -44,7 +44,7 @@ public:
 
     virtual const bool shouldCollide(CCSceneCollideable *collideWith, const bool initialCall);
 
-    virtual void update(const CCGameTime &gameTime);
+    virtual void update(const CCTime &gameTime);
     virtual void render(const bool alpha);
     virtual void renderModels(const bool alpha);
 

@@ -33,11 +33,11 @@ CCURLManager::~CCURLManager()
 }
 
 
-void CCURLManager::updateGameThread()
+void CCURLManager::updateEngineThread()
 {
     if( currentRequests.length > 0 )
     {
-        GameThreadLock();
+        CCEngineThreadLock();
         for( int i=0; i<currentRequests.length; ++i )
         {
             CCURLRequest *currentRequest = currentRequests.list[i];
@@ -46,7 +46,7 @@ void CCURLManager::updateGameThread()
                 finishURL( currentRequest );
             }
         }
-        GameThreadUnlock();
+        CCEngineThreadUnlock();
     }
 }
 
@@ -55,7 +55,7 @@ void CCURLManager::updateNativeThread()
 {
     if( readyToRequest() )
 	{
-		GameThreadLock();
+		CCEngineThreadLock();
         
         // Start a request
         // There's three streams going, two for anything, one for higher priority requests
@@ -176,7 +176,7 @@ void CCURLManager::updateNativeThread()
             }
 		}
         
-		GameThreadUnlock();
+		CCEngineThreadUnlock();
 	}
 }
 
@@ -204,7 +204,7 @@ void CCURLManager::requestURL(const char *url,
         highPriorityRequestsPending = true;
     }
 
-    GameThreadLock();
+    CCEngineThreadLock();
     
     CCURLRequest *urlRequest = NULL;
     for( int i=0; i<requestQueue.length; ++i )
@@ -375,7 +375,7 @@ void CCURLManager::requestURL(const char *url,
         }
     }
 
-	GameThreadUnlock();
+	CCEngineThreadUnlock();
 }
 
 

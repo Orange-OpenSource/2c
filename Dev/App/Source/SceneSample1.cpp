@@ -29,7 +29,7 @@ void SceneSample1::setup()
 {
     // Set our virtual camera width to be 320
     // This means that the width of the view will be 320
-    setCameraWidth( 320.0f );
+    camera->setCameraWidth( 320.0f );
     
     // Create a tile
     {
@@ -66,14 +66,14 @@ void SceneSample1::destruct()
 
 
 // CCSceneBase
-void SceneSample1::updateScene(const CCGameTime &gameTime)
+void SceneSample1::updateScene(const CCTime &gameTime)
 {
     // Called once a frame and internally updates all objects managed by this scene
     super::updateScene( gameTime );
 }
 
 
-void SceneSample1::updateCamera(const CCGameTime &gameTime)
+void SceneSample1::updateCamera(const CCTime &gameTime)
 {
     // Called once a frame and internally updates the camera view
     super::updateCamera( gameTime );

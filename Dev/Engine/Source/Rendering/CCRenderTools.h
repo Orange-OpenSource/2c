@@ -26,9 +26,9 @@ extern bool CCMatrixInvert(const float m[16], float invOut[16]);
 
 // Render functions
 //-----------------
-extern void CCRenderSquare(const CCPoint &start, const CCPoint &end, const bool outline=false);
-extern void CCRenderHorizontalSquare(const CCVector3 &start, const CCVector3 &end);
-extern void CCRenderVerticalSquare(const CCVector3 &start, const CCVector3 &end);
+extern void CCRenderSquare2D(const CCPoint &start, const CCPoint &end, const bool outline);
+extern void CCRenderSquare(const CCVector3 &start, const CCVector3 &end);
+extern void CCRenderSquareYAxisAligned(const CCVector3 &start, const CCVector3 &end);
 extern void CCRenderSquarePoint(const CCPoint &position, const float &size);
 extern void CCRenderRectanglePoint(const CCPoint &position, const float &sizeX, const float &sizeY, const bool outline=false);
 

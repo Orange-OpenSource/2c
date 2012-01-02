@@ -148,7 +148,7 @@ void CCDeviceControls::touchHandle(UITouch *touch)
 		if( screenTouch.usingTouch == NULL || screenTouch.usingTouch == touch )
 		{
 			CCPoint screenPosition = position;
-			GameThreadLock();
+			CCEngineThreadLock();
 			if( screenTouch.usingTouch != NULL )
 			{
 				screenTouch.delta.x += screenPosition.x - screenTouch.position.x;
@@ -171,7 +171,7 @@ void CCDeviceControls::touchHandle(UITouch *touch)
 			}
 			screenTouch.position = screenPosition;
 			screenTouch.usingTouch = touch;
-			GameThreadUnlock();
+			CCEngineThreadUnlock();
 			break;
 		}
     }

@@ -5,7 +5,7 @@
  * This software is distributed under the Apache 2.0 license,
  * see the "license.txt" file for more details.
  *-----------------------------------------------------------
- * File Name   : CCGameEngine.cpp
+ * File Name   : CCEngine.cpp
  *-----------------------------------------------------------
  */
 
@@ -21,7 +21,7 @@
 #include "CCFBApi.h"
 
 
-CCGameEngine::CCGameEngine()
+CCEngine::CCEngine()
 {
 	renderFlags = render_all;
 	fpsLimit = 1/50.0f;
@@ -31,7 +31,7 @@ CCGameEngine::CCGameEngine()
 }
 
 
-CCGameEngine::~CCGameEngine()
+CCEngine::~CCEngine()
 {		
 	scenes.deleteObjectsAndList( true );
 	cameras.deleteObjectsAndList();
@@ -44,11 +44,11 @@ CCGameEngine::~CCGameEngine()
 
 	gEngine = NULL;
 	
-    GameThreadUnlock();
+    CCEngineThreadUnlock();
 }
 
 
-void CCGameEngine::setupNativeThread()
+void CCEngine::setupNativeThread()
 {
 	urlManager = new CCURLManager();
 	CCFBApi::Initialize();
@@ -85,7 +85,7 @@ static int zCompare(const void *a, const void *b)
 }
 
 
-void CCGameEngine::setupGameThread()
+void CCEngine::setupEngineThread()
 {
     renderer = new CCDeviceRenderer();
     renderer->setup( false, true );
@@ -110,11 +110,11 @@ void CCGameEngine::setupGameThread()
     DEBUG_OPENGL();
     
     // Start Game
-    startGame();
+    start();
 }
 
 
-void CCGameEngine::addCamera(CCCameraBase *camera, const int index)
+void CCEngine::addCamera(CCCameraBase *camera, const int index)
 {
     camera->setIndex( cameras.length );
     cameras.add( camera );
@@ -126,7 +126,7 @@ void CCGameEngine::addCamera(CCCameraBase *camera, const int index)
 }
 
 
-const bool CCGameEngine::removeCamera(CCCameraBase *camera)
+const bool CCEngine::removeCamera(CCCameraBase *camera)
 {
 	if( cameras.remove( camera ) )
 	{
@@ -136,7 +136,7 @@ const bool CCGameEngine::removeCamera(CCCameraBase *camera)
 }
 
 
-void CCGameEngine::refreshCameras()
+void CCEngine::refreshCameras()
 {;
     for( int i=0; i<cameras.length; ++i )
     {
@@ -146,7 +146,7 @@ void CCGameEngine::refreshCameras()
 }
 
 
-void CCGameEngine::addScene(CCSceneBase *scene, const int index)
+void CCEngine::addScene(CCSceneBase *scene, const int index)
 {
 	scenes.add( scene );
 	scene->setup();
@@ -158,7 +158,7 @@ void CCGameEngine::addScene(CCSceneBase *scene, const int index)
 }
 
 
-void CCGameEngine::removeScene(CCSceneBase* scene)
+void CCEngine::removeScene(CCSceneBase* scene)
 {
 	if( scenes.remove( scene ) )
 	{
@@ -193,7 +193,7 @@ const double getSystemTime()
 }
 
 
-const bool CCGameEngine::updateTime()
+const bool CCEngine::updateTime()
 {
     double currentTime = getSystemTime();
     gameTime.real = (float)( currentTime - gameTime.lastUpdate );
@@ -217,19 +217,19 @@ const bool CCGameEngine::updateTime()
 }
 
 
-const bool CCGameEngine::updateNativeThread()
+const bool CCEngine::updateNativeThread()
 {	
     // Run callbacks
 	if( nativeThreadCallbacks.length > 0 )
     {
-        GameThreadLock();
+        CCEngineThreadLock();
         for( int i=0; i<nativeThreadCallbacks.length; ++i )
         {
             nativeThreadCallbacks.list[i]->run();
             delete nativeThreadCallbacks.list[i];
         }
         nativeThreadCallbacks.length = 0;
-        GameThreadUnlock();
+        CCEngineThreadUnlock();
     }
 
     urlManager->updateNativeThread();
@@ -237,7 +237,7 @@ const bool CCGameEngine::updateNativeThread()
 }
 
 
-void CCGameEngine::updateGameThread()
+void CCEngine::updateEngineThread()
 {	
     // Update our system time
     if( updateTime() == false )
@@ -246,7 +246,7 @@ void CCGameEngine::updateGameThread()
     	// FIXME: Android needs to always redraw the scene
     	// We currently never return false, so perhaps remove this..
     	renderer->clear();
-        render();
+        renderLoop();
 #endif
         return;
     }
@@ -269,22 +269,22 @@ void CCGameEngine::updateGameThread()
     
     // Run callbacks
     {
-        GameThreadLock();
-        for( int i=0; i<gameThreadCallbacks.length; ++i )
+        CCEngineThreadLock();
+        for( int i=0; i<engineThreadCallbacks.length; ++i )
         {
-            gameThreadCallbacks.list[i]->run();
-            delete gameThreadCallbacks.list[i];
+            engineThreadCallbacks.list[i]->run();
+            delete engineThreadCallbacks.list[i];
         }
-        gameThreadCallbacks.length = 0;
-        GameThreadUnlock();
+        engineThreadCallbacks.length = 0;
+        CCEngineThreadUnlock();
     }
 	
     finishJobs();
-	updateGame();
+	updateLoop();
 	
     renderer->update( gameTime.delta );
 	renderer->clear();
-    render();
+    renderLoop();
 	renderer->render();
 	
 #if defined DEBUGON && TARGET_IPHONE_SIMULATOR
@@ -295,10 +295,10 @@ void CCGameEngine::updateGameThread()
 }
 
 
-void CCGameEngine::updateGame()
+void CCEngine::updateLoop()
 {	
 #if defined PROFILEON
-    CCProfiler profile( "CCGameEngine::updateGame()" );
+    CCProfiler profile( "CCEngine::updateGame()" );
 #endif
     
     // Remove any redundant scenes
@@ -312,14 +312,14 @@ void CCGameEngine::updateGame()
 		}
 	}
     
-    GameThreadLock();
+    CCEngineThreadLock();
     for( int i=0; i<cameras.length; ++i )
     {
         CCCameraBase *camera = cameras.list[i];
         camera->updateControls();
     }
 	controls->update( gameTime );
-    GameThreadUnlock();
+    CCEngineThreadUnlock();
     
     // Allow scene to handle the controls first
 	for( int i=0; i<scenes.length; ++i )
@@ -351,10 +351,10 @@ void CCGameEngine::updateGame()
 }
 
 
-void CCGameEngine::render()
+void CCEngine::renderLoop()
 {	
 #if defined PROFILEON
-    CCProfiler profile( "CCGameEngine::render()" );
+    CCProfiler profile( "CCEngine::render()" );
 #endif
     
     // Tell the texture manager we're rendering a new frame
@@ -374,7 +374,7 @@ void CCGameEngine::render()
 
 
 #if defined PROFILEON
-		CCProfiler profile( "CCGameEngine::render()::camera" );
+		CCProfiler profile( "CCEngine::render()::camera" );
 #endif
 
         currentCamera->setViewport();
@@ -403,7 +403,7 @@ void CCGameEngine::render()
 			for( uint pass=render_background; pass<render_finished; ++pass )
 			{
 #if defined PROFILEON
-				CCProfiler profile( "CCGameEngine::render()::pass" );
+				CCProfiler profile( "CCEngine::render()::pass" );
 #endif
 
 				// Render all the non-collideables
@@ -481,15 +481,15 @@ void CCGameEngine::render()
 }
 
 
-void CCGameEngine::finishJobs()
+void CCEngine::finishJobs()
 {	
 #if defined PROFILEON
-    CCProfiler profile( "CCGameEngine::finishJobs()" );
+    CCProfiler profile( "CCEngine::finishJobs()" );
 #endif
     
     CCFileManager::readyIO();
     
-    urlManager->updateGameThread();
+    urlManager->updateEngineThread();
     
 	// Prune the octree
 	if( collisionManager->pruneTrees > 0.0f )
@@ -504,7 +504,7 @@ void CCGameEngine::finishJobs()
 }
 
 
-void CCGameEngine::restartGame()
+void CCEngine::restart()
 {
     urlManager->flushPendingRequests();
     for( int i=scenes.length-1; i>=0; --i )
@@ -512,41 +512,41 @@ void CCGameEngine::restartGame()
         removeScene( scenes.list[i] );
     }
     
-    startGame();
+    start();
 }
 
 
-void CCGameEngine::addCollideable(CCSceneCollideable* collideable)
+void CCEngine::addCollideable(CCSceneCollideable* collideable)
 {
 	collisionManager->objects[collisionManager->length++] = collideable;
 	CCOctreeAddObject( collisionManager->tree, collideable );
 }
 
 
-void CCGameEngine::removeCollideable(CCSceneCollideable* collideable)
+void CCEngine::removeCollideable(CCSceneCollideable* collideable)
 {	
 	RemoveFromList( collideable, (void**)collisionManager->objects, &collisionManager->length );
 	CCOctreeRemoveObject( collideable );
 }
 
 
-const bool CCGameEngine::serialize(const bool saving)
+const bool CCEngine::serialize(const bool saving)
 {
 	return false;
 }
 
 
-void CCGameEngine::runOnNativeThread(CCLambdaCallback *lambdaCallback)
+void CCEngine::runOnNativeThread(CCLambdaCallback *lambdaCallback)
 {
-    GameThreadLock();
+    CCEngineThreadLock();
     nativeThreadCallbacks.add( lambdaCallback );
-    GameThreadUnlock();
+    CCEngineThreadUnlock();
 }
 
 
-void CCGameEngine::runOnGameThread(CCLambdaCallback *lambdaCallback)
+void CCEngine::runOnEngineThread(CCLambdaCallback *lambdaCallback)
 {
-    GameThreadLock();
-    gameThreadCallbacks.add( lambdaCallback );
-    GameThreadUnlock();
+    CCEngineThreadLock();
+    engineThreadCallbacks.add( lambdaCallback );
+    CCEngineThreadUnlock();
 }

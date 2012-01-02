@@ -25,8 +25,8 @@ SOURCES 	+=  \
                 ../Source/Tools/CCDeviceURLManager.cpp \
 \
 \
-                ../../Engine/Source/CCGameEngine.cpp \
-                ../../Engine/Source/CCWindowController.cpp \
+                ../../Engine/Source/CCEngine.cpp \
+                ../../Engine/Source/CCViewManager.cpp \
 \
                 ../../Engine/Source/AI/CCControllerMovement.cpp \
                 ../../Engine/Source/AI/CCInterpolators.cpp \
@@ -129,8 +129,8 @@ HEADERS  	+= \
                 ../Source/Tools/CCDeviceURLManager.h \
 \
                 ../../Engine/Source/CCDefines.h \
-                ../../Engine/Source/CCGameEngine.h \
-                ../../Engine/Source/CCWindowController.cpp \
+                ../../Engine/Source/CCEngine.h \
+                ../../Engine/Source/CCViewManager.h \
 \
                 ../../Engine/Source/AI/CCControllerMovement.h \
                 ../../Engine/Source/AI/CCInterpolators.h \

@@ -43,8 +43,8 @@
 #define  printf LOGE
 #endif
 
-extern void GameThreadLock();
-extern void GameThreadUnlock();
+extern void CCEngineThreadLock();
+extern void CCEngineThreadUnlock();
 
 class CCProfiler
 {
