@@ -1,7 +1,7 @@
 # CCRELEASE: Remove for release
 debug:DEFINES += DEBUGON
 
-QT              += opengl network webkit network script phonon
+QT              += opengl network webkit script phonon
 TARGET 		 = 2c
 TEMPLATE 	 = app
 
