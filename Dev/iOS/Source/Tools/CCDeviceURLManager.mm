@@ -181,12 +181,6 @@ const bool CCDeviceURLManager::readyToRequest()
         return;
     }
     
-#if DEBUGON
-    NSLog( @"Download failed! Error - %@ %@ \n",
-           [error localizedDescription],
-           [[error userInfo] objectForKey:NSURLErrorFailingURLStringErrorKey] );
-#endif
-    
 	// Copy over the recieved data
 	CCEngineThreadLock();
 	packet->request->state = CCURLRequest::failed;
