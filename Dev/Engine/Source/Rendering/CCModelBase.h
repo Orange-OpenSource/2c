@@ -32,7 +32,7 @@ public:
 	// CCRenderable
 	virtual void render(const bool alpha);
 	
-	void addModel(CCModelBase *model);
+	void addModel(CCModelBase *model, const int index=-1);
 	void addPrimitive(CCPrimitiveBase *primitive);
     
     inline CCColour* getColour() { return colour; }

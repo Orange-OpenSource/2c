@@ -18,7 +18,7 @@
 
 
 class CCPrimitiveText : public CCPrimitiveBase
-{
+{    
 public:
     typedef CCPrimitiveBase super;
 
@@ -38,7 +38,7 @@ public:
     void setCentered(const bool inCentered) { centered = inCentered; }
 
     const float getWidth();
-    const float getHeight() { return height; }
+    const float getHeight();
     const CCText& getText() { return text; }
     
 	struct CCText text;
@@ -57,24 +57,33 @@ public:
     
     CCModelText(CCSceneCollideable *inParent=NULL);
     virtual void destruct();
+    
+    const bool update(const float delta);
 
     void setParent(CCSceneCollideable *inParent);
     
     const CCText& getText() { return primitive->text; }
     const float getWidth() { return primitive->getWidth(); }
+    const float getHeight() { return primitive->getHeight(); }
     
     void setText(const char *text, const float height=-1.0f, const char *font=NULL);
     void setHeight(const float height);
     void setCentered(const bool centered);
-	void setColour(const CCColour &inColour);
     
+	void setColour(const CCColour &inColour, const bool immediatly);
+	void setColourAlpha(const float inAlpha, const bool immediatly);
+private:
+    // Remove functionality of original setColour
+    void setColour(const CCColour &inColour) { super::setColour( inColour ); }
+    void setColourAlpha(const float inAlpha) { super::setColourAlpha( inAlpha ); }
+    
+public:
     void setFont(const char *font);
     
 protected:
     CCPrimitiveText *primitive;
     CCSceneCollideable *parent;
     
-public:
     CCInterpolatorLinearColour colourInterpolator;
 };
 

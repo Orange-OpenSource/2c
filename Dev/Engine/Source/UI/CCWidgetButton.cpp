@@ -71,7 +71,7 @@ CCWidgetButton::CCWidgetButton()
 	
 	hovering = false;
 	dragging = false;
-    dragOffset = CCPoint( -25.0f * gEngine->renderer->screenSizeMultiple.width, 25.0f * gEngine->renderer->screenSizeMultiple.height );
+    dragOffset = CCPoint( -25.0f * gEngine->renderer->getInverseScreenSize().width, 25.0f * gEngine->renderer->getInverseScreenSize().height );
 }
 
 
@@ -135,16 +135,16 @@ const bool CCWidgetButton::handleControls(const CCScreenTouches &screenTouch, co
 }
 
 
-const bool CCWidgetButton::update(const CCTime &gameTime)
+const bool CCWidgetButton::update(const CCTime &time)
 {
-	if( super::update( gameTime ) )
+	if( super::update( time ) )
 	{
 		if( textColour != NULL )
 		{
-            CCToTarget( textColour->alpha, textAlphaTarget, gameTime.delta );
+            CCToTarget( textColour->alpha, textAlphaTarget, time.delta );
 		}
 		
-        const float speed = gameTime.delta * 3.0f;
+        const float speed = time.delta * 3.0f;
 		if( textScaleTargetIndex == 0 )
 		{
             if( CCToTarget( textScale, textScaleTargets[0], speed ) == false )
@@ -192,8 +192,8 @@ const bool CCWidgetButton::render(const bool foreground)
 				{
 					GLColor4f( 0.0f, 0.0f, 0.0f, 0.25f );
 					gEngine->textureManager->fontPages.list[0]->renderText( text, textLength,
-                                                                           textStart.x + gEngine->renderer->screenSizeMultiple.width,
-                                                                           textStart.y + gEngine->renderer->screenSizeMultiple.height,
+                                                                           textStart.x + gEngine->renderer->getInverseScreenSize().width,
+                                                                           textStart.y + gEngine->renderer->getInverseScreenSize().height,
                                                                            textCentered, true, textScale );
 				}
 			}
@@ -214,12 +214,12 @@ void CCWidgetButton::refreshDimensions()
 	if( textCentered )
 	{
 		textStart.x = position.x;
-		textStart.y = position.y - textSize.height + textHeight * gEngine->renderer->aspectRatio;
+		textStart.y = position.y - textSize.height + textHeight * gEngine->renderer->getAspectRatio();
 	}
 	else 
 	{
 		textStart.x = min.x + ( textOffset.width * size.width * 2.0f );
-		textStart.y = min.y + ( textOffset.height * size.height * 2.0f ) + textHeight * gEngine->renderer->aspectRatio;
+		textStart.y = min.y + ( textOffset.height * size.height * 2.0f ) + textHeight * gEngine->renderer->getAspectRatio();
 	}
 }
 

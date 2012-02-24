@@ -44,18 +44,19 @@ class CCCameraBase
 public:
 	CCCameraBase();
 
-    void setupViewport(const CCCameraBase *inCamera);
-    void setupViewport(const float x1=0.0f, const float y1=0.0f, const float x2=1.0f, const float y2=1.0f);
-    void refreshViewport();
+    void setupViewport(float x=0.0f, float y=0.0f, float width=1.0f, float height=1.0f, const int frameBufferId=-1);
+    void recalcViewport();
     void setViewport();
     void setNearFar(const float zNear, const float zFar);
+    void setPerspective(const float perspective);
 	
     const bool project3D(float x, float y);
     void project3DY(CCVector3 *result, float x, float y, float offset=-1.0f);
     void project3DZ(CCVector3 *result, float x, float y, float offset=-1.0f);
     
-    virtual void scanFOVBounds();
-	struct FOVScan
+    void scanFOVBounds();
+    
+    struct FOVBounds
     {
         CCPoint min;
         CCPoint max;
@@ -66,7 +67,7 @@ public:
 		scan_flat,
 		max_fov_scans
 	};
-	FOVScan fovScans[max_fov_scans];
+    const FOVBounds* getFOVBounds() const { return fovBounds; }
 	
 	virtual void update();
 	
@@ -86,9 +87,11 @@ public:
 	
     const bool isUpdating() { return updating; }
 	void flagUpdate() { updating = true; }
+    void flagFOVScan() { updateFOV = true; }
     
     inline void setIndex(const uint inIndex) { index = inIndex; }
     inline const uint getIndex() const { return index; }
+    inline const int getFrameBufferId() { return frameBufferId; }
 	
 	const CCVector3 getDirection();
 	
@@ -127,26 +130,41 @@ protected:
     const bool GluProject(class CCRenderable *object, CCVector3 &result);
     
     void ExtractFrustum();
-	
-public:
-	bool enabled;
-    float aspectRatio;
-    int viewport[4];
-    float cameraX, cameraY, cameraW, cameraH, invCameraW, invCameraH;
-	CCMatrix projectionMatrix;
     
-    CCCameraProjectionResults projection;
-    CCScreenTouches cameraTouches[CCControls::numberOfTouches];
+public:
+    const bool isEnabled() { return enabled; }
+    const bool hasUpdated() { return updatedPosition; }
+    
+    const CCMatrix& getProjectionMatrix() { return projectionMatrix; }
+    const CCScreenTouches* getRelativeTouches() { return cameraTouches; }
+    const CCCameraProjectionResults& getProjectionResults() { return projectionResults; }
+    
+    const float getViewportX() { return viewportX; }
+    const float getViewportY() { return viewportY; }
+    const float getViewportX2() { return viewportX2; }
+    const float getViewportY2() { return viewportY2; }
+	
+protected:
+	bool enabled;
+    uint index;
+    int frameBufferId;
+    
+    // Are we updating
+    bool updating;
     
     // Has the camera been updated this frame
     bool updatedPosition;
 	
-protected:
-    uint index;
-    bool updating;
-	bool updateFOV;
-	
+    // Should we update our FOV
+    bool updateFOV;
+	FOVBounds fovBounds[max_fov_scans];
+    
+    int viewport[4];
+    float viewportX, viewportY, viewportX2, viewportY2, viewportW, viewportH, invViewportW, invViewportH;
+    float aspectRatio;
+    float perspective;
     float zNear, zFar;
+	CCMatrix projectionMatrix;
 	
 	CCVector3 offset;
 	CCVector3 position;
@@ -156,14 +174,41 @@ protected:
 	CCVector3 rotation;
 	
 	CCMatrix modelViewMatrix;
-	float frustum[frustum_max][4];
     
+	float frustum[frustum_max][4];
     CCPoint frustumMin, frustumMax;
     CCSize frustumSize;
     
-    // List of objects that the camera will render
+    // Are touches releative to the camera
+    CCScreenTouches cameraTouches[CCControls::numberOfTouches];
+    
+    // The results of a projection scan
+    CCCameraProjectionResults projectionResults;
+    
+    // List of objects that the camera will render, if NULL render everything
     CCList<CCSceneCollideable> *visiblesList;
+    
+public:
+    static CCCameraBase *currentCamera;
+#define MAX_PUSHES 15
+    CCMatrix pushedMatrix[MAX_PUSHES];
+    int currentPush;
+    
+#define MAX_VISIBLE_COLLIDEABLES 2048
+    CCList<CCSceneCollideable> visibleCollideables;
+    int sortedVisibleCollideables[MAX_VISIBLE_COLLIDEABLES];
 };
+
+
+// Attempt to simulate OpenGL 1.1 interface to matrices
+extern void GLSetPushMatrix(CCMatrix &matrix);
+extern void GLPushMatrix();
+extern void GLPopMatrix();
+extern void GLLoadIdentity();
+extern void GLMultMatrixf(CCMatrix &matrix);
+extern void GLTranslatef(GLfloat tx, GLfloat ty, GLfloat tz);
+extern void GLScalef(GLfloat sx, GLfloat sy, GLfloat sz);
+extern void GLRotatef(GLfloat angle, GLfloat x, GLfloat y, GLfloat z);
 
 
 #endif // __CCCAMERABASE_H__

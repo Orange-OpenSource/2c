@@ -39,33 +39,3 @@ void CCDebugAssert(const bool condition, const char *file, const int line, const
 }
 
 #endif
-
-
-
-// Depreciated, use CCList
-const bool RemoveFromList(const void *object, void **list, int *length)
-{
-    int index = -1;
-    for( int i=0; i<*length; ++i )
-    {
-        if( list[i] == object )
-        {
-            index = i;
-            break;
-        }
-    }
-
-    if( index != -1 )
-    {
-        ASSERT( *length >= 0 );
-        (*length)--;
-        for( int i=index; i<*length; ++i )
-        {
-            list[i] = list[i+1];
-        }
-
-        return true;
-    }
-
-        return false;
-}

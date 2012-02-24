@@ -21,8 +21,8 @@ CCSceneAppUI::CCSceneAppUI()
     //float distance = ( velocity * time ) + ( ( -velocity * pow( time, 2 ) ) / 2 );
     //    if( cameraVelocity != 0.0f )
     //    {
-    //        cameraLookAt.y += cameraVelocity * gameTime.delta;
-    //        ToTarget( &cameraVelocity, 0.0f, cameraReleaseVelocity * gameTime.delta * 2.0f );
+    //        cameraLookAt.y += cameraVelocity * time.delta;
+    //        ToTarget( &cameraVelocity, 0.0f, cameraReleaseVelocity * time.delta * 2.0f );
     //        camera->flagUpdate();
     //        
     //        if( cameraScrolling && fabsf( cameraVelocity ) < 10.0f )
@@ -51,7 +51,7 @@ void CCSceneAppUI::setup()
         camera->setupViewport( 0.0f, 0.0f, 1.0f, 1.0f );
     }
     camera->setCameraWidth( 100.0f );
-
+    
     refreshCameraView();
     lockCameraView();
 }
@@ -72,63 +72,77 @@ void CCSceneAppUI::destruct()
 
 
 // CCSceneBase
-const bool CCSceneAppUI::handleControls(const CCTime &gameTime)
+const bool CCSceneAppUI::updateControls(const CCTime &time)
 {	
+    if( camera->getFrameBufferId() != -1 )
+    {
+        return false;
+    }
+    
     if( updatingOrientation )
     {
         return false;
     }
 
-    bool usingControls = false;
-    CCScreenTouches *touches = (CCScreenTouches*)&camera->cameraTouches;
+    const CCScreenTouches *touches = camera->getRelativeTouches();
+    bool usingControls = handleTouches( touches[0], touches[1], time );
+    if( usingControls == false )
+    {
+        return super::updateControls( time );
+    }
+    
+    return usingControls;
+}
 
+
+const bool CCSceneAppUI::handleTouches(const CCScreenTouches &touch1, const CCScreenTouches &touch2, const CCTime &time)
+{
+    bool usingControls = false;
+    
     // Handles two touches pressed
-	if( touches[0].usingTouch != NULL && touches[1].usingTouch != NULL )
+	if( touch1.usingTouch != NULL && touch2.usingTouch != NULL )
 	{
-        if( touchAllowed( touches[0] ) )
+        if( touchAllowed( touch1 ) )
         {
-        if( controlsUITouch == touches[0].usingTouch )
-        {
-            handleTilesTouch( touches[0], touch_lost );
-        }
-        
-        if( controlsUITouch != touches[1].usingTouch )
-        {
-            controlsUITouch = touches[1].usingTouch;
-        }
-        
-            usingControls = handleTwoTouches( touches[0], touches[1] );
+            if( controlsUITouch == touch1.usingTouch )
+            {
+                touchReleased( touch1, touch_lost );
+            }
+            
+            if( controlsUITouch != touch2.usingTouch )
+            {
+                twoTouchRegistered( touch1, touch2 );
+            }
+            
+            usingControls = handleTwoTouches( touch1, touch2 );
         }
 	}
 	else
 	{
-		const CCScreenTouches &touch = touches[0];
-		
 		// Handles one touch pressed
-		if( touches[1].lastTimeReleased > 0.0f &&
-            touchAllowed( touch ) )
+		if( touch2.lastTimeReleased > 0.0f &&
+            touchAllowed( touch1 ) )
 		{
-			if( controlsUITouch != touch.usingTouch )
+			if( controlsUITouch != touch1.usingTouch )
 			{
-                controlsUITouch = touch.usingTouch;
-                touchPressed( touch );
+                touchRegistered( touch1 );
 			}
 			
-            CCPoint touchDelta = touch.delta;
+            CCPoint touchDelta = touch1.delta;
             if( controlsMoving == false )
             {
-                if( touchMovementAllowed( touch, touchDelta ) )
+                if( touchMovementAllowed( touch1, touchDelta ) )
                 {
                 }
                 else
-                {   
-                    usingControls = handleTilesTouch( touch, touch_pressed );
+                {
+                    usingControls = touchPressed( touch1 );
                 }
             }
             
             if( controlsMoving )
             {   
-                usingControls = touchMoving( touch, touchDelta );
+                usingControls = touchMoving( touch1, touchDelta );
             }
 		}
 		
@@ -137,13 +151,13 @@ const bool CCSceneAppUI::handleControls(const CCTime &gameTime)
         {
             if( controlsUITouch != NULL )
             {
-                if( controlsUITouch == touch.lastTouch )
+                if( controlsUITouch == touch1.lastTouch )
                 {	
-                    usingControls = touchReleased( touch );
+                    usingControls = touchReleased( touch1, touch_released );
                 }
                 else
                 {
-                    handleTilesTouch( touch, touch_lost );
+                    touchReleased( touch1, touch_lost );
                 }
                 
                 lockCameraView();
@@ -154,37 +168,33 @@ const bool CCSceneAppUI::handleControls(const CCTime &gameTime)
                     controlsMoving = false;
                 }
 				controlsUITouch = NULL;
-                
-                return usingControls;
 			}
 		}
 	}
-
-    if( usingControls == false )
-    {
-        return super::handleControls( gameTime );
-    }
     
     return usingControls;
 }
 
 
-void CCSceneAppUI::updateScene(const CCTime &gameTime)
+const bool CCSceneAppUI::updateScene(const CCTime &time)
 {
-    super::updateScene( gameTime );
+    return super::updateScene( time );
 }
 
 
-void CCSceneAppUI::updateCamera(const CCTime &gameTime)
+const bool CCSceneAppUI::updateCamera(const CCTime &time)
 {
+    bool updated = false;
+    
     const float lookAtSpeed = controlsUITouch && cameraScrolling == false ? 20.0f : 1.5f;
-	if( camera->interpolateCamera( gameTime.delta, lookAtSpeed ) )
+	if( camera->interpolateCamera( time.delta, lookAtSpeed ) )
     {
         // Tell the scroll bar where to go
         if( scrollBar != NULL )
         {
             scrollBar->reposition( camera->getLookAt().y, camera->cameraWidth, camera->cameraHeight );
         }
+        updated = true;
 	}
     else
     {
@@ -192,6 +202,7 @@ void CCSceneAppUI::updateCamera(const CCTime &gameTime)
         {
             cameraScrolling = false;
             lockCameraView();
+            updated = true;
         }
         
         if( updatingOrientation )
@@ -199,8 +210,11 @@ void CCSceneAppUI::updateCamera(const CCTime &gameTime)
             updatingOrientation = false;
             refreshCameraView();
             lockCameraView();
+            updated = true;
         }
     }
+    
+    return updated;
 }
 
 
@@ -208,7 +222,7 @@ const bool CCSceneAppUI::render(const CCCameraBase *inCamera, const int pass, co
 {
     if( camera == inCamera )
     {
-        renderObjects( pass, alpha );
+        renderObjects( inCamera, pass, alpha );
         return true;
     }
     return false;
@@ -219,7 +233,7 @@ void CCSceneAppUI::renderOctreeObject(CCSceneObject *object, const CCCameraBase 
 {
     if( camera == inCamera )
 	{
-        object->render( alpha );
+        object->renderObject( inCamera, alpha );
 	}
 }
 
@@ -250,7 +264,12 @@ void CCSceneAppUI::render2DForeground(const uint inCameraIndex)
 
 void CCSceneAppUI::beginOrientationUpdate()
 {
-    camera->setCameraWidth( camera->cameraWidth );
+    if( camera->getFrameBufferId() != -1 )
+    {
+        return;
+    }
+    
+    camera->setCameraWidth( camera->targetWidth );
 
     for( int i=0; i<orientationCallback.length; ++i )
     {
@@ -263,17 +282,35 @@ void CCSceneAppUI::beginOrientationUpdate()
 
 void CCSceneAppUI::finishOrientationUpdate()
 {
+    if( camera->getFrameBufferId() != -1 )
+    {
+        return;
+    }
+    
     updatingOrientation = true;
 }
 
 
 const bool CCSceneAppUI::touchAllowed(const CCScreenTouches &touch)
-    {
+{
+    // If the touch started in this scene
     return touch.usingTouch != NULL && 
-    touch.position.x > 0.0f && touch.position.x < 1.0f &&
-    touch.position.y > 0.0f && touch.position.y < 1.0f &&
-    touch.startPosition.x > 0.0f && touch.startPosition.x < 1.0f &&
-    touch.startPosition.y > 0.0f && touch.startPosition.y < 1.0f;
+    touch.startPosition.x >= 0.0f && touch.startPosition.x <= 1.0f &&
+    touch.startPosition.y >= 0.0f && touch.startPosition.y <= 1.0f;
+    
+    // If the touch started and is in this scene
+    return touch.usingTouch != NULL && 
+    touch.position.x >= 0.0f && touch.position.x <= 1.0f &&
+    touch.position.y >= 0.0f && touch.position.y <= 1.0f &&
+    touch.startPosition.x >= 0.0f && touch.startPosition.x <= 1.0f &&
+    touch.startPosition.y >= 0.0f && touch.startPosition.y <= 1.0f;
+    
+    // Potentially required for frame buffer controls?
+    return touch.usingTouch != NULL && 
+    touch.position.x > camera->getViewportX() && touch.position.x < camera->getViewportX2() &&
+    touch.position.y > camera->getViewportY() && touch.position.y < camera->getViewportY2() &&
+    touch.startPosition.x > camera->getViewportX() && touch.startPosition.x < camera->getViewportX2() &&
+    touch.startPosition.y > camera->getViewportY() && touch.startPosition.y < camera->getViewportY2();
 }
 
 
@@ -281,7 +318,7 @@ const bool CCSceneAppUI::handleTwoTouches(const CCScreenTouches &touch1, const C
 {
 //    CCPoint movement;
 //    // If x's are going in different directions?
-//#if !defined( TARGET_OS_IPHONE )
+//#ifdef TARGET_IPHONE_SIMULATOR
 //    movement.x = -touch1.delta.x;
 //    movement.y = touch1.delta.y;
 //    const CCPoint movementAbs = CCPoint( fabsf( movement.x ), fabsf( movement.y ) );
@@ -289,7 +326,7 @@ const bool CCSceneAppUI::handleTwoTouches(const CCScreenTouches &touch1, const C
 //#else
 //        movement.x = -touch1.delta.x + -touch2.delta.x;
 //    movement.y = touch1.delta.y + touch2.delta.y;
-//    if( gEngine->controls->detectZoomTouch() )
+//    if( CCControls::detectZoomTouch( touch1, touch2 ) )
 //#endif
 //    {
 //        // Find out the position of our touches
@@ -325,9 +362,21 @@ const bool CCSceneAppUI::handleThreeTouches(const CCScreenTouches &touch1,
 }
 
 
-void CCSceneAppUI::touchPressed(const CCScreenTouches &touch)
+void CCSceneAppUI::touchRegistered(const CCScreenTouches &touch)
 {
+    controlsUITouch = touch.usingTouch;
+}
 
+
+void CCSceneAppUI::twoTouchRegistered(const CCScreenTouches &touch1, const CCScreenTouches &touch2)
+{
+    controlsUITouch = touch2.usingTouch;
+}
+
+
+const bool CCSceneAppUI::touchPressed(const CCScreenTouches &touch)
+{
+    return handleTilesTouch( touch, touch_pressed ) == tile_touchAction;
 }
 
 
@@ -335,7 +384,7 @@ const bool CCSceneAppUI::touchMovementAllowed(const CCScreenTouches &touch, CCPo
 {
     const float absDeltaX = fabsf( touch.totalDelta.x );
     const float absDeltaY = fabsf( touch.totalDelta.y );
-    if( absDeltaX > CC_TOUCH_TO_MOVEMENT_THRESHOLD || absDeltaY > CC_TOUCH_TO_MOVEMENT_THRESHOLD )
+    if( absDeltaX > CCControls::GetTouchMovementThreashold().x || absDeltaY > CCControls::GetTouchMovementThreashold().y )
     {
         controlsMoving = true;
         touchDelta.x += touch.totalDelta.x;
@@ -351,20 +400,24 @@ const bool CCSceneAppUI::touchMovementAllowed(const CCScreenTouches &touch, CCPo
 const bool CCSceneAppUI::touchMoving(const CCScreenTouches &touch, const CCPoint &touchDelta)
 {
     // Run through all the tiles
-    if( handleTilesTouch( touch, controlsMovingVertical ? touch_movingVertical : touch_movingHorizontal ) )
+    CCTileTouchResult result = handleTilesTouch( touch, controlsMovingVertical ? touch_movingVertical : touch_movingHorizontal );
+    if( result == tile_touchAction )
     {
         return true;
     }
-
-    return touchCameraMoving( touch, touchDelta.x, touchDelta.y );
+    else
+    {
+        return touchCameraMoving( touch, touchDelta.x, touchDelta.y );
+    }
 }
 
 
-const bool CCSceneAppUI::touchReleased(const CCScreenTouches &touch)
+const bool CCSceneAppUI::touchReleased(const CCScreenTouches &touch, const CCTouchAction touchAction)
 {
     // Find pressed tile
-    bool usingControls = handleTilesTouch( touch, touch_released );
-    if( usingControls == false )
+    CCTileTouchResult result = handleTilesTouch( touch, touchAction );
+    bool usingControls = result == tile_touchAction;
+    if( usingControls == false && touchAction == touch_released )
     {
         usingControls = touchReleaseSwipe( touch );
     }
@@ -372,31 +425,54 @@ const bool CCSceneAppUI::touchReleased(const CCScreenTouches &touch)
 }
 
 
-const bool CCSceneAppUI::handleTilesTouch(const CCScreenTouches &touch, const CCTouchAction touchAction)
+const CCSceneAppUI::CCTileTouchResult CCSceneAppUI::handleTilesTouch(const CCScreenTouches &touch, const CCTouchAction touchAction)
 {
     if( camera->project3D( touch.position.x, touch.position.y ) )
     {
+        const CCCameraProjectionResults &projectionResults = camera->getProjectionResults();
+        
         // Scan to see if we're blocked by a collision
         static CCVector3 hitPosition;
         CCSceneCollideable *hitObject = CCBasicLineCollisionCheck( (CCSceneCollideable**)tiles.list,
                                                                    tiles.length,
                                                                    NULL,
-                                                                   camera->projection.vNear, camera->projection.vFar,
+                                                                   projectionResults.vNear, projectionResults.vFar,
                                                                    &hitPosition,
                                                                    true,
                                                                    collision_ui,
                                                                    false );
+        
+        // Fill in the hitPosition variable if nothing has been hit
+        if( hitObject == NULL )
+        {
+            hitPosition = projectionResults.vLookAt;
+        }
 
+        bool actioned = false;
         for( int i=0; i<tiles.length; ++i )
         {
             CCTile3D *tile = tiles.list[i];
-            if( tile->handleProjectedTouch( camera->projection, hitObject, hitPosition, touch, touchAction ) == 2 )
+            if( tile->handleProjectedTouch( projectionResults, hitObject, hitPosition, touch, touchAction ) )
             {
-                return true;
+                actioned |= true;
+                if( touchAction < touch_released )
+                {
+                    break;
+                }
             }
         }
+        
+        if( actioned )
+        {
+            return tile_touchAction;
+        }
+        
+        if( hitObject != NULL )
+        {
+            return tile_touchCollision;
+        }
     }
-    return false;
+    return tile_touchNone;
 }
 
 
@@ -404,24 +480,32 @@ const bool CCSceneAppUI::touchCameraMoving(const CCScreenTouches &touch, const f
 {
     if( controlsMovingVertical )
     {
-        float delta = y * camera->cameraHeight;
-        if( camera->targetLookAt.y > sceneTop || camera->targetLookAt.y < sceneBottom )
+        if( y != 0.0f )
         {
-            delta *= 0.5f;
+            float delta = y * camera->cameraHeight;
+            if( camera->targetLookAt.y > sceneTop || camera->targetLookAt.y < sceneBottom )
+            {
+                delta *= 0.5f;
+            }
+            camera->targetLookAt.y += delta;
+            camera->flagUpdate();
+            return true;
         }
-        camera->targetLookAt.y += delta;
     }
     else
     {
-        float delta = x * camera->cameraWidth;
-        if( camera->targetLookAt.x < sceneLeft || camera->targetLookAt.x > sceneRight )
+        if( x != 0.0f )
         {
-            delta *= 0.5f;
+            float delta = x * camera->cameraWidth;
+            if( camera->targetLookAt.x < sceneLeft || camera->targetLookAt.x > sceneRight )
+            {
+                delta *= 0.5f;
+            }
+            camera->targetLookAt.x -= delta;
+            camera->flagUpdate();
+            return true;
         }
-        camera->targetLookAt.x -= delta;
     }
-
-    camera->flagUpdate();
     return true;
 }
 
@@ -497,13 +581,6 @@ const bool CCSceneAppUI::touchReleaseSwipe(const CCScreenTouches &touch)
 }
 
 
-void CCSceneAppUI::scrollCameraToTop()
-{
-    camera->targetLookAt.y = sceneTop;
-    camera->flagUpdate();
-}
-
-
 void CCSceneAppUI::refreshCameraView()
 {
     sceneLeft = 0.0f;
@@ -524,4 +601,11 @@ void CCSceneAppUI::lockCameraView()
     camera->flagUpdate();
     camera->targetLookAt.x = 0.0f;
     camera->targetLookAt.y = 0.0f;
+}
+
+
+void CCSceneAppUI::scrollCameraToTop()
+{
+    camera->targetLookAt.y = sceneTop;
+    camera->flagUpdate();
 }

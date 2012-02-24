@@ -9,7 +9,7 @@
  * Description : Common OpenGL renderer.
  *
  * Created     : 01/05/10
- * Author(s)   : Ashraf Samy Hegab
+ * Author(s)   : Ashraf Samy Hegab, Chris Wilson
  *-----------------------------------------------------------
  */
 
@@ -17,12 +17,15 @@
 #define __CCRENDERER_H__
 
 
+#include "CCFrameBufferManager.h"
+
+
 enum CCRenderFlags
 {
     render_all				= 0x000000001,
     render_collisionBoxes	= 0x000000002,
     render_collisionTrees	= 0x000000004,
-    render_aiNodes			= 0x000000008,
+    render_pathFinder		= 0x000000008,
     render_noPyramids		= 0x000000010,
     render_fontPage         = 0x000000012,
 };
@@ -57,8 +60,8 @@ enum
 enum 
 {
     ATTRIB_VERTEX,
-    ATTRIB_COLOR,
 	ATTRIB_TEXCOORD,
+    ATTRIB_COLOUR,
     ATTRIB_NORMAL,
     NUM_ATTRIBUTES
 };
@@ -68,6 +71,8 @@ struct CCShader
     CCShader(const char *name);
     
     void use();
+    void enableAttributeArray(const uint index);
+    void disableAttributeArray(const uint index);
     
     const char *name;
     GLint uniforms[NUM_UNIFORMS];
@@ -82,59 +87,52 @@ struct CCShader
 
 class CCRenderer
 {
+    friend class CCFrameBufferManager;
+    
 public:
     virtual ~CCRenderer();
 
-    void setup(const bool lighting, const bool clear);
+    void setup(const bool clear);
 
     // Calculates the screen size parameters
     void setupScreenSizeParams();
 
-    void update(const float delta);
     virtual void clear();
-    virtual void render() {};
+    virtual void resolve() {};
 
 protected:
-    virtual const bool createContext() { return true; }
-    virtual const bool createFrameBuffer() { return true; }
-	virtual void destroyFrameBuffer() {}
-    
     virtual const int getShaderUniformLocation(const char *name) = 0;
     CCShader* loadShader(const char *name);
     virtual const bool loadShader(CCShader *shader) = 0;
     const bool loadShaders();
 
-    // Gets the current screen size
+    virtual const bool createContext() { return true; }
+    virtual const bool createDefaultFrameBuffer(CCFrameBufferObject &fbo) = 0;
+
+    // Gets the current screen size from the view
     virtual void refreshScreenSize() = 0;
 
 public:
     void setupOpenGL();
     
-    inline const bool isPortrait() { return orientation.target == 0.0f || orientation.target == 180.0f; }
-    void setOrientation(const float deviceOrientation, const bool immediate=false);
-    void correctOrientation(float &x, float &y);
+    inline FBOType getDefaultFrameBuffer() { return frameBufferManager.defaultFBO.getFrameBuffer(); }
     
     inline const CCShader* getShader() { return currentShader; }
-    const bool setShader(const char *name);
+    const bool setShader(const char *name, const bool useVertexColours=false, const bool useVertexNormals=false);
     
-    inline const int getBackBufferWidth() { return backBufferWidth; }
-    inline const int getBackBufferHeight() { return backBufferHeight; }
-
+    const CCSize& getScreenSize() { return screenSize; }
+    const CCSize& getInverseScreenSize() { return inverseScreenSize; }
+    const float getAspectRatio() { return aspectRatio; }
+    
 protected:
-    int backBufferWidth, backBufferHeight;
-    GLuint frameBuffer, renderBuffer, depthBuffer;
-
-public:
     CCSize screenSize;
-    CCSize screenSizeMultiple;
+    CCSize inverseScreenSize;
     float aspectRatio;
-    float heightDivWidth;
 
-    bool lightingEnabled;
     bool clearScreenRequired;
-
-    CCFloatTarget orientation;
-    uint updatingOrientation;
+    
+public:
+    CCFrameBufferManager frameBufferManager;
     
 protected:
     CCShader *currentShader;
@@ -142,21 +140,14 @@ protected:
 };
 
 
+extern void GLEnableBlend();
+extern void GLDisableBlend();
+extern const bool GLBlendState();
+extern void GLEnableDepth();
+extern void GLDisableDepth();
+extern const bool GLDepthState();
+
 // Attempt to simulate OpenGL 1.1 interface to shaders
-#include "CCMatrix.h"
-
-#define MAX_PUSHES 15
-extern CCMatrix pushedMatrix[MAX_PUSHES];
-extern int currentPush;
-
-extern void GLSetPushMatrix(CCMatrix &matrix);
-extern void GLPushMatrix();
-extern void GLPopMatrix();
-extern void GLLoadIdentity();
-extern void GLMultMatrixf(CCMatrix &matrix);
-extern void GLScalef(GLfloat sx, GLfloat sy, GLfloat sz);
-extern void GLRotatef(GLfloat angle, GLfloat x, GLfloat y, GLfloat z);
-
 extern void GLVertexPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 extern void GLTexCoordPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 extern void GLColor4f(GLfloat r, GLfloat g, GLfloat b, GLfloat a);

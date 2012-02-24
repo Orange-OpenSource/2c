@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------
  * 2c - Cross Platform 3D Application Framework
  *-----------------------------------------------------------
- * Copyright © 2011 – 2011 France Telecom
+ * Copyright Ôæ© 2011 Ôøê 2011 France Telecom
  * This software is distributed under the Apache 2.0 license,
  * see the "license.txt" file for more details.
  *-----------------------------------------------------------
@@ -22,13 +22,16 @@
 class CCDeviceRenderer : public CCRenderer
 {
 public:
-	~CCDeviceRenderer() {};
+	~CCDeviceRenderer();
 
 private:
 	const bool linkProgram(GLuint &prog);
     const int getShaderUniformLocation(const char *name);
     const bool loadShader(CCShader *shader);
+
     const bool createContext() { return true; };
+	const bool createDefaultFrameBuffer(CCFrameBufferObject &fbo);
+
     void refreshScreenSize();
 };
 

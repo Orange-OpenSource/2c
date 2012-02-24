@@ -66,9 +66,9 @@ void CCModelBase::render(const bool alpha)
             	CCProfiler profile( "CCModelBase::render()::colourOutline" );
 #endif
                 CCSetColour( *colourOutline );
-                if( alpha == false && CCColourHasAlpha() )
+                if( alpha == false && ( CCGetColour().alpha > 0.0f ) )
                 {
-                    glEnable( GL_BLEND );
+                    GLEnableBlend();
                 }
 
                 CCDefaultTexCoords();
@@ -78,9 +78,9 @@ void CCModelBase::render(const bool alpha)
                     primitives.list[i]->renderOutline();
                 }
 
-                if( alpha == false && CCColourHasAlpha() )
+                if( alpha == false && ( CCGetColour().alpha > 0.0f ) )
                 {
-                    glDisable( GL_BLEND );
+                    GLDisableBlend();
                 }
             }
 
@@ -113,10 +113,15 @@ void CCModelBase::render(const bool alpha)
 }
 
 
-void CCModelBase::addModel(CCModelBase *model)
+void CCModelBase::addModel(CCModelBase *model, const int index)
 {
     ASSERT( model != this );
-	models.add( model );
+    models.add( model );
+    
+    if( index != -1 )
+    {
+        models.reinsert( model, index );
+    }
 }
 
 

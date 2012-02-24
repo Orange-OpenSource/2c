@@ -31,6 +31,8 @@ private:
     const int getShaderUniformLocation(const char *name);
     const bool loadShader(CCShader *shader);
 
+    const bool createDefaultFrameBuffer(CCFrameBufferObject &fbo);
+
     virtual void refreshScreenSize();
 };
 

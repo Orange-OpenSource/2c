@@ -31,7 +31,18 @@ CCDeviceRenderer::CCDeviceRenderer()
 
 CCDeviceRenderer::~CCDeviceRenderer()
 {
-	destroyFrameBuffer();
+    frameBufferManager.destoryAllFrameBuffers();
+    
+#if ENABLE_MULTISAMPLING
+    
+    if( useMultisampling )
+    {
+        glDeleteFramebuffers( 1, &frameBufferMSAA );
+        glDeleteRenderbuffers( 1, &renderBufferMSAA );
+    }
+    
+#endif
+    
     if( [EAGLContext currentContext] == context ) 
 	{
 		[EAGLContext setCurrentContext:NULL];
@@ -50,7 +61,7 @@ void CCDeviceRenderer::clear()
     }
     else
     {
-        glBindFramebuffer( GL_FRAMEBUFFER, frameBuffer );
+        glBindFramebuffer( GL_FRAMEBUFFER, getDefaultFrameBuffer() );
     }
     
 #else
@@ -63,7 +74,7 @@ void CCDeviceRenderer::clear()
 }
 
 
-void CCDeviceRenderer::render()
+void CCDeviceRenderer::resolve()
 {	
 #if ENABLE_MULTISAMPLING
     
@@ -75,13 +86,13 @@ void CCDeviceRenderer::render()
         glDiscardFramebufferEXT( GL_READ_FRAMEBUFFER_APPLE, 2, attachments );
         
         glBindFramebuffer( GL_READ_FRAMEBUFFER_APPLE, frameBufferMSAA );
-        glBindFramebuffer( GL_DRAW_FRAMEBUFFER_APPLE, frameBuffer );
+        glBindFramebuffer( GL_DRAW_FRAMEBUFFER_APPLE, getDefaultFrameBuffer() );
         glResolveMultisampleFramebufferAPPLE();
     }
     
 #endif
     
-    glBindRenderbuffer( GL_RENDERBUFFER, renderBuffer );
+    glBindRenderbuffer( GL_RENDERBUFFER, getDefaultFrameBuffer() );
     [context presentRenderbuffer:GL_RENDERBUFFER];
 }	
 
@@ -115,25 +126,31 @@ static const bool compileShader(GLuint *shader, GLenum type, NSString *file)
     glCompileShader( *shader );
 	
 #if DEBUGON
+    GLchar *log = NULL;
     GLint logLength;
     glGetShaderiv( *shader, GL_INFO_LOG_LENGTH, &logLength );
     if( logLength > 0 )
     {
-        GLchar *log = (GLchar*)malloc( logLength );
+        log = (GLchar*)malloc( logLength );
         glGetShaderInfoLog( *shader, logLength, &logLength, log );
         NSLog( @"Shader compile log:\n%s", log );
-        free( log );
     }
 #endif
 	
     glGetShaderiv( *shader, GL_COMPILE_STATUS, &status );
+    bool result = true;
     if( status == 0 )
     {
         glDeleteShader( *shader );
-        return FALSE;
+        ASSERT( false );
+        result = false;
     }
+    
+#if DEBUGON
+    free( log );
+#endif
 	
-    return TRUE;
+    return result;
 }
 
 
@@ -189,6 +206,7 @@ const bool CCDeviceRenderer::loadShader(CCShader *shader)
     // Create and compile fragment shader
     if( !compileShader( &fragShader, GL_FRAGMENT_SHADER, shaderPath ) )
     {
+        ASSERT( false );
         NSLog( @"Failed to compile fragment shader" );
         return false;
     }
@@ -202,8 +220,8 @@ const bool CCDeviceRenderer::loadShader(CCShader *shader)
     // Bind attribute locations
     // this needs to be done prior to linking
     glBindAttribLocation( shader->program, ATTRIB_VERTEX, "vs_position" );
-    //glBindAttribLocation( shader->program, ATTRIB_COLOR, "vs_color" );
 	glBindAttribLocation( shader->program, ATTRIB_TEXCOORD, "vs_texCoord" );
+    glBindAttribLocation( shader->program, ATTRIB_COLOUR, "vs_colour" );
     glBindAttribLocation( shader->program, ATTRIB_NORMAL, "vs_normal" );
 	
     // Link program
@@ -257,8 +275,13 @@ const bool CCDeviceRenderer::createContext()
 }
 
 
-const bool CCDeviceRenderer::createFrameBuffer()
+const bool CCDeviceRenderer::createDefaultFrameBuffer(CCFrameBufferObject &fbo)
 {
+    GLuint frameBuffer = 0;
+    GLuint renderBuffer = 0;
+    GLuint depthBuffer = 0;
+    int backBufferWidth, backBufferHeight;
+    
 	// Create default buffers
 	glGenFramebuffers( 1, &frameBuffer );
 	glBindFramebuffer( GL_FRAMEBUFFER, frameBuffer );
@@ -318,25 +341,17 @@ const bool CCDeviceRenderer::createFrameBuffer()
 	if( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
 	{
 		NSLog( @"Failed to make complete framebuffer object %x", glCheckFramebufferStatus( GL_FRAMEBUFFER ) );
+		ASSERT( false );
 		return false;
 	}
+    
+    fbo.setFrameBuffer( frameBuffer );
+    fbo.renderBuffer = renderBuffer;
+    fbo.depthBuffer = depthBuffer;
+    fbo.width = backBufferWidth;
+    fbo.height = backBufferHeight;
 	
     return true;
-}
-
-
-void CCDeviceRenderer::destroyFrameBuffer()
-{	
-    glDeleteFramebuffers( 1, &frameBuffer );
-    frameBuffer = 0;
-    glDeleteRenderbuffers( 1, &renderBuffer );
-    renderBuffer = 0;
-	
-    if( depthBuffer ) 
-	{
-		glDeleteRenderbuffers( 1, &depthBuffer );
-		depthBuffer = 0;
-    }
 }
 
 

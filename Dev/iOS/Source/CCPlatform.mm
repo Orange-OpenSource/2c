@@ -14,17 +14,33 @@
 
 #import <pthread.h>
 
-void CCEngineThreadLock()
+void CCNativeThreadLock()
 {
 //    pthread_t threadID = pthread_self();
 //    DEBUGLOG( "Locked thread %i \n", threadID );
-    pthread_mutex_lock( &gView->engineThreadMutex );
+    pthread_mutex_lock( &gView->nativeThreadMutex->mutex );
 }
 
 
-void CCEngineThreadUnlock()
+void CCNativeThreadUnlock()
 {
 //    pthread_t threadID = pthread_self();
 //    DEBUGLOG( "Unlocked thread %i \n", threadID );
-    pthread_mutex_unlock( &gView->engineThreadMutex );
+    pthread_mutex_unlock( &gView->nativeThreadMutex->mutex );
+}
+
+
+void CCJobsThreadLock()
+{
+    //    pthread_t threadID = pthread_self();
+    //    DEBUGLOG( "Locked thread %i \n", threadID );
+    pthread_mutex_lock( &gView->jobsThreadMutex->mutex );
+}
+
+
+void CCJobsThreadUnlock()
+{
+    //    pthread_t threadID = pthread_self();
+    //    DEBUGLOG( "Unlocked thread %i \n", threadID );
+    pthread_mutex_unlock( &gView->jobsThreadMutex->mutex );
 }

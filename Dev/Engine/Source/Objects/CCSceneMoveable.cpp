@@ -29,11 +29,13 @@ CCSceneMoveable::CCSceneMoveable()
 
 
 // CCSceneObject
-void CCSceneMoveable::update(const CCTime &gameTime)
+const bool CCSceneMoveable::update(const CCTime &time)
 {
-	super::update( gameTime );
+	super::update( time );
 	
-    updateMovement( gameTime.delta );
+    updateMovement( time.delta );
+    
+    return true;
 }
 
 

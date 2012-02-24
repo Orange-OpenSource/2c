@@ -59,7 +59,7 @@ void CCSceneCollideable::translate(const float x, const float y, const float z)
 void CCSceneCollideable::setScene(CCSceneBase *scene)
 {
 	super::setScene( scene );
-	AddFlag( collideableType, collision_box );
+	CCAddFlag( collideableType, collision_box );
     scene->addCollideable( this );
 }
 
@@ -74,7 +74,7 @@ void CCSceneCollideable::removeFromScene()
 void CCSceneCollideable::deactivate()
 {
 	super::deactivate();
-	RemoveFlag( collideableType, collision_box );
+	CCRemoveFlag( collideableType, collision_box );
 	CCOctreeRemoveObject( this );
     
     if( owner != NULL )
@@ -119,24 +119,24 @@ const bool CCSceneCollideable::shouldCollide(CCSceneCollideable *collideWith, co
 }
 
 
-void CCSceneCollideable::renderModels(const bool alpha)
+void CCSceneCollideable::render(const bool alpha)
 {
-	super::renderModels( alpha );
+	super::render( alpha );
 	
 	if( alpha == transparent &&
         gEngine->renderFlags & render_collisionBoxes &&
-        HasFlag( collideableType, collision_box ) )
+        CCHasFlag( collideableType, collision_box ) )
 	{
 		if( transparent == false )
 		{
-			glEnable( GL_BLEND );
+			GLEnableBlend();
 		}
 		
 		renderCollisionBox();
 		
 		if( transparent == false )
 		{
-			glDisable( GL_BLEND );
+			GLDisableBlend();
 		}
 	}
 }
@@ -146,6 +146,7 @@ void CCSceneCollideable::renderCollisionBox()
 {
 	GLPushMatrix();
 	{
+        glLineWidth( LINE_WIDTH );
 		GLScalef( collisionBounds.x, collisionBounds.y, collisionBounds.z );
 		//glColor4f( 1.0f, 1.0f, 0.0f, 0.5f );
         //RenderCube( true );
@@ -185,6 +186,12 @@ void CCSceneCollideable::setHCollisionBounds(const float hWidth, const float hHe
 	inverseBoundsLength.y = 1.0f / collisionBoundsLength.y;
     
     updateCollisions = true;
+}
+
+
+void CCSceneCollideable::setCollisionBounds(const float width, const float height, const float depth)
+{
+    setHCollisionBounds( width * 0.5f, height * 0.5f, depth * 0.5f );
 }
 
 

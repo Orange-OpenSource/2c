@@ -49,7 +49,7 @@ public:
     const bool inActiveSpace(const CCPoint &inPosition);
     const bool touchInActiveSpace(const CCScreenTouches &screenTouch);
     virtual const bool handleControls(const CCScreenTouches &screenTouch, const bool released=true);
-    virtual const bool update(const CCTime &gameTime);
+    virtual const bool update(const CCTime &time);
 	virtual const bool render(const bool foreground);
 	
 	inline const float getWidth() const { return size.width; }

@@ -37,7 +37,7 @@ void CCURLManager::updateEngineThread()
 {
     if( currentRequests.length > 0 )
     {
-        CCEngineThreadLock();
+        CCNativeThreadLock();
         for( int i=0; i<currentRequests.length; ++i )
         {
             CCURLRequest *currentRequest = currentRequests.list[i];
@@ -46,7 +46,7 @@ void CCURLManager::updateEngineThread()
                 finishURL( currentRequest );
             }
         }
-        CCEngineThreadUnlock();
+        CCNativeThreadUnlock();
     }
 }
 
@@ -55,10 +55,10 @@ void CCURLManager::updateNativeThread()
 {
     if( readyToRequest() )
 	{
-		CCEngineThreadLock();
+		CCNativeThreadLock();
         
         // Start a request
-        // There's three streams going, two for anything, one for higher priority requests
+        // There's two streams going, one for anything, one for higher priority requests
         while( currentRequests.length < 2 && requestQueue.length > 0 )
 		{
             CCURLRequest *pendingRequest = requestQueue.list[0];
@@ -73,19 +73,6 @@ void CCURLManager::updateNativeThread()
                 }
             }
             
-#ifdef DEBUGON
-            
-            if( pendingRequest->priority == 0 )
-            {
-                for( int i=1; i<requestQueue.length; ++i )
-                {
-                    CCURLRequest *otherRequest = requestQueue.list[i];
-                    ASSERT( otherRequest->priority == 0 );
-                }
-            }
-            
-#endif
-            
             const bool removed = requestQueue.remove( pendingRequest );
             ASSERT( removed );
             currentRequests.add( pendingRequest );
@@ -95,15 +82,9 @@ void CCURLManager::updateNativeThread()
         for( int i=0; i<currentRequests.length; ++i )
         {
             CCURLRequest *currentRequest = currentRequests.list[i];
-
-#ifdef DEBUGON
-            const int requestIndex = requestQueue.find( currentRequest );
-            ASSERT( requestIndex == -1 );
-#endif
-
             if( currentRequest->state == CCURLRequest::not_started )
             {
-                if( gEngine->gameTime.lifetime < currentRequest->timeout )
+                if( gEngine->time.lifetime < currentRequest->timeRequestable )
                 {
                     continue;
                 }
@@ -148,7 +129,7 @@ void CCURLManager::updateNativeThread()
                         if( CCText::Contains( currentRequest->url.buffer, domainTimeOut->name.buffer ) )
                         {
                             const float nextRequestTime = domainTimeOut->lastRequested + domainTimeOut->timeout;
-                            if( gEngine->gameTime.lifetime < nextRequestTime )
+                            if( gEngine->time.lifetime < nextRequestTime )
                             {
                                 wait = true;
                             }
@@ -158,7 +139,7 @@ void CCURLManager::updateNativeThread()
                     
                     if( wait == false )
                     {
-                        currentRequest->timeRequested = gEngine->gameTime.lifetime;
+                        currentRequest->timeRequested = gEngine->time.lifetime;
                         deviceURLManager->processRequest( currentRequest );
                         
                         // Record the last request of this domain
@@ -167,7 +148,7 @@ void CCURLManager::updateNativeThread()
                             DomainTimeOut *domainTimeOut = domainTimeOuts.list[i];
                             if( CCText::Contains( currentRequest->url.buffer, domainTimeOut->name.buffer ) )
                             {
-                                domainTimeOut->lastRequested = gEngine->gameTime.lifetime;
+                                domainTimeOut->lastRequested = gEngine->time.lifetime;
                                 break;
                             }
                         }
@@ -176,7 +157,7 @@ void CCURLManager::updateNativeThread()
             }
 		}
         
-		CCEngineThreadUnlock();
+		CCNativeThreadUnlock();
 	}
 }
 
@@ -204,7 +185,7 @@ void CCURLManager::requestURL(const char *url,
         highPriorityRequestsPending = true;
     }
 
-    CCEngineThreadLock();
+    CCNativeThreadLock();
     
     CCURLRequest *urlRequest = NULL;
     for( int i=0; i<requestQueue.length; ++i )
@@ -229,7 +210,7 @@ void CCURLManager::requestURL(const char *url,
         urlRequest->url.set( url );
         urlRequest->priority = priority;
         urlRequest->checkCache = checkCache;
-        urlRequest->timeout = gEngine->gameTime.lifetime + timeout;
+        urlRequest->timeRequestable = gEngine->time.lifetime + timeout;
         
         if( cacheFile != NULL )
         {
@@ -276,7 +257,7 @@ void CCURLManager::requestURL(const char *url,
     else if( urlRequest->priority != priority )
     {
         urlRequest->priority = priority;
-        urlRequest->timeout = gEngine->gameTime.lifetime + timeout;
+        urlRequest->timeRequestable = gEngine->time.lifetime + timeout;
 
         // If our new priority if 0, push it to the back of the queue
         if( priority == 0 )
@@ -340,7 +321,7 @@ void CCURLManager::requestURL(const char *url,
     // Is this request already cached?
     if( urlRequest->checkCache )
     {
-        if( gEngine->gameTime.lifetime >= urlRequest->timeout )
+        if( gEngine->time.lifetime >= urlRequest->timeRequestable )
         {
             if( urlRequest->cacheChecked == false )
             {
@@ -375,20 +356,12 @@ void CCURLManager::requestURL(const char *url,
         }
     }
 
-	CCEngineThreadUnlock();
+	CCNativeThreadUnlock();
 }
 
 
 void CCURLManager::finishURL(CCURLRequest *request)
 {
-    //LAMBDA_EMIT_ONCE( request->onComplete );
-    for( int i=0; i<request->onComplete.length; ++i )
-    {
-        CCLambdaCallback *callback = request->onComplete.list[i];
-        callback->run();
-    }
-    request->onComplete.deleteObjectsAndList();
-
     // Save out our result?
     if( request->cacheFile.length > 0 )
     {
@@ -397,6 +370,14 @@ void CCURLManager::finishURL(CCURLRequest *request)
             CCFileManager::saveCachedFile( request->cacheFile.buffer, request->data.buffer, request->data.length );
         }
     }
+
+    //LAMBDA_EMIT_ONCE( request->onComplete );
+    for( int i=0; i<request->onComplete.length; ++i )
+    {
+        CCLambdaCallback *callback = request->onComplete.list[i];
+        callback->run();
+    }
+    request->onComplete.deleteObjectsAndList();
 
     // Clean up our request object
     const bool removed = currentRequests.remove( request );

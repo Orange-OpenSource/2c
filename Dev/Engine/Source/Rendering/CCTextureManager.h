@@ -64,6 +64,7 @@ public:
 	
     // Used for direct OpenGL access binding
 	void bindTexture(const uint glName=0);
+    const uint getCurrentGLTexture() { return currentGLTexture; }
     
     // Used for assignging textures
 	const bool setTextureIndex(const int textureIndex);
@@ -76,7 +77,7 @@ public:
     CCTextureSprites *textureSprites;
 	
 protected:
-	uint currentTextureHandle;
+	uint currentGLTexture;
     uint totalTexturesLoaded;
     uint totalTextureSpace;
     uint totalTexturesLoadedThisFrame;

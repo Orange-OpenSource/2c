@@ -27,6 +27,6 @@ public:
     
 protected:
     CCVector3Target currentOffsetTarget;
-    CCInterpolatorCurveV3<CCInterpolatorCurve> offsetInterpolator;
+    CCInterpolatorV3<CCInterpolatorSin2Curve> offsetInterpolator;
 };
 

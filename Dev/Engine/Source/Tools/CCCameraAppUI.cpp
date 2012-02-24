@@ -10,11 +10,11 @@
  */
 
 #include "CCDefines.h"
+#include "CCViewManager.h"
 
 
 CCCameraAppUI::CCCameraAppUI()
 {
-    offsetInterpolator.setDuration( 0.3f );
 }
 
 
@@ -42,7 +42,7 @@ const bool CCCameraAppUI::interpolateCamera(const float delta, const float speed
             lookAtInterpolator.setup( &currentLookAtTarget.current, currentLookAtTarget.target );
         }
         
-        if( offsetInterpolator.update( delta ) )
+        if( offsetInterpolator.update( delta * speed ) )
         {
             refreshCameraSize();
             updating = true;
@@ -68,16 +68,16 @@ const bool CCCameraAppUI::interpolateCamera(const float delta, const float speed
 
 void CCCameraAppUI::setOffset(const CCVector3 &offsetTarget)
 {
-    currentOffsetTarget.current = currentOffsetTarget.target = offsetTarget;
+    targetOffset = currentOffsetTarget.current = currentOffsetTarget.target = offsetTarget;
     updateOffset( offsetTarget );
 }
 
 
 void CCCameraAppUI::setCameraWidth(const float inWidth)
 {
-    cameraWidth = inWidth;
+    targetWidth = cameraWidth = inWidth;
     targetOffset.z = cameraWidth;
-    if( gEngine->renderer->isPortrait() )
+    if( frameBufferId != -1 || CCViewManager::IsPortrait() )
     {
         targetOffset.z /= getFrustumSize().width;
         cameraHeight = targetOffset.z * getFrustumSize().height;
@@ -97,7 +97,7 @@ void CCCameraAppUI::setCameraHeight(const float inHeight)
 {
     cameraHeight = inHeight;
     targetOffset.z = cameraHeight;
-    if( gEngine->renderer->isPortrait() )
+    if( frameBufferId != -1 || CCViewManager::IsPortrait() )
     {
         targetOffset.z /= getFrustumSize().height;
     }
@@ -106,7 +106,7 @@ void CCCameraAppUI::setCameraHeight(const float inHeight)
         targetOffset.z /= getFrustumSize().width;
     }
     
-    cameraWidth = targetOffset.z * getFrustumSize().height;
+    targetWidth = cameraWidth = targetOffset.z * getFrustumSize().height;
     cameraHWidth = cameraWidth * 0.5f;
     cameraHHeight = cameraHeight * 0.5f;
 }
@@ -114,17 +114,67 @@ void CCCameraAppUI::setCameraHeight(const float inHeight)
 
 void CCCameraAppUI::refreshCameraSize()
 {
-    if( gEngine->renderer->isPortrait() )
+    CCVector3 &currentOffset = currentOffsetTarget.current;
+    if( frameBufferId != -1 || CCViewManager::IsPortrait() )
     {
-        cameraWidth = targetOffset.z * getFrustumSize().width;
-        cameraHeight = targetOffset.z * getFrustumSize().height;
+        cameraWidth = currentOffset.z * getFrustumSize().width;
+        cameraHeight = currentOffset.z * getFrustumSize().height;
     }
     else
     {
-        cameraWidth = targetOffset.z * getFrustumSize().height;
-        cameraHeight = targetOffset.z * getFrustumSize().width;
+        cameraWidth = currentOffset.z * getFrustumSize().height;
+        cameraHeight = currentOffset.z * getFrustumSize().width;
     }
     
     cameraHWidth = cameraWidth * 0.5f;
     cameraHHeight = cameraHeight * 0.5f;
+}
+
+
+
+const float CCCameraAppUI::calcCameraOffset(const float inWidth)
+{
+    float offsetZ = inWidth;
+    if( frameBufferId != -1 || CCViewManager::IsPortrait() )
+    {
+        offsetZ /= getFrustumSize().width;
+    }
+    else
+    {
+        offsetZ /= getFrustumSize().height;
+    }
+    
+    return offsetZ;
+}
+
+
+const float CCCameraAppUI::calcCameraWidth(const float inOffset)
+{
+    float width = inOffset;
+    if( frameBufferId != -1 || CCViewManager::IsPortrait() )
+    {
+        width *= getFrustumSize().width;
+    }
+    else
+    {
+        width *= getFrustumSize().height;
+    }
+    
+    return width;
+}
+
+
+const float CCCameraAppUI::calcCameraHeight(const float inOffset)
+{
+    float height = inOffset;
+    if( frameBufferId != -1 || CCViewManager::IsPortrait() )
+    {
+        height *= getFrustumSize().height;
+    }
+    else
+    {
+        height *= getFrustumSize().width;
+    }
+    
+    return height;
 }

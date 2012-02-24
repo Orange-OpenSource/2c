@@ -96,6 +96,18 @@ void CCRenderable::setPositionX(const float x)
 }
 
 
+void CCRenderable::setPositionY(const float y)
+{
+	setPositionXYZ( position.x, y, position.z );
+}
+
+
+void CCRenderable::setPositionXY(const float x, const float y)
+{
+	setPositionXYZ( x, y, position.z );
+}
+
+
 void CCRenderable::setPositionXZ(const float x, const float z)
 {
 	setPositionXYZ( x, position.y, z );

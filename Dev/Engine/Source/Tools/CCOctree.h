@@ -67,13 +67,13 @@ extern void CCOctreeRefreshObject(CCSceneCollideable *collideable);
 extern void CCOctreePruneTree(CCOctree *tree);
 
 // See if the range is in the tree
-extern bool CCOctreeIsInLeaf(const CCOctree *leaf, const CCVector3 *targetMin, const CCVector3 *targetMax);
+extern bool CCOctreeIsInLeaf(const CCOctree *leaf, const CCVector3 &targetMin, const CCVector3 &targetMax);
 
 // Traverse the tree
 extern bool CCOctreeHasObjects(CCOctree *tree);
 
 // Traverse the tree and find the leafs nodes, from the bottom up so we don't end up with all the leafs
-extern void CCOctreeListLeafs(const CCOctree *tree, const CCVector3 *targetMin, const CCVector3 *targetMax, const CCOctree **leafsList, int *numberOfLeafs);
+extern void CCOctreeListLeafs(const CCOctree *tree, const CCVector3 &targetMin, const CCVector3 &targetMax, const CCOctree **leafsList, int *numberOfLeafs);
 
 // List all the collideables in the tree
 extern void CCOctreeListCollideables(CCSceneCollideable **collideables, int *numberOfCollideables, const CCOctree **leafs, const int numberOfLeafs);
@@ -84,11 +84,13 @@ extern void CCOctreeRender(CCOctree *tree);
 
 // Render the objects in the trees
 extern CCSceneCollideable* CCOctreeGetVisibleCollideables(const int i);
-extern void CCOctreeResetVisibleCollideables();
-extern void CCOctreeScanVisibleCollideables(const float frustum[6][4]);
-extern void CCScanVisibleCollideables(const float frustum[6][4], CCList<CCSceneCollideable> &collideables);
+extern void CCOctreeScanVisibleCollideables(const float frustum[6][4],
+                                            CCList<CCSceneCollideable> &visibleCollideables);
+extern void CCScanVisibleCollideables(const float frustum[6][4], 
+                                      CCList<CCSceneCollideable> &collideables,
+                                      CCList<CCSceneCollideable> &visibleCollideables);
 extern void CCOctreeSetRenderSortCallback(int (*callback)(const void *, const void *) );
-extern void CCOctreeRenderVisibleObjects(const CCCameraBase *camera, const int pass, const bool alpha);
+extern void CCOctreeRenderVisibleObjects(CCCameraBase *camera, const int pass, const bool alpha);
 
 
 #endif // __CCOCTREE_H__

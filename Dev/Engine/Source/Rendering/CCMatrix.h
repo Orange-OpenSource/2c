@@ -28,7 +28,7 @@ struct CCMatrix
 
 extern void CCMatrixLoadIdentity(CCMatrix &result);
 
-extern void CCMatrixMultiply(CCMatrix &result, CCMatrix &srcA, CCMatrix &srcB);
+extern void CCMatrixMultiply(CCMatrix &result, const CCMatrix &srcA, const CCMatrix &srcB);
 
 extern const bool CCMatrixInverse(CCMatrix &result, CCMatrix &source);
 extern void CCMatrixTranspose(CCMatrix &result, CCMatrix &source);
@@ -39,6 +39,7 @@ extern void CCMatrixOrtho(CCMatrix &result, float left, float right, float botto
 
 extern void CCMatrixScale(CCMatrix &result, float sx, float sy, float sz);
 extern void CCMatrixTranslate(CCMatrix &result, float tx, float ty, float tz);
+extern void CCMatrixPosition(CCMatrix &result, float tx, float ty, float tz);
 extern void CCMatrixRotate(CCMatrix &result, float angle, float x, float y, float z);
 
 

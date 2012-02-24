@@ -298,12 +298,12 @@ public:
                         else
 #endif
                         {
-                            CCEngineThreadLock();
+                            CCNativeThreadLock();
                             if( CCFileManager::saveCachedFile( filename.buffer, reply->data.buffer, reply->data.length ) )
                             {
                                 saved = true;
                             }
-                            CCEngineThreadUnlock();
+                            CCNativeThreadUnlock();
                         }
                         break;
                     }
@@ -326,12 +326,12 @@ public:
                             }
                             else
                             {
-                                CCEngineThreadLock();
+                                CCNativeThreadLock();
                                 if( CCFileManager::saveCachedFile( filename.buffer, reply->data.buffer, reply->data.length ) )
                                 {
                                     saved = true;
                                 }
-                                CCEngineThreadUnlock();
+                                CCNativeThreadUnlock();
                             }
                             break;
                         }

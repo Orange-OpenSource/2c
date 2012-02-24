@@ -17,7 +17,18 @@
 
 CCTile3D::CCTile3D()
 {
-    movementController = NULL;
+}
+
+
+void CCTile3D::destruct()
+{
+    // Delete objects from CCTouchable
+    onPress.deleteObjectsAndList();
+    onMove.deleteObjectsAndList();
+    onRelease.deleteObjectsAndList();
+    onLoss.deleteObjectsAndList();
+    
+    super::destruct();
 }
 
 // CCRenderable
@@ -44,11 +55,6 @@ void CCTile3D::setPositionXYZ(const float x, const float y, const float z)
         {
             CCSceneObject *attachment = attachments.list[i];
             attachment->translate( -distance.x, -distance.y, -distance.z );
-        }
-
-        if( movementController != NULL )
-        {
-            movementController->setTarget( position );
         }
 
         CCOctreeRefreshObject( this );
@@ -97,4 +103,11 @@ void CCTile3D::positionTileRight(CCTile3D *fromTile)
 {
     setPosition( fromTile->getPosition() );
     translate( fromTile->collisionBounds.x + collisionBounds.x, 0.0f, 0.0f );
+}
+
+
+void CCTile3D::positionTileLeft(CCTile3D *fromTile)
+{
+    setPosition( fromTile->getPosition() );
+    translate( fromTile->collisionBounds.x - collisionBounds.x, 0.0f, 0.0f );
 }

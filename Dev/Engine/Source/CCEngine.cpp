@@ -19,14 +19,20 @@
 #include "CCDeviceRenderer.h"
 #include "CCGLView.h"
 #include "CCFBApi.h"
+#include "CCViewManager.h"
 
 
-CCEngine::CCEngine()
+CCEngine::CCEngine() :
+    collisionManager( 250000.0f )
 {
+    running = true;
+    engineThreadRunning = false;
+    paused = false;
+    
 	renderFlags = render_all;
 	fpsLimit = 1/50.0f;
     
-    // Initialise our gameTime lastUpdate value;
+    // Initialise our time lastUpdate value;
     updateTime();
 }
 
@@ -40,11 +46,10 @@ CCEngine::~CCEngine()
 	delete textureManager;
 	delete controls;
 	delete renderer;
-	delete collisionManager;
 
 	gEngine = NULL;
 	
-    CCEngineThreadUnlock();
+    CCNativeThreadUnlock();
 }
 
 
@@ -64,7 +69,7 @@ static int zCompare(const void *a, const void *b)
     {
         if( objectA->drawOrder == 200 && objectB->drawOrder == 200 )
         {
-            const CCVector3 &cameraPosition = gEngine->currentCamera->getRotatedPosition();
+            const CCVector3 &cameraPosition = CCCameraBase::currentCamera->getRotatedPosition();
             const CCVector3 *positionA = objectA->positionPtr;
             const CCVector3 *positionB = objectB->positionPtr;
             const float distanceA = CCVector3Distance( *positionA, cameraPosition, true );
@@ -87,22 +92,20 @@ static int zCompare(const void *a, const void *b)
 
 void CCEngine::setupEngineThread()
 {
+    engineThreadRunning = true;
+
     renderer = new CCDeviceRenderer();
-    renderer->setup( false, true );
+    renderer->setup( true );
     DEBUG_OPENGL();
     
     textureManager = new CCTextureManager();
     textureManager->load();
     DEBUG_OPENGL();
     textureManager->loadFont( "HelveticaNeueLight" );
-    //textureManager->loadFont( "HelveticaNeueBold" );
+    textureManager->loadFont( "HelveticaNeueBold" );
     DEBUG_OPENGL();
     
     controls = new CCDeviceControls();
-    
-	currentCamera = NULL;
-    
-    collisionManager = new CCCollisionManager( 250000.0f );
     
 	CCOctreeSetRenderSortCallback( &zCompare );
     
@@ -137,11 +140,11 @@ const bool CCEngine::removeCamera(CCCameraBase *camera)
 
 
 void CCEngine::refreshCameras()
-{;
+{
     for( int i=0; i<cameras.length; ++i )
     {
         CCCameraBase *camera = cameras.list[i];
-        camera->refreshViewport();
+        camera->recalcViewport();
     }
 }
 
@@ -196,22 +199,22 @@ const double getSystemTime()
 const bool CCEngine::updateTime()
 {
     double currentTime = getSystemTime();
-    gameTime.real = (float)( currentTime - gameTime.lastUpdate );
+    time.real = (float)( currentTime - time.lastUpdate );
 	
     // If we're too fast, sleep
-	while( gameTime.real < fpsLimit )
+	while( time.real < fpsLimit )
 	{
-        const uint difference = roundf( ( fpsLimit - gameTime.real ) * 1000.0f ) + 1;
+        const uint difference = roundf( ( fpsLimit - time.real ) * 1000.0f ) + 1;
 		usleep( difference );
 
 		currentTime = getSystemTime();
-		gameTime.real = (float)( currentTime - gameTime.lastUpdate );
+		time.real = (float)( currentTime - time.lastUpdate );
 	}
 	
 	// Fake 25 fps
-	gameTime.delta = MIN( gameTime.real, 0.04f );
+	time.delta = MIN( time.real, 0.04f );
 
-    gameTime.lastUpdate = currentTime;
+    time.lastUpdate = currentTime;
     
     return true;
 }
@@ -222,14 +225,14 @@ const bool CCEngine::updateNativeThread()
     // Run callbacks
 	if( nativeThreadCallbacks.length > 0 )
     {
-        CCEngineThreadLock();
+        CCNativeThreadLock();
         for( int i=0; i<nativeThreadCallbacks.length; ++i )
         {
             nativeThreadCallbacks.list[i]->run();
             delete nativeThreadCallbacks.list[i];
         }
         nativeThreadCallbacks.length = 0;
-        CCEngineThreadUnlock();
+        CCNativeThreadUnlock();
     }
 
     urlManager->updateNativeThread();
@@ -251,13 +254,13 @@ void CCEngine::updateEngineThread()
         return;
     }
 
-	gameTime.lifetime += gameTime.real;
+	time.lifetime += time.real;
 
 #if LOG_FPS
     static uint loggedUpdates = 0;
     static float loggedDelta = 0.0f;
     loggedUpdates++;
-    loggedDelta += gameTime.real;
+    loggedDelta += time.real;
     if( loggedDelta > 1.0f )
     {
         const float averageFPS = 1.0f / ( loggedDelta / loggedUpdates );
@@ -268,30 +271,55 @@ void CCEngine::updateEngineThread()
 #endif
     
     // Run callbacks
+    if( engineThreadCallbacks.length > 0 )
     {
-        CCEngineThreadLock();
-        for( int i=0; i<engineThreadCallbacks.length; ++i )
-        {
-            engineThreadCallbacks.list[i]->run();
-            delete engineThreadCallbacks.list[i];
-        }
-        engineThreadCallbacks.length = 0;
-        CCEngineThreadUnlock();
+        CCNativeThreadLock();
+        CCJobsThreadLock();
+        CCLambdaCallback *callback = engineThreadCallbacks.pop();
+        CCNativeThreadUnlock();
+        CCJobsThreadUnlock();
+        
+        callback->run();
+        delete callback;
+        
+//        for( int i=0; i<engineThreadCallbacks.length; ++i )
+//        {
+//            engineThreadCallbacks.list[i]->run();
+//            delete engineThreadCallbacks.list[i];
+//        }
+//        engineThreadCallbacks.length = 0;
     }
 	
     finishJobs();
 	updateLoop();
+    
+    CCViewManager::UpdateOrientation( time.delta );
 	
-    renderer->update( gameTime.delta );
 	renderer->clear();
     renderLoop();
-	renderer->render();
+	renderer->resolve();
 	
 #if defined DEBUGON && TARGET_IPHONE_SIMULATOR
 	// 66 frames a second in debug
 	//usleep( 15000 );
 	usleep( 0 );
 #endif
+}
+
+
+const bool CCEngine::updateJobsThread()
+{	
+    // Run callbacks
+	if( jobsThreadCallbacks.length > 0 )
+    {
+        CCJobsThreadLock();
+        CCLambdaCallback *callback = jobsThreadCallbacks.pop();
+        CCJobsThreadUnlock();
+        callback->run();
+        delete callback;
+        return true;
+    }
+    return false;
 }
 
 
@@ -312,21 +340,25 @@ void CCEngine::updateLoop()
 		}
 	}
     
-    CCEngineThreadLock();
+    CCNativeThreadLock();
     for( int i=0; i<cameras.length; ++i )
     {
         CCCameraBase *camera = cameras.list[i];
         camera->updateControls();
     }
-	controls->update( gameTime );
-    CCEngineThreadUnlock();
+	controls->update( time );
+    CCNativeThreadUnlock();
     
     // Allow scene to handle the controls first
 	for( int i=0; i<scenes.length; ++i )
     {
-        if( scenes.list[i]->handleControls( gameTime ) )
+        if( scenes.list[i]->updateControls( time ) )
         {
-            break;
+            // If we're not releasing our touch
+            if( controls->getScreenTouches()[0].usingTouch != NULL )
+            {
+                break;
+            }
         }
 	}
 
@@ -335,7 +367,7 @@ void CCEngine::updateLoop()
     {
         // Delete on finish update
         CCUpdater *updater = updaters.list[i];
-        if( updater->update( gameTime.delta ) == false )
+        if( updater->update( time.delta ) == false )
         {
             updaters.remove( updater );
             DELETE_OBJECT( updater );
@@ -346,7 +378,7 @@ void CCEngine::updateLoop()
 	for( int i=0; i<scenes.length; ++i )
     {
         CCSceneBase *scene = scenes.list[i];
-        scene->update( gameTime );
+        scene->update( time );
 	}
 }
 
@@ -359,18 +391,27 @@ void CCEngine::renderLoop()
     
     // Tell the texture manager we're rendering a new frame
     gEngine->textureManager->prepareRender();
-    for( int i=0; i<collisionManager->length; ++i )
     {
-        collisionManager->objects[i]->visible = false;
+        CCList<CCSceneCollideable> &collideables = collisionManager.collideables;
+        for( int i=0; i<collideables.length; ++i )
+        {
+            collideables.list[i]->visible = false;
+        }
     }
-
+    CCTile3DFrameBuffer::ResetRenderFlag();
+    
 	for( int cameraIndex=0; cameraIndex<cameras.length; ++cameraIndex )
     {
-		currentCamera = cameras.list[cameraIndex];
-		if( currentCamera->enabled == false )
+		CCCameraBase *currentCamera = CCCameraBase::currentCamera = cameras.list[cameraIndex];
+		if( currentCamera->isEnabled() == false )
 		{
 			continue;
 		}
+        
+        if( currentCamera->getFrameBufferId() != -1 )
+        {
+            continue;
+        }
 
 
 #if defined PROFILEON
@@ -380,10 +421,11 @@ void CCEngine::renderLoop()
         currentCamera->setViewport();
 		
 		// 2D Background
+        if( false )
 		{	
 			CCMatrix matrix;
 			CCMatrixLoadIdentity( matrix );
-			CCMatrixRotate( matrix, renderer->orientation.current, 0.0f, 0.0f, 1.0f );
+			CCMatrixRotate( matrix, CCViewManager::GetOrientation().current, 0.0f, 0.0f, 1.0f );
 			CCMatrixOrtho( matrix, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f );
 			GLSetPushMatrix( matrix );
 			
@@ -394,8 +436,8 @@ void CCEngine::renderLoop()
 		}
 		
 		// 3D Rendering
-		glEnable( GL_DEPTH_TEST );
-		extern bool gUseProjectionMatrix;
+		GLEnableDepth();
+        extern bool gUseProjectionMatrix; 
 		gUseProjectionMatrix = true;
 		{	
 			currentCamera->update();
@@ -407,7 +449,7 @@ void CCEngine::renderLoop()
 #endif
 
 				// Render all the non-collideables
-				glDisable( GL_BLEND );
+				GLDisableBlend();
 				for( int i=0; i<scenes.length; ++i )
 				{
 					scenes.list[i]->render( currentCamera, pass, false );
@@ -421,20 +463,25 @@ void CCEngine::renderLoop()
 					CCOctreeRenderVisibleObjects( currentCamera, pass, false );
 				}
 				
-				glEnable( GL_BLEND );
+				GLEnableBlend();
 				
 				if( pass == render_main )
 				{	
-					if( HasFlag( gEngine->renderFlags, render_collisionTrees ) )
+					if( CCHasFlag( gEngine->renderFlags, render_collisionTrees ) )
 					{
-						CCOctreeRender( collisionManager->tree );
+						CCOctreeRender( collisionManager.tree );
+					}
+                    
+                    if( CCHasFlag( gEngine->renderFlags, render_pathFinder ) )
+					{
+						collisionManager.pathFinderNetwork.view();
 					}
 				}
 				
 				if( pass == render_main )
 				{
 					// Keep it disabled for the rest of the renders
-					glDisable( GL_DEPTH_TEST );
+					GLDisableDepth();
 				}
 				
 				for( int i=0; i<scenes.length; ++i )
@@ -455,10 +502,11 @@ void CCEngine::renderLoop()
 		gUseProjectionMatrix = false;
 		
 		// 2D Rendering
+        if( false )
 		{
 			CCMatrix matrix;
 			CCMatrixLoadIdentity( matrix );
-			CCMatrixRotate( matrix, renderer->orientation.current, 0.0f, 0.0f, 1.0f );
+			CCMatrixRotate( matrix, CCViewManager::GetOrientation().current, 0.0f, 0.0f, 1.0f );
 			CCMatrixOrtho( matrix, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f );
 			GLSetPushMatrix( matrix );
 			
@@ -468,7 +516,7 @@ void CCEngine::renderLoop()
             }
 			
 #ifdef DEBUGON
-			if( HasFlag( gEngine->renderFlags, render_fontPage ) )
+			if( CCHasFlag( gEngine->renderFlags, render_fontPage ) )
 			{
 				CCSetColour( CCColour() );
 				textureManager->fontPages.list[0]->view();
@@ -478,6 +526,108 @@ void CCEngine::renderLoop()
 		
 		currentCamera = NULL;
 	}
+}
+
+
+void CCEngine::renderFrameBuffer(const int frameBufferId)
+{  
+    CCCameraBase *defaultFrameBufferCamera = CCCameraBase::currentCamera;
+    const bool defaultBlendState = GLBlendState();
+    const bool defaultDepthState = GLDepthState();
+    
+    bool bindedFrameBuffer = false;
+    for( int cameraIndex=0; cameraIndex<cameras.length; ++cameraIndex )
+    {
+        CCCameraBase *currentCamera = CCCameraBase::currentCamera = cameras.list[cameraIndex];
+        if( currentCamera->isEnabled() == false )
+        {
+            continue;
+        }
+        
+        if( currentCamera->getFrameBufferId() != frameBufferId )
+        {
+            continue;
+        }
+        
+        if( bindedFrameBuffer == false )
+        {
+            bindedFrameBuffer = true;
+            renderer->frameBufferManager.bindFrameBuffer( frameBufferId );
+            glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+        }
+        currentCamera->setViewport();
+        
+        // 3D Rendering
+		GLEnableDepth();
+        {	
+            currentCamera->update();
+            
+            for( uint pass=render_background; pass<render_finished; ++pass )
+            {   
+                // Render all the non-collideables
+                GLDisableBlend();
+                for( int i=0; i<scenes.length; ++i )
+                {
+                    scenes.list[i]->render( currentCamera, pass, false );
+                }
+                
+                // Render all the visible collideables
+                {
+                    CCOctreeRenderVisibleObjects( currentCamera, pass, false );
+                }
+                
+                GLEnableBlend();
+                if( pass == render_main )
+                {
+                    // Keep it disabled for the rest of the renders
+                    GLDisableDepth();
+                }
+                
+                for( int i=0; i<scenes.length; ++i )
+                {
+                    scenes.list[i]->render( currentCamera, pass, true );
+                }
+                
+                // Render all the visible collideables
+                {
+                    CCOctreeRenderVisibleObjects( currentCamera, pass, true );
+                }
+            }
+        }
+    }
+    
+    // Generate a mip map - too slow for use?
+    if( bindedFrameBuffer )
+    {
+        glBindTexture( GL_TEXTURE_2D, renderer->frameBufferManager.getFrameBufferTexture( frameBufferId ) );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+        glGenerateMipmap( GL_TEXTURE_2D );
+        glBindTexture( GL_TEXTURE_2D, textureManager->getCurrentGLTexture() );
+    }
+    
+    if( bindedFrameBuffer )
+    {
+        renderer->frameBufferManager.bindDefaultFrameBuffer();
+    }
+    CCCameraBase::currentCamera = defaultFrameBufferCamera;
+    CCCameraBase::currentCamera->setViewport();
+    
+    if( defaultBlendState )
+    {
+        GLEnableBlend();
+    }
+    else
+    {
+        GLDisableBlend();
+    }
+    if( defaultDepthState )
+    {
+        GLEnableDepth();
+    }
+    else
+    {
+        GLDisableDepth();
+    }
 }
 
 
@@ -492,13 +642,13 @@ void CCEngine::finishJobs()
     urlManager->updateEngineThread();
     
 	// Prune the octree
-	if( collisionManager->pruneTrees > 0.0f )
+	if( collisionManager.pruneTreesTimer > 0.0f )
 	{
-		collisionManager->pruneTrees -= gameTime.real;
-		if( collisionManager->pruneTrees <= 0.0f )
+		collisionManager.pruneTreesTimer -= time.real;
+		if( collisionManager.pruneTreesTimer <= 0.0f )
 		{
             //DEBUGLOG( "Octree - prune" );
-			CCOctreePruneTree( collisionManager->tree );
+			CCOctreePruneTree( collisionManager.tree );
 		}
 	}
 }
@@ -518,14 +668,14 @@ void CCEngine::restart()
 
 void CCEngine::addCollideable(CCSceneCollideable* collideable)
 {
-	collisionManager->objects[collisionManager->length++] = collideable;
-	CCOctreeAddObject( collisionManager->tree, collideable );
+	collisionManager.collideables.add( collideable );
+	CCOctreeAddObject( collisionManager.tree, collideable );
 }
 
 
 void CCEngine::removeCollideable(CCSceneCollideable* collideable)
 {	
-	RemoveFromList( collideable, (void**)collisionManager->objects, &collisionManager->length );
+    collisionManager.collideables.remove( collideable );
 	CCOctreeRemoveObject( collideable );
 }
 
@@ -536,17 +686,37 @@ const bool CCEngine::serialize(const bool saving)
 }
 
 
-void CCEngine::runOnNativeThread(CCLambdaCallback *lambdaCallback)
+void CCEngine::engineToNativeThread(CCLambdaCallback *lambdaCallback)
 {
-    CCEngineThreadLock();
+    CCNativeThreadLock();
     nativeThreadCallbacks.add( lambdaCallback );
-    CCEngineThreadUnlock();
+    CCNativeThreadUnlock();
 }
 
 
-void CCEngine::runOnEngineThread(CCLambdaCallback *lambdaCallback)
+void CCEngine::nativeToEngineThread(CCLambdaCallback *lambdaCallback)
 {
-    CCEngineThreadLock();
+    CCNativeThreadLock();
     engineThreadCallbacks.add( lambdaCallback );
-    CCEngineThreadUnlock();
+    CCNativeThreadUnlock();
+}
+
+
+void CCEngine::engineToJobsThread(CCLambdaCallback *lambdaCallback, const bool pushToFront)
+{
+    CCJobsThreadLock();
+    jobsThreadCallbacks.add( lambdaCallback );
+    if( pushToFront )
+    {
+        jobsThreadCallbacks.reinsert( lambdaCallback, 0 );
+    }
+    CCJobsThreadUnlock();
+}
+
+
+void CCEngine::jobsToEngineThread(CCLambdaCallback *lambdaCallback)
+{
+    CCJobsThreadLock();
+    engineThreadCallbacks.add( lambdaCallback );
+    CCJobsThreadUnlock();
 }

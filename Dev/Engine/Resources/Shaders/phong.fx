@@ -13,9 +13,7 @@
  *-----------------------------------------------------------
  */
 
-#ifndef QT
 precision mediump float;
-#endif
 
 // -------
 // Globals

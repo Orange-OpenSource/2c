@@ -26,24 +26,24 @@ extern bool CCMatrixInvert(const float m[16], float invOut[16]);
 
 // Render functions
 //-----------------
-extern void CCRenderSquare2D(const CCPoint &start, const CCPoint &end, const bool outline);
+extern void CCRenderSquare(const CCPoint &start, const CCPoint &end, const bool outline=false);
 extern void CCRenderSquare(const CCVector3 &start, const CCVector3 &end);
 extern void CCRenderSquareYAxisAligned(const CCVector3 &start, const CCVector3 &end);
 extern void CCRenderSquarePoint(const CCPoint &position, const float &size);
 extern void CCRenderRectanglePoint(const CCPoint &position, const float &sizeX, const float &sizeY, const bool outline=false);
 
 extern void CCRenderLine(const CCVector3 &start, const CCVector3 &end);
-extern void CCRenderLineTarget();
 extern void CCRenderCube(const bool outline);
 extern void CCRenderCubeMinMax(const CCVector3 min, const CCVector3 max, const bool outline);
 
 // Shader functions
 //-----------------
 extern void CCSetColour(const CCColour &colour);
-extern const bool CCColourHasAlpha();
+extern const CCColour& CCGetColour();
 
 extern void CCSetTexCoords(const float *inUVs);
 extern void CCDefaultTexCoords();
+extern void CCInverseTexCoords();
 
 extern void CCSetViewMatrix();
 extern void CCRefreshRenderAttributes();

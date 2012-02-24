@@ -1,7 +1,7 @@
 # CCRELEASE: Remove for release
 debug:DEFINES += DEBUGON
 
-QT              += opengl network webkit script phonon
+QT              += opengl network webkit network script phonon
 TARGET 		 = 2c
 TEMPLATE 	 = app
 
@@ -30,6 +30,7 @@ SOURCES 	+=  \
 \
                 ../../Engine/Source/AI/CCControllerMovement.cpp \
                 ../../Engine/Source/AI/CCInterpolators.cpp \
+                ../../Engine/Source/AI/CCPathFinderNetwork.cpp \
 \
                 ../../Engine/Source/Objects/CCRenderable.cpp \
                 ../../Engine/Source/Objects/CCSceneCollideable.cpp \
@@ -37,8 +38,10 @@ SOURCES 	+=  \
                 ../../Engine/Source/Objects/CCSceneObject.cpp \
                 ../../Engine/Source/Objects/CCTile3D.cpp \
                 ../../Engine/Source/Objects/CCTile3DButton.cpp \
+                ../../Engine/Source/Objects/CCTile3DFrameBuffer.cpp \
                 ../../Engine/Source/Objects/CCTile3DScrollBar.cpp \
 \
+                ../../Engine/Source/Rendering/CCFrameBufferManager.cpp \
                 ../../Engine/Source/Rendering/CCMatrix.cpp \
                 ../../Engine/Source/Rendering/CCModel3ds.cpp \
                 ../../Engine/Source/Rendering/CCModelBase.cpp \
@@ -134,6 +137,7 @@ HEADERS  	+= \
 \
                 ../../Engine/Source/AI/CCControllerMovement.h \
                 ../../Engine/Source/AI/CCInterpolators.h \
+                ../../Engine/Source/AI/CCPathFinderNetwork.h \
 \
                 ../../Engine/Source/Objects/CCObjects.h \
                 ../../Engine/Source/Objects/CCRenderable.h \
@@ -142,8 +146,10 @@ HEADERS  	+= \
                 ../../Engine/Source/Objects/CCSceneObject.h \
                 ../../Engine/Source/Objects/CCTile3D.h \
                 ../../Engine/Source/Objects/CCTile3DButton.h \
+                ../../Engine/Source/Objects/CCTile3DFrameBuffer.h \
                 ../../Engine/Source/Objects/CCTile3DScrollBar.h \
 \
+                ../../Engine/Source/Rendering/CCFrameBufferManager.h \
                 ../../Engine/Source/Rendering/CCMatrix.h \
                 ../../Engine/Source/Rendering/CCModel3ds.h \
                 ../../Engine/Source/Rendering/CCModelBase.h \
@@ -188,7 +194,7 @@ HEADERS  	+= \
                 ../../Engine/Source/UI/CCWidgets.h \
 \
                 ../../External/3dsloader/3dsloader.h \
-                ../../External/3dsloader/3dsobject.h \
+                ../../External/3dsloader/3dsvect.h \
 \
                 ../../External/jansson-2.1/src/hashtable.h \
                 ../../External/jansson-2.1/src/jansson_config.h \
@@ -232,8 +238,7 @@ win32:{\
 macx:{
 
     copyfiles.commands += mkdir -p ./2c.app/Contents/MacOS/ &
-    copyfiles.commands += mkdir -p ./2c.app/Contents/MacOS/cache/api/ &
-    copyfiles.commands += mkdir -p ./2c.app/Contents/MacOS/cache/photos/ &
+    copyfiles.commands += mkdir -p ./2c.app/Contents/MacOS/cache/ &
 
     copyfiles.commands += cp -r ../../Engine/Resources/ ./2c.app/Contents/MacOS/Resources/ &
     copyfiles.commands += cp -r ../../App/Resources/ ./2c.app/Contents/MacOS/Resources/ &

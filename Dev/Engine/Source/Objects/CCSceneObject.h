@@ -44,15 +44,15 @@ public:
 
     virtual const bool shouldCollide(CCSceneCollideable *collideWith, const bool initialCall);
 
-    virtual void update(const CCTime &gameTime);
+    virtual const bool update(const CCTime &time);
+    virtual void renderObject(const CCCameraBase *camera, const bool alpha);
     virtual void render(const bool alpha);
-    virtual void renderModels(const bool alpha);
 
     const bool isTransparent() { return transparent; }
     void setTransparent(const bool toggle=true);
     void setTransparentParent(const bool toggle=true);
 
-    bool enabled;
+    bool enabled;               // Ambigious: Currently controls if collision handing for line checks are enabled
     CCSceneBase *inScene;
     uint deleteMe;
 

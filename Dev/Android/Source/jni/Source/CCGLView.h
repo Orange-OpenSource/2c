@@ -36,12 +36,11 @@ public:
 		pthread_mutex_init( &engineThreadMutex, &engineThreadMutexType );
 
     	width = height = 0.0f;
-    	runningGame = paused = engineThreadRunning = false;
     }
 
     ~CCGLView()
     {
-        ASSERT( runningGame == false );
+        ASSERT( gEngine == NULL );
     	pthread_mutex_destroy( &engineThreadMutex );
         pthread_mutexattr_destroy( &engineThreadMutexType );
     }
@@ -56,7 +55,6 @@ public:
     const float getHeight() { return height; }
 
 public:
-    bool runningGame, paused, engineThreadRunning;
     JNIEnv *jniEnv;
     jobject jniObj;
 

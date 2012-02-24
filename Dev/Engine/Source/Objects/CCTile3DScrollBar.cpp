@@ -14,11 +14,12 @@
 
 
 CCTile3DScrollBar::CCTile3DScrollBar(CCSceneBase *scene) :
-    CCTile3DButton( scene, 0.0f, 0.0f, NULL )
+    CCTile3DButton( scene )
 {
     // Draw on top of other objects
     drawOrder = 202;
-    setBaseColour( CCColour( 0.25f, 0.0f ) );
+    
+    setTileColour( CCColour( 0.25f, 0.0f ), true );
 }
 
 
@@ -28,13 +29,13 @@ void CCTile3DScrollBar::destruct()
 }
 
 
-void CCTile3DScrollBar::update(const CCTime &gameTime)
+const bool CCTile3DScrollBar::update(const CCTime &time)
 {
-    super::update( gameTime );
+    return super::update( time );
 }
 
 
-const uint CCTile3DScrollBar::handleProjectedTouch(const CCCameraProjectionResults &cameraProjectionResults,
+const bool CCTile3DScrollBar::handleProjectedTouch(const CCCameraProjectionResults &cameraProjectionResults,
                                                    const CCSceneCollideable *hitObject, 
                                                    const CCVector3 &hitPosition,
                                                    const CCScreenTouches &touch, 
@@ -55,7 +56,7 @@ void CCTile3DScrollBar::resize(const float cameraY, const float cameraWidth, con
 
     const float viewPercentage = cameraHeight / sceneHeight;
     const float scrollBarHeight = viewPercentage * cameraHeight;
-    setupBase( 1.0f, scrollBarHeight );
+    setTileSize( 1.0f, scrollBarHeight );
 
     reposition( cameraY, cameraWidth, cameraHeight );
 }
@@ -87,13 +88,13 @@ void CCTile3DScrollBar::moved()
         tile->unHighlight();
              
     )
-    colourInterpolator.setTargetAlpha( 0.85f, new ColourCallback( this ) );
-    colourInterpolator.setDuration( 0.1f );
+    tileColourInterpolator.setTargetAlpha( 0.85f, new ColourCallback( this ) );
+    tileColourInterpolator.setDuration( 0.1f );
 }
 
 
 void CCTile3DScrollBar::unHighlight()
 {
-    colourInterpolator.setTargetAlpha( 0.0f );
-    colourInterpolator.setDuration( 2.0f );
+    tileColourInterpolator.setTargetAlpha( 0.0f );
+    tileColourInterpolator.setDuration( 2.0f );
 }

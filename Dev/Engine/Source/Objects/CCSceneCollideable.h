@@ -30,13 +30,14 @@ public:
 	virtual void removeFromScene();
 	virtual void deactivate();
 	virtual const bool shouldCollide(CCSceneCollideable *collideWith, const bool initialCall);
-    virtual void renderModels(const bool alpha);
+    virtual void render(const bool alpha);
 	
 	void renderCollisionBox();
 	
 	void setHSquareCollisionBounds(const float hSize);
 	void setHSquareCollisionBounds(const float hWidth, const float hHeight);
 	void setHCollisionBounds(const float hWidth, const float hHeight, const float hDepth);
+	void setCollisionBounds(const float width, const float height, const float depth);
 	
 	// Ask to report a collision to the collidedWith object
 	virtual CCSceneCollideable* requestCollisionReport(CCSceneCollideable *collidedWith);

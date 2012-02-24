@@ -30,15 +30,15 @@ public:
 	virtual ~CCDeviceRenderer();
 	
 	void clear();
-	void render();
+	void resolve();
 	
 private:
 	const bool linkProgram(GLuint prog);
     const int getShaderUniformLocation(const char *name);
     const bool loadShader(CCShader *shader);
+    
     virtual const bool createContext();
-	const bool createFrameBuffer();
-	void destroyFrameBuffer();
+	const bool createDefaultFrameBuffer(CCFrameBufferObject &fbo);
     
     void refreshScreenSize();
 	

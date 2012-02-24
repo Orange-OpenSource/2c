@@ -17,6 +17,7 @@
 
 #define CC_SMALLFLOAT 0.01f
 #define CC_PI (float)M_PI
+const float CC_PI2 = CC_PI*CC_PI;
 const float CC_HPI = CC_PI * 0.5f;
 
 #define CC_DEGREES_TO_RADIANS(__ANGLE__) ( CC_PI * (__ANGLE__) / 180.0f )
@@ -34,6 +35,7 @@ extern const float CCRandomDualFloat();
 extern const int CCRandomDualInt();
 extern void CCSwapFloat(float &a, float &b);
 extern void CCClampFloat(float &value, const float min, const float max);
+extern void CCClampInt(int &value, const int min, const int max);
 inline const bool CCToTarget(float &value, const float target, const float amount)
 {
     if( value != target )

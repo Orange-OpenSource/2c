@@ -19,16 +19,23 @@
 
 #import "CCDefines.h"
 
+struct ThreadMutex
+{
+    ThreadMutex();
+    ~ThreadMutex();
+    
+	pthread_mutex_t mutex;
+    pthread_mutexattr_t type;
+};
+
 @class CCGLView;
 extern CCGLView *gView;
 
 @interface CCGLView : UIView 
 {	
 @public
-	bool runningGame, paused, engineThreadRunning;
-	pthread_mutex_t engineThreadMutex;
-    pthread_mutexattr_t engineThreadMutexType;
-	
+    ThreadMutex *nativeThreadMutex;
+    ThreadMutex *jobsThreadMutex;
 	NSTimer *updateTimer;
 }
 

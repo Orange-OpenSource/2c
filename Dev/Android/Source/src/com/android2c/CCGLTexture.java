@@ -51,7 +51,7 @@ public class CCGLTexture
 			int dotIndex = filename.lastIndexOf( '.' );
 			
 			final String pureFilename = ( dotIndex > 0 ) ? filename.substring( 0, dotIndex ) : filename;  
-			int id = CCJNI.activity.getResources().getIdentifier( pureFilename, "drawable", "com.android2c" );
+			int id = CCJNI.activity.getResources().getIdentifier( pureFilename, "drawable", CCJNI.packageName );
 	
 	        try 
 	        {

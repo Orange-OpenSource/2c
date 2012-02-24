@@ -34,19 +34,26 @@ public:
     void deleteLinkedScenesLater();
     inline const bool shouldDelete() { return deleteMe; }
 	
-    virtual const bool handleControls(const CCTime &gameTime);
+    // Called by the Engine to let the scene fetch and handle the controls
+    virtual const bool updateControls(const CCTime &time);
+    
+    // Called by updateControls or a user object perhaps rendering the scene in a frame buffer with specific touches to handle the controls with
+    virtual const bool handleTouches(const CCScreenTouches &touch1, const CCScreenTouches &touch2, const CCTime &time) { return false; }
+    
     virtual const bool handleBackButton() { return false; }
-	void update(const CCTime &gameTime);
+    
+	const bool update(const CCTime &time);
+    const bool updateTask(const CCTime &time);
     
 protected:
-    virtual void updateScene(const CCTime &gameTime);
-    virtual void updateCamera(const CCTime &gameTime);
+    virtual const bool updateScene(const CCTime &time);
+    virtual const bool updateCamera(const CCTime &time);
 	
 public:
     virtual const bool render(const CCCameraBase *inCamera, const int pass, const bool alpha);
     
 protected:
-    virtual void renderObjects(const int pass, const bool alpha);
+    virtual void renderObjects(const CCCameraBase *inCamera, const int pass, const bool alpha);
     
 public:
 	// For sorted objects, we get passed the object to draw here

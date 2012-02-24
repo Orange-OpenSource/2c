@@ -12,13 +12,14 @@
 #include "CCDefines.h"
 #include "CCControls.h"
 #include "CCDeviceControls.h"
+#include "CCViewManager.h"
 
 
 const CCPoint CCScreenTouches::averageLastDeltas() const
 {
     CCPoint averageDeltas;
     int numberOfDeltas = 0;
-    const float lifetime = gEngine->gameTime.lifetime;
+    const float lifetime = gEngine->time.lifetime;
     for( int i=0; i<max_last_deltas; ++i )
     {
         const TimedDelta &lastDelta = lastDeltas[i];
@@ -43,9 +44,15 @@ const CCPoint CCScreenTouches::averageLastDeltas() const
 }
 
 
+
+CCPoint CCControls::touchMovementThreashold;
+
+
 CCControls::CCControls()
 {
     inUse = false;
+    
+    RefreshTouchMovementThreashold();
 }
 
 
@@ -54,42 +61,47 @@ void CCControls::render()
 }
 
 
-void CCControls::update(const CCTime &gameTime)
+void CCControls::update(const CCTime &time)
 {
 	for( uint i=0; i<numberOfTouches; ++i )
 	{
-        CCScreenTouches &screenTouch = screenTouches[i];
-        if( screenTouch.usingTouch != NULL )
-		{
-            screenTouch.timeHeld += gameTime.real;
-		}
-		
-        if( screenTouch.lastTouch != NULL )
-		{
-            if( screenTouch.usingTouch != NULL )
-            {
-                screenTouch.usingTouch = NULL;
-            }
-            else
-            {
-                screenTouch.lastTouch = NULL;
-            }
-		}
-		else
-		{
-            screenTouch.lastTimeReleased += gameTime.real;
-		}
-
-		for( uint j=1; j<CCScreenTouches::max_last_deltas; ++j )
-		{
-            screenTouch.lastDeltas[j] = screenTouch.lastDeltas[j-1];
-		}
-        screenTouch.lastDeltas[0].time = gameTime.lifetime;
-        screenTouch.lastDeltas[0].delta = screenTouch.delta;
-		
-        screenTouch.delta.x = 0.0f;
-        screenTouch.delta.y = 0.0f;
+        UpdateTouch( screenTouches[i], time );
 	}
+}
+
+
+void CCControls::UpdateTouch(CCScreenTouches &touch, const CCTime &time)
+{
+    if( touch.usingTouch != NULL )
+    {
+        touch.timeHeld += time.real;
+    }
+    
+    if( touch.lastTouch != NULL )
+    {
+        if( touch.usingTouch != NULL )
+        {
+            touch.usingTouch = NULL;
+        }
+        else
+        {
+            touch.lastTouch = NULL;
+        }
+    }
+    else
+    {
+        touch.lastTimeReleased += time.real;
+    }
+    
+    for( uint j=1; j<CCScreenTouches::max_last_deltas; ++j )
+    {
+        touch.lastDeltas[j] = touch.lastDeltas[j-1];
+    }
+    touch.lastDeltas[0].time = time.lifetime;
+    touch.lastDeltas[0].delta = touch.delta;
+    
+    touch.delta.x = 0.0f;
+    touch.delta.y = 0.0f;
 }
 
 
@@ -101,139 +113,136 @@ void CCControls::unTouch(void *touch)
         CCScreenTouches &screenTouch = screenTouches[i];
 		if( screenTouch.usingTouch == uiTouch )
         {
-            CCEngineThreadLock();
+            CCNativeThreadLock();
             screenTouch.lastTouch = uiTouch;
 			
 			screenTouch.lastTimeReleased = 0.0f;
 			screenTouch.lastTotalDelta = screenTouch.totalDelta;
-            CCEngineThreadUnlock();
+            CCNativeThreadUnlock();
 		}
 	}
 }
 
 
-const bool CCControls::detectZoomTouch()
+const bool CCControls::DetectZoomGesture(const CCScreenTouches &touch1, const CCScreenTouches &touch2)
 {
-	if( screenTouches[0].delta.x != 0.0f || 
-	    screenTouches[0].delta.y != 0.0f ||	
-	    screenTouches[1].delta.x != 0.0f ||
-	    screenTouches[1].delta.y != 0.0f )
-	{	
-		// If our x's are opposite
-		if( screenTouches[0].delta.x > 0.0f )
-		{
-			if( screenTouches[1].delta.x < 0.0f )
-			{
+    if( touch1.delta.x != 0.0f || touch1.delta.y != 0.0f ||
+        touch2.delta.x != 0.0f || touch2.delta.y != 0.0f )
+    {
+        const CCScreenTouches *topTouch = &touch1,
+        *bottomTouch = &touch2;
+        if( touch1.position.y < touch2.position.y )
+        {
+            topTouch = &touch2;
+            bottomTouch = &touch1;
+        }
+        const CCScreenTouches *rightTouch = &touch1,
+        *leftTouch = &touch2;
+        if( touch1.position.x < touch2.position.x )
+        {
+            rightTouch = &touch2;
+            leftTouch = &touch1;
+        }
+        
+        if( leftTouch->totalDelta.x < 0.0f && rightTouch->totalDelta.x > 0.0f )
+        {
+            const float total = -leftTouch->totalDelta.x + rightTouch->totalDelta.x;
+            if( total > touchMovementThreashold.x * 2.0f )
+            {
                 return true;
-			}
-		}
-		else if( screenTouches[0].delta.x < 0.0f )
-		{
-			if( screenTouches[1].delta.x > 0.0f )
-			{
+            }
+        }
+        else if( leftTouch->totalDelta.x > 0.0f && rightTouch->totalDelta.x < 0.0f )
+        {
+            const float total = leftTouch->totalDelta.x + -rightTouch->totalDelta.x;
+            if( total > touchMovementThreashold.x * 2.0f )
+            {
                 return true;
-			}
-		}
-		
-		// Find out the position of our touches
-		CCScreenTouches *topTouch = &screenTouches[0],
-                     *bottomTouch = &screenTouches[1];
-		if( screenTouches[0].position.y < screenTouches[1].position.y )
-		{
-			topTouch = &screenTouches[1];
-			bottomTouch = &screenTouches[0];
-		}
-		
-		if( topTouch->delta.y > 0.0f )
-		{
-			if( bottomTouch->delta.y < 0.0f )
-			{
-				if( topTouch->delta.x > 0.0f )
-				{
-					if( bottomTouch->delta.x < 0.0f )
-					{
-                        return true;
-					}
-				}
-				else if( topTouch->delta.x < 0.0f )
-				{
-					if( bottomTouch->delta.x > 0.0f )
-					{
-                        return true;
-					}
-				}
-			}
-		}
-		else if( topTouch->delta.y < 0.0f )
-		{
-			if( bottomTouch->delta.y > 0.0f )
-			{
-				if( topTouch->delta.x > 0.0f )
-				{
-					if( bottomTouch->delta.x < 0.0f )
-					{
-                        return true;
-					}
-				}
-				else if( topTouch->delta.x < 0.0f )
-				{
-					if( bottomTouch->delta.x > 0.0f )
-					{
-                        return true;
-					}
-				}
-			}
-		}
-		
-		float combinedHorizontalDelta = 0.0f;
-		if( topTouch->delta.x > 0.0f || bottomTouch->delta.x > 0.0f )
-		{
-			combinedHorizontalDelta += topTouch->delta.x;
-			combinedHorizontalDelta += bottomTouch->delta.x;
-		}
-		else
-		{
-			combinedHorizontalDelta += -topTouch->delta.x;
-			combinedHorizontalDelta += -bottomTouch->delta.x;
-		}
-
-		float combinedVerticalDelta = 0.0f;
-		if( screenTouches[0].delta.y > 0.0f )
-		{
-			combinedVerticalDelta += screenTouches[0].delta.y;
-			combinedVerticalDelta += -screenTouches[1].delta.y;
-		}
-		else if( screenTouches[0].delta.y < 0.0f )
-		{
-			combinedVerticalDelta += -screenTouches[0].delta.y;
-			combinedVerticalDelta += screenTouches[1].delta.y;
-		}
-		else if( screenTouches[1].delta.y > 0.0f )
-		{
-			combinedVerticalDelta += screenTouches[1].delta.y;
-			combinedVerticalDelta += -screenTouches[0].delta.y;
-		}
-		else if( screenTouches[1].delta.y < 0.0f )
-		{
-			combinedVerticalDelta += -screenTouches[1].delta.y;
-			combinedVerticalDelta += screenTouches[0].delta.y;
-		}
-		
-		if( combinedVerticalDelta > combinedHorizontalDelta )
-		{
-            return true;
-		}
-	}
+            }
+        }
+        
+        if( bottomTouch->totalDelta.y < 0.0f && topTouch->totalDelta.y > 0.0f )
+        {
+            const float total = -bottomTouch->totalDelta.x + topTouch->totalDelta.x;
+            if( total > touchMovementThreashold.y * 2.0f )
+            {
+                return true;
+            }
+        }
+        else if( bottomTouch->totalDelta.y > 0.0f && topTouch->totalDelta.y < 0.0f )
+        {
+            const float total = bottomTouch->totalDelta.y + -topTouch->totalDelta.y;
+            if( total > touchMovementThreashold.y * 2.0f )
+            {
+                return true;
+            }
+        }
+    }
 	
     return false;
 }
 
 
-const bool CCControls::touchActionMoving(const CCTouchAction touchAction)
+const bool CCControls::DetectRotateGesture(const CCScreenTouches &touch1, const CCScreenTouches &touch2)
+{
+    if( touch1.delta.x != 0.0f || touch1.delta.y != 0.0f ||
+        touch2.delta.x != 0.0f || touch2.delta.y != 0.0f )
+    {
+        const float absX1 = fabsf( touch1.totalDelta.x );
+        const float absX2 = fabsf( touch2.totalDelta.x );
+        const float absY1 = fabsf( touch1.totalDelta.y );
+        const float absY2 = fabsf( touch2.totalDelta.y );
+        if( absX1 > absY1 && absX2 > absY2 )
+        {
+            if( touch1.totalDelta.x > touchMovementThreashold.x && touch2.totalDelta.x > touchMovementThreashold.x )
+            {
+                return true;
+            }
+
+            if( touch1.totalDelta.x < -touchMovementThreashold.x && touch2.totalDelta.x < -touchMovementThreashold.x )
+            {
+                return true;
+            }
+        }
+        else if( absY1 > absX1 && absY2 > absX2 )
+        {
+            if( touch1.totalDelta.y > touchMovementThreashold.y && touch2.totalDelta.y > touchMovementThreashold.y )
+            {
+                return true;
+            }
+            
+            if( touch1.totalDelta.y < -touchMovementThreashold.y && touch2.totalDelta.y < -touchMovementThreashold.y )
+            {
+                return true;
+            }
+        }
+    }
+    
+    return false;
+}
+
+
+const bool CCControls::TouchActionMoving(const CCTouchAction touchAction)
 {
     if( touchAction >= touch_movingHorizontal && touchAction <= touch_moving )
     {
         return true;
     }
     return false;
+}
+
+
+void CCControls::RefreshTouchMovementThreashold()
+{
+    const float pixels = 3.0f;
+    if( CCViewManager::IsPortrait() )
+    {
+        touchMovementThreashold.x = pixels * gEngine->renderer->getInverseScreenSize().width;
+        touchMovementThreashold.y = pixels * gEngine->renderer->getInverseScreenSize().height;
+    }
+    else
+    {
+        touchMovementThreashold.x = pixels * gEngine->renderer->getInverseScreenSize().height;
+        touchMovementThreashold.y = pixels * gEngine->renderer->getInverseScreenSize().width;
+    }
 }

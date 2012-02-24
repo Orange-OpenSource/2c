@@ -227,7 +227,7 @@ public:
         list[index] = object;
     }
     
-    const int find(const T *object)
+    const int find(const void *object)
     {
         for( int i=0; i<length; ++i )
         {
@@ -237,6 +237,12 @@ public:
             }
         }
         return -1;
+    }
+    
+    T* first()
+    {
+        ASSERT( length > 0 );
+        return list[0];
     }
     
     T* last()
@@ -359,6 +365,7 @@ struct CCText : CCData
     static void SetLastWord(const char *inBuffer, CCText &outText);
 
     void replaceChar(const char search, const char replace);
+    void replaceChars(const char *token, const char *replace);
 
     // Set the text to be the value between the split tokens
     void splitBetween(CCText &source, const char *from, const char *to);

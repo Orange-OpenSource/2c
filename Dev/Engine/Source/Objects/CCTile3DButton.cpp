@@ -21,11 +21,9 @@ CCTile3DButton::CCTile3DButton(CCSceneBase *scene)
 }
 
 
-CCTile3DButton::CCTile3DButton(CCSceneBase *scene, const float width, const float height, const char *text)
+void CCTile3DButton::setupTile(const float width, const float height, const char *text)
 {
-    construct( scene );
-    
-    setupBase( width, height );
+    setTileSize( width, height );
     
     if( text )
     {
@@ -34,23 +32,30 @@ CCTile3DButton::CCTile3DButton(CCSceneBase *scene, const float width, const floa
 }
 
 
-CCTile3DButton::CCTile3DButton(CCSceneBase *scene, const float width, const char *textureName)
+void CCTile3DButton::setupTextured(const float width, const char *textureName)
 {
-    construct( scene );
-    
     const CCTextureBase *texture = gEngine->textureManager->getTexture( textureName, Resource_Packaged );
     const float aspectRatio = texture->getImageWidth() / texture->getImageHeight();
     const float height = width / aspectRatio;
-    setupBase( width, height );
+    setTileSize( width, height );
 
-    setBaseTexture( textureName, Resource_Packaged );
+    setTileTexture( textureName, Resource_Packaged );
 }
 
 
-CCTile3DButton::CCTile3DButton(CCSceneBase *scene, const char *text, const float height, const bool centered)
+void CCTile3DButton::setupTexturedHeight(const float height, const char *textureName)
 {
-    construct( scene );
+    const CCTextureBase *texture = gEngine->textureManager->getTexture( textureName, Resource_Packaged );
+    const float aspectRatio = texture->getImageWidth() / texture->getImageHeight();
+    const float width = height * aspectRatio;
+    setTileSize( width, height );
     
+    setTileTexture( textureName, Resource_Packaged );
+}
+
+
+void CCTile3DButton::setupText(const char *text, const float height, const bool centered)
+{
     textModel->setText( text, height );
     
     const float width = textModel->getWidth();
@@ -68,7 +73,7 @@ CCTile3DButton::CCTile3DButton(CCSceneBase *scene, const char *text, const float
 
 void CCTile3DButton::construct(CCSceneBase *scene)
 {
-    AddFlag( collideableType, collision_ui );
+    CCAddFlag( collideableType, collision_ui );
 
     if( scene != NULL )
     {
@@ -80,23 +85,24 @@ void CCTile3DButton::construct(CCSceneBase *scene)
     
     model = new CCModelBase();
     
-    baseModel = new CCModelBase();
-    model->addModel( baseModel );
-    setBaseColour( CCColour() );
-    colourInterpolator.setDuration( 0.5f );
-    baseSquare = NULL;
+    tileModel = new CCModelBase();
+    model->addModel( tileModel );
+    setTileColour( CCColour(), true );
+    tileColourInterpolator.setDuration( 0.5f );
+    tileSquare = NULL;
     
+    // Use an object to ensure the model is rendered in the transparent pass
+    textObject = new CCSceneObject();
     textModel = new CCModelText( this );
+    textObject->model = textModel;
+    addChild( textObject );
+    textObject->setTransparent( true );
     
     allowTouchRotation( false );
     touchRotationMagnitude = 0.0f;
     touchRotationSpeed = 1.0f;
     
-    if( scale == NULL )
-    {
-        CCVector3FillPtr( &scale, 0.0f, 0.0f, 1.0f );
-    }
-    scaleInterpolator.setup( scale, 1.0f );
+    setTileScale( CCVector3( 1.0f ), false );
 
     allowTouchMovement( false );
 
@@ -110,10 +116,6 @@ void CCTile3DButton::construct(CCSceneBase *scene)
 
 void CCTile3DButton::destruct()
 {
-    onPress.deleteObjectsAndList();
-    onRelease.deleteObjectsAndList();
-    onLoss.deleteObjectsAndList();
-
     super::destruct();
 }
 
@@ -141,6 +143,11 @@ void CCTile3DButton::refreshModelMatrix()
             CCMatrixRotate( modelMatrix, rotation.y, 0.0f, 1.0f, 0.0f );
         }
         
+        if( rotation.z != 0.0f )
+        {
+            CCMatrixRotate( modelMatrix, rotation.z, 0.0f, 0.0f, 1.0f );
+        }
+        
 		if( touchRotationMagnitude != 0.0f )
         {
             CCMatrixRotate( modelMatrix, touchRotationMagnitude * 20.0f, 1.0f, 0.0f, 0.0f );
@@ -153,13 +160,13 @@ void CCTile3DButton::refreshModelMatrix()
 
 
 // CCSceneObject
-void CCTile3DButton::update(const CCTime &gameTime)
+const bool CCTile3DButton::update(const CCTime &time)
 {
-    super::update( gameTime );
+    bool updated = super::update( time );
 
     if( scale != NULL )
     {
-        const float speed = gameTime.delta * 1.0f;
+        const float speed = time.delta * 1.0f;
         if( scaleInterpolator.update( speed ) )
         {
             dirtyModelMatrix();
@@ -168,120 +175,166 @@ void CCTile3DButton::update(const CCTime &gameTime)
         {
             DELETE_POINTER( scale );
         }
+        
+        updated = true;
     }
 
     // Touch depress: On update
     if( touchDepressRange > 0.0f )
     {
-        if( touchDepressInterpolator.update( gameTime.delta ) )
+        if( touchDepressInterpolator.update( time.delta ) )
         {
             dirtyModelMatrix();
+            updated = true;
         }
     }
 
     if( touchRotationAllowed )
     {
         const float speed = touching || touchReleased ? 3.0f : touchRotationSpeed;
-        if( touchRotationInterpolator.update( gameTime.delta * speed ) )
+        if( touchRotationInterpolator.update( time.delta * speed ) )
         {
             const float magnitudeSquared = rotation.x * rotation.x + rotation.y * rotation.y;
             touchRotationMagnitude = sqrtf( magnitudeSquared );
             touchRotationMagnitude = MIN( touchRotationMagnitude, 1.0f );
 
             dirtyModelMatrix();
+            updated = true;
         }
     }
 
     if( touching )
     {
-        touchingTime += gameTime.real;
+        touchingTime += time.real;
     }
     else if( touchReleased )
     {
         if( touchDepressInterpolator.finished() && touchRotationInterpolator.finished() )
         {
             handleTouchRelease();
+            updated = true;
         }
     }
 
-    colourInterpolator.update( gameTime.delta );
+    updated |= tileColourInterpolator.update( time.delta );
 
     if( textModel != NULL )
     {
-        textModel->colourInterpolator.update( gameTime.delta );
+        updated |= textModel->update( time.delta );
     }
+    
+    return updated;
 }
 
 
-void CCTile3DButton::renderModels(const bool alpha)
+void CCTile3DButton::render(const bool alpha)
 {
     if( alpha )
     {
         if( renderDepth )
         {
-            glEnable( GL_DEPTH_TEST );
-            super::renderModels( alpha );
-            glDisable( GL_DEPTH_TEST );
+            GLEnableDepth();
+            super::render( alpha );
+            GLDisableDepth();
         }
         else
         {
-            super::renderModels( alpha );
+            super::render( alpha );
         }
     }
     else
     {
         if( renderDepth )
         {
-            super::renderModels( alpha );
+            super::render( alpha );
         }
         else
         {
-            glDisable( GL_DEPTH_TEST );
-            super::renderModels( alpha );
-            glEnable( GL_DEPTH_TEST );
+            GLDisableDepth();
+            super::render( alpha );
+            GLEnableDepth();
             
         }
     }
 }
 
 
-void CCTile3DButton::setupBase(const float width, const float height)
+void CCTile3DButton::setTileSize(const float width, const float height)
 {
-    if( baseSquare == NULL )
+    if( tileSquare == NULL )
     {
-        baseSquare = new CCPrimitiveSquare();
-        baseModel->addPrimitive( baseSquare );
+        tileSquare = new CCPrimitiveSquare();
+        tileModel->addPrimitive( tileSquare );
     }
 
     const float hWidth = width * 0.5f;
     const float hHeight = height * 0.5f;
     setHCollisionBounds( hWidth, hHeight, CC_SMALLFLOAT );
-    baseSquare->setupZFacing( collisionBounds.x, collisionBounds.y );
     CCUpdateCollisions( this );
+    
+    tileSquare->setupZFacing( collisionBounds.x, collisionBounds.y );
 }
 
 
-void CCTile3DButton::setBaseTexture(const char *name, const CCResourceType resourceType)
+void CCTile3DButton::setTileTexture(const char *name, const CCResourceType resourceType)
 {
-    baseSquare->setTexture( name, resourceType );
+    tileSquare->setTexture( name, resourceType );
 }
 
 
-void CCTile3DButton::setBaseColour(const CCColour &inColour)
+void CCTile3DButton::setTileColour(const CCColour &inColour, const bool immediatley)
 {
-    baseModel->setColour( inColour );
-    colourInterpolator.setup( baseModel->getColour(), *baseModel->getColour() );
+    if( tileModel == NULL )
+    {
+        setTileSize( 0.0f, 0.0f );
+    }
+    
+    if( immediatley )
+    {
+        tileModel->setColour( inColour );
+        tileColourInterpolator.setup( tileModel->getColour(), *tileModel->getColour() );
+    }
+    else 
+    {
+        tileColourInterpolator.setup( tileModel->getColour(), inColour );
+    }
 }
 
 
-void CCTile3DButton::setBaseColourAlpha(const float inAlpha)
+void CCTile3DButton::setTileColourAlpha(const float inAlpha, const bool immediatley)
 {
-    baseModel->setColourAlpha( inAlpha );
-    colourInterpolator.setup( baseModel->getColour(), *baseModel->getColour() );
+    if( immediatley )
+    {
+        tileModel->setColourAlpha( inAlpha );
+        tileColourInterpolator.setup( tileModel->getColour(), *tileModel->getColour() );
+    }
+    else 
+    {
+        tileColourInterpolator.setTargetAlpha( inAlpha );
+    }
 }
 
 
-const uint CCTile3DButton::handleProjectedTouch(const CCCameraProjectionResults &cameraProjectionResults,
+void CCTile3DButton::setTileScale(const CCVector3 inScale, const bool immediatley)
+{
+    if( scale == NULL )
+    {
+        CCVector3FillPtr( &scale, 0.0f, 0.0f, 1.0f );
+    }
+    
+    if( immediatley )
+    {
+        *scale = inScale;
+        scaleInterpolator.setup( scale, *scale );
+    }
+    else 
+    {
+        scaleInterpolator.setup( scale, inScale );
+    }
+}
+
+
+const bool CCTile3DButton::handleProjectedTouch(const CCCameraProjectionResults &cameraProjectionResults,
                                                 const CCSceneCollideable *hitObject, 
                                                 const CCVector3 &hitPosition,
                                                 const CCScreenTouches &touch, 
@@ -293,7 +346,7 @@ const uint CCTile3DButton::handleProjectedTouch(const CCCameraProjectionResults 
     }
 
     if( hitObject == this && 
-        ( touchAction == touch_pressed || ( touchMovementAllowed && CCControls::touchActionMoving( touchAction ) ) ) )
+        ( touchAction == touch_pressed || ( touchMovementAllowed && CCControls::TouchActionMoving( touchAction ) ) ) )
     {
         if( touching == false )
         {
@@ -316,10 +369,10 @@ const uint CCTile3DButton::handleProjectedTouch(const CCCameraProjectionResults 
                 relativeHitPosition.y = hitPosition.y - position.y;
                 float x = relativeHitPosition.x / collisionBounds.x;
                 float y = relativeHitPosition.y / collisionBounds.y;
-                touchActionPressed( x, y, touchAction );
+                touchActionPressed( x, y, touch, touchAction );
             }
         }
-        else if( touchMovementAllowed && CCControls::touchActionMoving( touchAction ) )
+        else if( touchMovementAllowed && CCControls::TouchActionMoving( touchAction ) )
         {
             if( hitObject != this )
             {
@@ -332,7 +385,7 @@ const uint CCTile3DButton::handleProjectedTouch(const CCCameraProjectionResults 
                 relativeHitPosition.y = hitPosition.y - position.y;
                 float x = relativeHitPosition.x / collisionBounds.x;
                 float y = relativeHitPosition.y / collisionBounds.y;
-                touchActionPressed( x, y, touchAction );
+                touchActionPressed( x, y, touch, touchAction );
             }
         }
         else
@@ -344,7 +397,7 @@ const uint CCTile3DButton::handleProjectedTouch(const CCCameraProjectionResults 
                 {
                     const float absDeltaX = fabsf( touch.totalDelta.x );
                     const float absDeltaY = fabsf( touch.totalDelta.y );
-                    if( absDeltaX > CC_TOUCH_TO_MOVEMENT_THRESHOLD || absDeltaY > CC_TOUCH_TO_MOVEMENT_THRESHOLD )
+                    if( absDeltaX > CCControls::GetTouchMovementThreashold().x || absDeltaY > CCControls::GetTouchMovementThreashold().y )
                     {
                         return handleProjectedTouch( cameraProjectionResults, hitObject, hitPosition, touch, touch_lost );
                     }
@@ -356,7 +409,7 @@ const uint CCTile3DButton::handleProjectedTouch(const CCCameraProjectionResults 
                 relativeHitPosition.y = hitPosition.y - position.y;
                 float x = relativeHitPosition.x / collisionBounds.x;
                 float y = relativeHitPosition.y / collisionBounds.y;
-                touchActionPressed( x, y, touch_pressed );
+                touchActionPressed( x, y, touch, touch_pressed );
             }
 
             touching = false;
@@ -364,16 +417,16 @@ const uint CCTile3DButton::handleProjectedTouch(const CCCameraProjectionResults 
             
             if( touchAction == touch_released )
             {
-                return 2;
+                return true;
             }
         }
     }
     
-    return 0;
+    return false;
 }
 
 
-void CCTile3DButton::touchActionPressed(const float x, const float y, const CCTouchAction touchAction)
+void CCTile3DButton::touchActionPressed(const float x, const float y, const CCScreenTouches &touch, const CCTouchAction touchAction)
 {
     if( touchRotationAllowed )
     {
@@ -401,8 +454,14 @@ void CCTile3DButton::touchActionPressed(const float x, const float y, const CCTo
 
     if( touchAction > touch_pressed && touchAction < touch_released )
     {
-        onTouchMove();
+        touchActionMoved( x,  y,  touch, touchAction);
     }
+}
+
+
+void CCTile3DButton::touchActionMoved(const float x, const float y, const CCScreenTouches &touch, const CCTouchAction touchAction)
+{
+    onTouchMove();
 }
 
 

@@ -37,6 +37,7 @@ protected:
 class CCLambdaCallback
 {
 public:
+    virtual ~CCLambdaCallback() {};
     virtual void run() = 0;
 };
 

@@ -51,12 +51,15 @@ void FontTexture::paintEvent(QPaintEvent *event)
     QPainter painter( this );
 
     // Make the background dark gray
-    painter.fillRect( rect(), Qt::black );
+    //QColor colour = QColor( 128, 128, 128, 128 );
+    //painter.fillRect( rect(), colour );
+    painter.fillRect( rect(), Qt::gray );
+    //painter.fillRect( rect(), Qt::black );
 
     // Set the pen for the grid
     QPen pen;
     pen.setStyle( Qt::SolidLine );
-    pen.setBrush( Qt::white);
+    pen.setBrush( Qt::white );
     pen.setCapStyle( Qt::RoundCap );
     pen.setJoinStyle( Qt::RoundJoin );
     painter.setPen( pen );
@@ -74,11 +77,11 @@ void FontTexture::paintEvent(QPaintEvent *event)
     }
 
     // Create the glyph render
-    QImage img(size(), QImage::Format_ARGB32);
+    QImage img( size(), QImage::Format_ARGB32 );
     buildTexture(img);
 
     // Render the glyph image
-    painter.drawImage(rect(), img, img.rect());
+    painter.drawImage( rect(), img, img.rect() );
 }
 
 void FontTexture::changeFont()
@@ -86,7 +89,7 @@ void FontTexture::changeFont()
     bool ok;
 
     // Create a new font dialog and set it  default to our current font
-    QFont font = QFontDialog::getFont(&ok, _texFont, this);
+    QFont font = QFontDialog::getFont( &ok, _texFont, this );
 
     if (ok == true)
     {
@@ -116,7 +119,7 @@ void FontTexture::buildTexture(QImage &img)
     painter.setRenderHint( QPainter::TextAntialiasing );
 
     // Clear the texture to be 100% transparent
-    img.fill( 0xffffff );
+    img.fill( 0xaaaaff );
 
     // Set the pen color to white to draw all the text white
     QPen pen;

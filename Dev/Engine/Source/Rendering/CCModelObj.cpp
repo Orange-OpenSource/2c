@@ -24,6 +24,7 @@ CCModelObj::CCModelObj(const char *file,
 {
     primitive = new CCPrimitiveObj();
     primitive->load( file );
+    
     primitive->setTexture( texture1, resourceType, alwaysResident, mipmap );
     if( texture2 != NULL )
     {
@@ -228,4 +229,32 @@ void CCPrimitiveObj::renderVertices(const bool textured)
     CCSetTexCoords( textureUVs != NULL ? textureUVs : modelUVs );
 
 	glDrawArrays( GL_TRIANGLES, 0, vertexCount );
+}
+
+
+const CCVector3 CCPrimitiveObj::getOrigin()
+{
+    CCVector3 origin;
+    origin.x = mmX.min + ( width * 0.5f );
+    origin.y = mmY.min + ( height * 0.5f );
+    origin.z = mmZ.min + ( depth * 0.5f );
+    return origin;
+}
+
+
+void CCPrimitiveObj::moveVerticesToOrigin()
+{
+    const CCVector3 origin = getOrigin();
+    
+    for( uint i=0; i<vertexCount; ++i )
+    {
+        const uint index = i*3;
+        float &x = vertices[index+0];
+        float &y = vertices[index+1];
+        float &z = vertices[index+2];
+        
+        x -= origin.x;
+        y -= origin.y;
+        z -= origin.z;
+    }
 }

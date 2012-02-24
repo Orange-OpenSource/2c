@@ -25,13 +25,15 @@ public:
     typedef CCTile3D super;
     
     CCTile3DButton(CCSceneBase *scene);
-    CCTile3DButton(CCSceneBase *scene, const float width, const float height, const char *text=NULL);
+    
+    void setupTile(const float width, const float height, const char *text=NULL);
     
     // Create tile with width and textures aspect ratio
-    CCTile3DButton(CCSceneBase *scene, const float width, const char *textureName);
+    void setupTextured(const float width, const char *textureName);
+    void setupTexturedHeight(const float heigth, const char *textureName);
     
     // Create tile with the text height
-    CCTile3DButton(CCSceneBase *scene, const char *text, const float height, const bool centered);
+    void setupText(const char *text, const float height, const bool centered);
     
     virtual void construct(CCSceneBase *scene);
     virtual void destruct();
@@ -40,38 +42,67 @@ public:
 	virtual void refreshModelMatrix();
 
 	// CCSceneObject
-	virtual void update(const CCTime &gameTime);
-    virtual void renderModels(const bool alpha);
+	virtual const bool update(const CCTime &time);
+    virtual void render(const bool alpha);
 
-    virtual void setupBase(const float width, const float height);
-    void setBaseTexture(const char *name, const CCResourceType resourceType);
-    void setBaseColour(const CCColour &inColour);
-    void setBaseColourAlpha(const float inAlpha);
-    const CCColour& getBaseColour() { return *baseModel->getColour(); }
-    inline CCPrimitiveSquare* getBaseSquare() { return baseSquare; }
+    virtual void setTileSize(const float width, const float height);
+    void setTileTexture(const char *name, const CCResourceType resourceType);
+    void setTileColour(const CCColour &inColour, const bool immediatley);
+    void setTileColourAlpha(const float inAlpha, const bool immediatley);
+    const CCColour& getTileColour() { return *tileModel->getColour(); }
+    void setTileScale(const CCVector3 inScale, const bool immediatley);
+    inline CCPrimitiveSquare* getTileSquare() { return tileSquare; }
+    
+    virtual void setText(const char *text, const float height=-1.0f)
+    {
+        textModel->setText( text, height );
+    }
+    
+    void setTextColour(const CCColour &colour, const bool immediatly)
+    {
+        textModel->setColour( colour, immediatly );
+    }
+    
+    void setTextAlpha(const float alpha, const bool immediatly)
+    {
+        textModel->setColourAlpha( alpha, immediatly );
+    }
+    
+    void setTextFont(const char *font)
+    {
+        textModel->setFont( font );
+    }
+    
+    virtual void setTextHeight(const float height)
+    {
+        textModel->setHeight( height );
+    }
     
     void setRenderDepth(const bool toggle) { renderDepth = toggle; }
     
     // Touchable
-    virtual const uint handleProjectedTouch(const CCCameraProjectionResults &cameraProjectionResults,
+    virtual const bool handleProjectedTouch(const CCCameraProjectionResults &cameraProjectionResults,
                                             const CCSceneCollideable *hitObject, 
                                             const CCVector3 &hitPosition,
                                             const CCScreenTouches &touch, 
                                             const CCTouchAction touchAction);
 
     // Called when the tile is touched
-    virtual void touchActionPressed(const float x, const float y, const CCTouchAction touchAction);
+    virtual void touchActionPressed(const float x, const float y, const CCScreenTouches &touch, const CCTouchAction touchAction);
+    
+    // Called when a touch is moved over this tile
+    virtual void touchActionMoved(const float x, const float y, const CCScreenTouches &touch, const CCTouchAction touchAction);
 
     // Called when the tile is released
     virtual void touchActionRelease(const CCTouchAction touchAction);
 
 protected:
     // Callbacks
-    void handleTouchRelease();
+    virtual void handleTouchRelease();
 
 public:
     inline void allowTouchRotation(const bool allow) { touchRotationAllowed = allow; }
-    const CCVector3& getRotationTarget() 
+    const CCVector3 getRotationTarget() 
     {
         if( touchRotationInterpolator.interpolators.length > 0 )
         {
@@ -95,21 +126,21 @@ public:
         touchDepressRange = range;
     }
 
-public:
-    CCModelText *textModel;
-
 protected:
     bool renderDepth;
+
+    CCModelBase *tileModel;
+    CCPrimitiveSquare *tileSquare;
     
-    CCModelBase *baseModel;
-    CCPrimitiveSquare *baseSquare;
+    CCSceneObject *textObject;
+    CCModelText *textModel;
     
-    CCInterpolatorCurveV3<CCInterpolatorCurve> scaleInterpolator;
+    CCInterpolatorV3<CCInterpolatorSin2Curve> scaleInterpolator;
 
     bool touchMovementAllowed;
     
     bool touchRotationAllowed;
-    CCInterpolatorLinearsV3 touchRotationInterpolator;
+    CCInterpolatorListV3<CCInterpolatorLinear> touchRotationInterpolator;
     float touchRotationMagnitude;
     float touchRotationSpeed;
     
@@ -118,10 +149,10 @@ protected:
 
     // Touch Position interpolation
     CCVector3 touchDepressPosition;
-    CCInterpolatorCurvesV3 touchDepressInterpolator;
+    CCInterpolatorListV3<CCInterpolatorSin2Curve> touchDepressInterpolator;
     
 public:
-    CCInterpolatorLinearColour colourInterpolator;
+    CCInterpolatorLinearColour tileColourInterpolator;
 };
 
 

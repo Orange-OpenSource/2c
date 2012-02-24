@@ -70,9 +70,6 @@ JNIEXPORT void JNICALL Java_com_android2c_CCJNI_onSurfaceChanged(JNIEnv *jEnv, j
 	gEngine->setupNativeThread();
 	gEngine->setupEngineThread();
 
-	gView->runningGame = true;
-	gView->engineThreadRunning = true;
-
 #if defined PROFILEON
     CCProfiler::open();
 #endif
@@ -81,12 +78,13 @@ JNIEXPORT void JNICALL Java_com_android2c_CCJNI_onSurfaceChanged(JNIEnv *jEnv, j
 
 JNIEXPORT void JNICALL Java_com_android2c_CCJNI_onDrawFrame(JNIEnv *jEnv, jobject jObj)
 {
-	if( gView->runningGame )
+	if( gEngine->running )
 	{
 		gView->jniEnv = jEnv;
 		gView->jniObj = jObj;
 
 		gEngine->updateNativeThread();
+		gEngine->updateJobsThread();
 		gEngine->updateEngineThread();
 	}
 

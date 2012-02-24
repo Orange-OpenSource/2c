@@ -105,7 +105,7 @@ void CCOctreeSplit(CCOctree *tree)
 		for( uint i=0; i<8; ++i )
 		{
 			CCOctree *leaf = tree->leafs[i];
-			if( CCOctreeIsInLeaf( leaf, &collideable->min, &collideable->max ) )
+			if( CCOctreeIsInLeaf( leaf, collideable->min, collideable->max ) )
 			{
 				CCOctreeAddObject( leaf, collideable );
 			}
@@ -149,7 +149,7 @@ void CCOctreeAddObject(CCOctree *tree, CCSceneCollideable *collideable)
 		for( uint i=0; i<8; ++i )
 		{
 			CCOctree *leaf = tree->leafs[i];
-			if( CCOctreeIsInLeaf( leaf, &collideable->min, &collideable->max ) )
+			if( CCOctreeIsInLeaf( leaf, collideable->min, collideable->max ) )
 			{
 				CCOctreeAddObject( leaf, collideable );
 			}
@@ -199,9 +199,9 @@ void CCOctreeRemoveObject(CCSceneCollideable *collideable)
 		
 		if( tree->objects.length == 0 )
 		{
-			if( gEngine->collisionManager->pruneTrees <= 0.0f )
+			if( gEngine->collisionManager.pruneTreesTimer <= 0.0f )
 			{
-				gEngine->collisionManager->pruneTrees = 0.0f;
+				gEngine->collisionManager.pruneTreesTimer = 0.0f;
 			}
 		}
 	}
@@ -213,7 +213,7 @@ void CCOctreeRefreshObject(CCSceneCollideable *collideable)
 	CCOctreeRemoveObject( collideable );
 	if( collideable->isActive() )
 	{
-		CCOctreeAddObject( gEngine->collisionManager->tree, collideable );
+		CCOctreeAddObject( gEngine->collisionManager.tree, collideable );
 	}
 	
 	//ASSERT( collideable->numberOfOctrees > 0 );
@@ -240,16 +240,16 @@ void CCOctreePruneTree(CCOctree *tree)
 }
 
 
-bool CCOctreeIsInLeaf(const CCOctree *leaf, const CCVector3 *targetMin, const CCVector3 *targetMax)
+bool CCOctreeIsInLeaf(const CCOctree *leaf, const CCVector3 &targetMin, const CCVector3 &targetMax)
 {
 	const CCVector3 *sourceMin = &leaf->min;
 	const CCVector3 *sourceMax = &leaf->max;
 	
-	if( sourceMax->y >= targetMin->y && sourceMin->y <= targetMax->y )
+	if( sourceMax->y >= targetMin.y && sourceMin->y <= targetMax.y )
 	{
-		if( sourceMax->x >= targetMin->x && sourceMin->x <= targetMax->x )
+		if( sourceMax->x >= targetMin.x && sourceMin->x <= targetMax.x )
 		{
-			if( sourceMax->z >= targetMin->z && sourceMin->z <= targetMax->z )
+			if( sourceMax->z >= targetMin.z && sourceMin->z <= targetMax.z )
 			{
 				return true;
 			}
@@ -280,7 +280,7 @@ void CCOctreeRender(CCOctree *tree)
 {
 	if( tree->parent == NULL )
 	{
-		//glDisable( GL_DEPTH_TEST );
+		//GLDisableDepth();
 	}
 		
 	if( tree->objects.length > 0 )
@@ -302,7 +302,7 @@ void CCOctreeRender(CCOctree *tree)
 	
 	if( tree->parent == NULL )
 	{
-		//glEnable( GL_DEPTH_TEST );
+		//GLEnableDepth();
 		//glLineWidth( LINE_WIDTH );
 	}
 }
@@ -319,7 +319,7 @@ void CCOctreeListCollideables(CCSceneCollideable **collideables, int *numberOfCo
 			
 			if( collideable->isActive() )
 			{
-				if( HasFlag( collideable->collideableType, collision_none ) == false )
+				if( CCHasFlag( collideable->collideableType, collision_none ) == false )
 				{
 					bool found = false;
 					for( int collideablesIndex=0; collideablesIndex<*numberOfCollideables; ++collideablesIndex )
@@ -376,7 +376,7 @@ void CCOctreeListVisibles(CCList<CCOctree> &leafs, CCList<CCSceneCollideable> &c
 }
 
 
-void CCOctreeListLeafs(const CCOctree *tree, const CCVector3 *targetMin, const CCVector3 *targetMax, const CCOctree **leafsList, int *numberOfLeafs)
+void CCOctreeListLeafs(const CCOctree *tree, const CCVector3 &targetMin, const CCVector3 &targetMax, const CCOctree **leafsList, int *numberOfLeafs)
 {	
 	if( tree->leafs != NULL )
 	{
@@ -432,7 +432,9 @@ inline void fillLeafsInFrustum(const float frustum[6][4], CCOctree *tree, CCList
 }
 
 
-static void collideablesInFrustum(const float frustum[6][4], CCList<CCSceneCollideable> &octreeCollideables, CCList<CCSceneCollideable> &visibleCollideables)
+static void collideablesInFrustum(const float frustum[6][4], 
+                                  CCList<CCSceneCollideable> &octreeCollideables, 
+                                  CCList<CCSceneCollideable> &visibleCollideables)
 {
     for( int i=0; i<octreeCollideables.length; ++i )
     {
@@ -440,27 +442,20 @@ static void collideablesInFrustum(const float frustum[6][4], CCList<CCSceneColli
         if( CCCubeInFrustum( frustum, collideable->min, collideable->max ) )
         {
             collideable->visible = true;
-            visibleCollideables.list[visibleCollideables.length++] = collideable;
+            visibleCollideables.add( collideable );
         }
     }
 }
 
 
-#define MAX_VISIBLE_COLLIDEABLES 2048
-static CCList<CCSceneCollideable> visibleCollideables( MAX_VISIBLE_COLLIDEABLES );
 CCSceneCollideable* CCOctreeGetVisibleCollideables(const int i)
 {
-	return visibleCollideables.list[i];
-}
-
-static int sortedVisibleCollideables[MAX_VISIBLE_COLLIDEABLES];
-void CCOctreeResetVisibleCollideables()
-{
-	visibleCollideables.length = 0;
+	return CCCameraBase::currentCamera->visibleCollideables.list[i];
 }
 
 
-void CCOctreeScanVisibleCollideables(const float frustum[6][4])
+void CCOctreeScanVisibleCollideables(const float frustum[6][4], 
+                                     CCList<CCSceneCollideable> &visibleCollideables)
 {
 #define MAX_LEAFS 512
     static CCList<CCOctree> leafs( MAX_LEAFS );
@@ -468,7 +463,7 @@ void CCOctreeScanVisibleCollideables(const float frustum[6][4])
 
     // First find all the octrees that collide with the frustum
     leafs.length = 0;
-    fillLeafsInFrustum( frustum, gEngine->collisionManager->tree, leafs );
+    fillLeafsInFrustum( frustum, gEngine->collisionManager.tree, leafs );
     ASSERT( leafs.length < MAX_LEAFS );
     LOG_NEWMAX( "Max leafs per scan", maxLeafsPerScan, leafs.length );
 
@@ -482,26 +477,18 @@ void CCOctreeScanVisibleCollideables(const float frustum[6][4])
     collideablesInFrustum( frustum, octreeCollideables, visibleCollideables );
     ASSERT( visibleCollideables.length < MAX_VISIBLE_COLLIDEABLES );
     LOG_NEWMAX( "Max collideables per scan", maxCollideablesPerScan, visibleCollideables.length );
-
-    for( int i=0; i<visibleCollideables.length; ++i )
-    {
-        sortedVisibleCollideables[i] = i;
-    }
 }
 
 
-void CCScanVisibleCollideables(const float frustum[6][4], CCList<CCSceneCollideable> &collideables)
+void CCScanVisibleCollideables(const float frustum[6][4], 
+                               CCList<CCSceneCollideable> &collideables,
+                               CCList<CCSceneCollideable> &visibleCollideables)
 {
     // Finally find all the collideables that collide with the frustum
     visibleCollideables.length = 0;
     collideablesInFrustum( frustum, collideables, visibleCollideables );
     ASSERT( visibleCollideables.length < MAX_VISIBLE_COLLIDEABLES );
     LOG_NEWMAX( "Max collideables per scan", maxCollideablesPerScan, visibleCollideables.length );
-    
-    for( int i=0; i<visibleCollideables.length; ++i )
-    {
-        sortedVisibleCollideables[i] = i;
-    }
 }
 
 
@@ -511,16 +498,17 @@ void CCOctreeSetRenderSortCallback(int (*callback)(const void *, const void *) )
 	visibleCompareFunction = callback;
 };
 
-void CCOctreeRenderVisibleObjects(const CCCameraBase *camera, const int pass, const bool alpha)
+void CCOctreeRenderVisibleObjects(CCCameraBase *camera, const int pass, const bool alpha)
 {
+    CCList<CCSceneCollideable> &visibleCollideables = camera->visibleCollideables;
 	if( pass == render_main && alpha && visibleCompareFunction != NULL )
 	{
-		qsort( sortedVisibleCollideables, visibleCollideables.length, sizeof( int ), visibleCompareFunction );
+		qsort( camera->sortedVisibleCollideables, visibleCollideables.length, sizeof( int ), visibleCompareFunction );
 	}
 	
 	for( int i=0; i<visibleCollideables.length; ++i )
 	{
-		CCSceneCollideable *object = visibleCollideables.list[sortedVisibleCollideables[i]];
+		CCSceneCollideable *object = visibleCollideables.list[camera->sortedVisibleCollideables[i]];
 		if( object->renderPass == pass )
 		{
 			// Ask the scene if we should render this obejct

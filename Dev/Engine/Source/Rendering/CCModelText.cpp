@@ -33,21 +33,16 @@ void CCModelText::destruct()
 }
 
 
+const bool CCModelText::update(const float delta)
+{
+    return colourInterpolator.update( delta );
+}
+
+
 void CCModelText::setParent(CCSceneCollideable *inParent)
 {
     ASSERT( parent == NULL );
     parent = inParent;
-    if( inParent != NULL )
-    {
-        if( parent->model == NULL )
-        {
-            parent->model = this;
-        }
-        else
-        {
-            parent->model->addModel( this );
-        }
-    }
 }
 
 
@@ -56,7 +51,7 @@ void CCModelText::setText(const char *text, const float height, const char *font
     if( primitive == NULL )
     {
         translate( 0.0f, 0.0f, CC_SMALLFLOAT );
-        setColour( CCColour( 0.0f ) );
+        setColour( CCColour( 0.0f ), true );
         primitive = new CCPrimitiveText( text );
         addPrimitive( primitive );
     }
@@ -101,10 +96,31 @@ void CCModelText::setCentered(const bool centered)
 }
 
 
-void CCModelText::setColour(const CCColour &inColour)
+void CCModelText::setColour(const CCColour &inColour, const bool immediatly)
 {
-    super::setColour( inColour );
-    colourInterpolator.setup( colour, *colour );
+    if( immediatly )
+    {
+        super::setColour( inColour );
+        colourInterpolator.setup( colour, *colour );
+    }
+    else 
+    {
+        colourInterpolator.setup( colour, inColour );
+    }
+}
+
+
+void CCModelText::setColourAlpha(const float inAlpha, const bool immediatly)
+{
+    if( immediatly )
+    {
+        super::setColourAlpha( inAlpha );
+        colourInterpolator.setup( colour, *colour );
+    }
+    else 
+    {
+        colourInterpolator.setTargetAlpha( inAlpha );
+    }
 }
 
 
@@ -170,3 +186,7 @@ const float CCPrimitiveText::getWidth()
     return fontPage->getWidth( text.buffer, text.length, height );
 }
 
+const float CCPrimitiveText::getHeight()
+{
+    return fontPage->getHeight( text.buffer, text.length, height );
+}

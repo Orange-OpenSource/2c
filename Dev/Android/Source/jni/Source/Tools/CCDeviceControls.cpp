@@ -11,8 +11,7 @@
 
 #include "CCDefines.h"
 #include "CCDeviceControls.h"
-
-#include <jni.h>
+#include "CCViewManager.h"
 
 
 // Java constants pulled from touch event at Java end
@@ -135,11 +134,11 @@ void CCDeviceControls::touchEnd(UITouch *touch)
 
 void CCDeviceControls::touchHandle(UITouch *touch)
 {
-    const CCSize &screenSize = gEngine->renderer->screenSizeMultiple;
+    const CCSize &inverseScreenSize = gEngine->renderer->getInverseScreenSize();
 
     CCPoint position = touch->pos;
-    position.x *= screenSize.width;
-    position.y *= screenSize.height;
+    position.x *= inverseScreenSize.width;
+    position.y *= inverseScreenSize.height;
 
     for( uint touchIndex = 0; touchIndex<numberOfTouches; ++touchIndex )
     {
@@ -148,7 +147,23 @@ void CCDeviceControls::touchHandle(UITouch *touch)
 		if( screenTouch.usingTouch == NULL || screenTouch.usingTouch == touch )
 		{
 			CCPoint screenPosition = position;
-			CCEngineThreadLock();
+			if( CCViewManager::GetOrientation().target == 270.0f )
+			{
+				CCSwapFloat( screenPosition.x, screenPosition.y );
+				screenPosition.y = 1.0f - screenPosition.y;
+			}
+			else if( CCViewManager::GetOrientation().target == 90.0f )
+			{
+				CCSwapFloat( screenPosition.x, screenPosition.y );
+				screenPosition.x = 1.0f - screenPosition.x;
+			}
+			else if( CCViewManager::GetOrientation().target == 180.0f )
+			{
+				screenPosition.x = 1.0f - screenPosition.x;
+				screenPosition.y = 1.0f - screenPosition.y;
+			}
+
+			CCNativeThreadLock();
 			if( screenTouch.usingTouch != NULL )
 			{
 				screenTouch.delta.x += screenPosition.x - screenTouch.position.x;
@@ -171,7 +186,7 @@ void CCDeviceControls::touchHandle(UITouch *touch)
 			}
 			screenTouch.position = screenPosition;
 			screenTouch.usingTouch = touch;
-			CCEngineThreadUnlock();
+			CCNativeThreadUnlock();
 			break;
 		}
     }

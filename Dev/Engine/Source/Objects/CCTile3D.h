@@ -28,14 +28,17 @@ public:
     
     inline const float getTouchingTime() { return touchingTime; }
     
-    virtual const uint handleProjectedTouch(const CCCameraProjectionResults &cameraProjectionResults,
+    virtual const bool handleProjectedTouch(const CCCameraProjectionResults &cameraProjectionResults,
                                             const CCSceneCollideable *hitObject, 
                                             const CCVector3 &hitPosition,
                                             const CCScreenTouches &touch, 
                                             const CCTouchAction touchAction) = 0;
     
     // Called when the tile is touched
-    virtual void touchActionPressed(const float x, const float y, const CCTouchAction touchAction) = 0;
+    virtual void touchActionPressed(const float x, const float y, const CCScreenTouches &touch, const CCTouchAction touchAction) = 0;
+    
+    // Called when a touch is moved over this tile
+    virtual void touchActionMoved(const float x, const float y, const CCScreenTouches &touch, const CCTouchAction touchAction) = 0;
     
     // Called when the tile is released
     virtual void touchActionRelease(const CCTouchAction touchAction) = 0;
@@ -76,7 +79,6 @@ public:
 };
 
 
-class CCControllerMovement;
 
 class CCTile3D : public CCSceneCollideable, public CCTouchable, public virtual CCLazyCallback
 {
@@ -84,6 +86,7 @@ public:
     typedef CCSceneCollideable super;
 
     CCTile3D();
+    virtual void destruct();
 
     // CCRenderable
     virtual void dirtyModelMatrix();
@@ -95,10 +98,10 @@ public:
     virtual void positionTileBelow(CCTile3D *fromTile);
     void positionTileAbove(CCTile3D *fromTile);
     void positionTileRight(CCTile3D *fromTile);
+    void positionTileLeft(CCTile3D *fromTile);
 
     // Objects which move along with this tile, but contain handle their own collisions
     CCList<CCSceneObject> attachments;
-    CCControllerMovement *movementController;
 };
 
 

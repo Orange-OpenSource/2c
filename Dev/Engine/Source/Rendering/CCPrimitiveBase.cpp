@@ -18,6 +18,7 @@ CCPrimitiveBase::CCPrimitiveBase()
 	vertices = NULL;
 	normals = NULL;
 	textureInfo = NULL;
+    frameBufferId = -1;
 }
 
 
@@ -115,7 +116,11 @@ void CCPrimitiveBase::render()
             }
 		}
 	}
-	else
+	else if( frameBufferId >= 0 )
+    {
+        gEngine->renderer->frameBufferManager.bindFrameBufferTexture( frameBufferId );
+    }
+    else
 	{
 		gEngine->textureManager->setTextureIndex( 0 );
 	}

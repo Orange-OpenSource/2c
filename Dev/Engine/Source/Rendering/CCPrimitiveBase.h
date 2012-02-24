@@ -33,6 +33,8 @@ public:
     virtual void setTexture(const char *name, const CCResourceType resourceType, 
                             const bool alwaysResident=false, const bool mipmap=false);
     void removeTexture();
+    
+    void setFrameBufferId(const int frameBufferId) { this->frameBufferId = frameBufferId; }
 
 protected:
     // Adjust the model's UVs to match the loaded texture, 
@@ -58,6 +60,7 @@ public:
         
     };
 	TextureInfo *textureInfo;
+    int frameBufferId;
 };
 
 

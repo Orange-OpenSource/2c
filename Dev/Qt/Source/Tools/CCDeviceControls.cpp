@@ -11,6 +11,7 @@
 
 #include "CCDefines.h"
 #include "CCDeviceControls.h"
+#include "CCViewManager.h"
 
 
 CCDeviceControls::CCDeviceControls()
@@ -48,25 +49,25 @@ void CCDeviceControls::touchEnd(UITouch *touch)
 
 void CCDeviceControls::touchHandle(UITouch *touch)
 {
-    const CCSize &screenSizeMultiple = gEngine->renderer->screenSizeMultiple;
+    const CCSize &inverseScreenSize = gEngine->renderer->getInverseScreenSize();
 
     CCScreenTouches& screenTouch = screenTouches[0];
 
     CCPoint position = touch->pos;
-    position.x *= screenSizeMultiple.width;
-    position.y *= screenSizeMultiple.height;
+    position.x *= inverseScreenSize.width;
+    position.y *= inverseScreenSize.height;
 
-    if( gEngine->renderer->orientation.target == 270.0f )
+    if( CCViewManager::GetOrientation().target == 270.0f )
     {
         CCSwapFloat( position.x, position.y );
         position.y = 1.0f - position.y;
     }
-    else if( gEngine->renderer->orientation.target == 90.0f )
+    else if( CCViewManager::GetOrientation().target == 90.0f )
     {
         CCSwapFloat( position.x, position.y );
         position.x = 1.0f - position.x;
     }
-    else if( gEngine->renderer->orientation.target == 180.0f )
+    else if( CCViewManager::GetOrientation().target == 180.0f )
     {
         position.x = 1.0f - position.x;
         position.y = 1.0f - position.y;
@@ -156,7 +157,7 @@ void CCDeviceControls::touchEnd(QList<QTouchEvent::TouchPoint> touches)
 
 void CCDeviceControls::touchHandle(QList<QTouchEvent::TouchPoint> touches)
 {
-    const CCSize &screenSizeMultiple = gEngine->renderer->screenSizeMultiple;
+    const CCSize &inverseScreenSize = gEngine->renderer->getInverseScreenSize();
 
     for( int touchIndex=0; touchIndex<touches.size(); ++touchIndex )
     {
@@ -170,26 +171,26 @@ void CCDeviceControls::touchHandle(QList<QTouchEvent::TouchPoint> touches)
             UITouch *uiTouch = (UITouch*)screenTouch.usingTouch;
             if( uiTouch == NULL || uiTouch->touchID == touchID )
             {
-                CCEngineThreadLock();
+                CCNativeThreadLock();
 
                 QPointF qPosition = touchPoint.pos();
                 CCPoint position( qPosition.x(), qPosition.y() );
 
                 // Range between 0.0f - 1.0f
-                position.x *= screenSizeMultiple.width;
-                position.y *= screenSizeMultiple.height;
+                position.x *= inverseScreenSize.width;
+                position.y *= inverseScreenSize.height;
 
-                if( gEngine->renderer->orientation.target == 270.0f )
+                if( CCViewManager::GetOrientation().target == 270.0f )
                 {
                     CCSwapFloat( position.x, position.y );
                     position.y = 1.0f - position.y;
                 }
-                else if( gEngine->renderer->orientation.target == 90.0f )
+                else if( CCViewManager::GetOrientation().target == 90.0f )
                 {
                     CCSwapFloat( position.x, position.y );
                     position.x = 1.0f - position.x;
                 }
-                else if( gEngine->renderer->orientation.target == 180.0f )
+                else if( CCViewManager::GetOrientation().target == 180.0f )
                 {
                     position.x = 1.0f - position.x;
                     position.y = 1.0f - position.y;
@@ -224,7 +225,7 @@ void CCDeviceControls::touchHandle(QList<QTouchEvent::TouchPoint> touches)
 
                 screenTouch.position = position;
 
-                CCEngineThreadUnlock();
+                CCNativeThreadUnlock();
                 break;
             }
         }

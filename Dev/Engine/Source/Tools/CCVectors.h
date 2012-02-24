@@ -400,6 +400,13 @@ static inline CCColour CCColourInt(const float red, const float green, const flo
 }
 
 
+template <typename T> struct CCTarget
+{
+    T current;
+    T target;
+};
+
+
 struct CCFloatTarget
 {
 	CCFloatTarget()

@@ -16,8 +16,7 @@
 CCCollisionManager::CCCollisionManager(const float octreeSize)
 {
     tree = new CCOctree( NULL, CCVector3(), octreeSize );
-	pruneTrees = 0.0f;
-	length = 0;	
+	pruneTreesTimer = 0.0f;
 }
 
 
@@ -34,7 +33,7 @@ CCCollisionManager::~CCCollisionManager()
 void CCUpdateCollisions(CCSceneCollideable *collideable, const bool dependantOnFlags)
 {
 	if( collideable->updateCollisions && 
-		( dependantOnFlags == false || HasFlag( collideable->collideableType, collision_box ) ) )
+		( dependantOnFlags == false || CCHasFlag( collideable->collideableType, collision_box ) ) )
 	{
 		collideable->min.x = collideable->positionPtr->x - collideable->collisionBounds.x;
 		collideable->min.y = collideable->positionPtr->y - collideable->collisionBounds.y;
@@ -49,13 +48,13 @@ void CCUpdateCollisions(CCSceneCollideable *collideable, const bool dependantOnF
 }
 
 
-const bool CCBasicBoxCollisionCheck(const CCVector3 *sourceMin, const CCVector3 *sourceMax, const CCVector3 *targetMin, const CCVector3 *targetMax)
+const bool CCBasicBoxCollisionCheck(const CCVector3 &sourceMin, const CCVector3 &sourceMax, const CCVector3 &targetMin, const CCVector3 &targetMax)
 {
-	if( sourceMax->z > targetMin->z && sourceMin->z < targetMax->z )
+	if( sourceMax.z > targetMin.z && sourceMin.z < targetMax.z )
 	{
-		if( sourceMax->x > targetMin->x && sourceMin->x < targetMax->x )
+		if( sourceMax.x > targetMin.x && sourceMin.x < targetMax.x )
 		{
-			if( sourceMax->y > targetMin->y && sourceMin->y < targetMax->y )
+			if( sourceMax.y > targetMin.y && sourceMin.y < targetMax.y )
 			{
 				return true;
 			}
@@ -68,9 +67,9 @@ const bool CCBasicBoxCollisionCheck(const CCVector3 *sourceMin, const CCVector3 
 
 CCSceneCollideable* CCBasicCollisionCheck(CCSceneCollideable *sourceObject, const CCVector3 *targetLocation)
 {
-	CCCollisionManager *collideables = gEngine->collisionManager;
+    CCList<CCSceneCollideable> &collideables = gEngine->collisionManager.collideables;
 	
-	if( HasFlag( sourceObject->collideableType, collision_box ) )
+	if( CCHasFlag( sourceObject->collideableType, collision_box ) )
 	{
 		CCVector3 sourceMin = CCVector3( targetLocation->x - sourceObject->collisionBounds.x,
                                        targetLocation->y - sourceObject->collisionBounds.y,
@@ -80,19 +79,19 @@ CCSceneCollideable* CCBasicCollisionCheck(CCSceneCollideable *sourceObject, cons
                                        targetLocation->y + sourceObject->collisionBounds.y,
                                        targetLocation->z + sourceObject->collisionBounds.z );
 		
-		for( int i=0; i<collideables->length; ++i )
+		for( int i=0; i<collideables.length; ++i )
 		{
-            CCSceneCollideable *checkingObject = collideables->objects[i];
+            CCSceneCollideable *checkingObject = collideables.list[i];
 			
 			if( checkingObject != sourceObject )
 			{
-				if( HasFlag( checkingObject->collideableType, collision_box ) )
+				if( CCHasFlag( checkingObject->collideableType, collision_box ) )
 				{
 					CCUpdateCollisions( checkingObject );
-					CCVector3 *targetMin = &checkingObject->min;
-					CCVector3 *targetMax = &checkingObject->max;
+					const CCVector3 &targetMin = checkingObject->min;
+					const CCVector3 &targetMax = checkingObject->max;
 					
-					if( CCBasicBoxCollisionCheck( &sourceMin, &sourceMax, targetMin, targetMax ) )
+					if( CCBasicBoxCollisionCheck( sourceMin, sourceMax, targetMin, targetMax ) )
 					{
 						return checkingObject;
 					}
@@ -109,12 +108,12 @@ CCSceneCollideable* CCBasicCollisionCheck(CCSceneCollideable *sourceObject, cons
 #define MAX_COLLIDEABLES 256
 static CCSceneCollideable *collideables[MAX_COLLIDEABLES];
 static int numberOfCollideables;
-static void setCollideablesList(const CCVector3 *sourceMin, const CCVector3 *sourceMax)
+static void setCollideablesList(const CCVector3 &sourceMin, const CCVector3 &sourceMax)
 {
 	static const CCOctree *leafsList[MAX_LEAFS];
 	static int numberOfLeafs;
 	numberOfLeafs = 0;
-	CCOctreeListLeafs( gEngine->collisionManager->tree, sourceMin, sourceMax, leafsList, &numberOfLeafs );
+	CCOctreeListLeafs( gEngine->collisionManager.tree, sourceMin, sourceMax, leafsList, &numberOfLeafs );
 	ASSERT( numberOfLeafs < MAX_LEAFS );
     LOG_NEWMAX( "Max leafs per scan", maxLeafsPerScan, numberOfLeafs );
 	
@@ -130,7 +129,7 @@ CCSceneCollideable* CCBasicOctreeCollisionCheck(CCSceneCollideable *sourceObject
 											 const bool requestCollisionReport,
 											 const CCCollisionFlags flags)
 {
-	if( HasFlag( sourceObject->collideableType, collision_box ) && sourceObject->octrees.length > 0 )
+	if( CCHasFlag( sourceObject->collideableType, collision_box ) && sourceObject->octrees.length > 0 )
 	{
 		CCVector3 sourceMin = CCVector3( targetLocation->x - sourceObject->collisionBounds.x,
                                        targetLocation->y - sourceObject->collisionBounds.y,
@@ -140,7 +139,7 @@ CCSceneCollideable* CCBasicOctreeCollisionCheck(CCSceneCollideable *sourceObject
                                        targetLocation->y + sourceObject->collisionBounds.y,
                                        targetLocation->z + sourceObject->collisionBounds.z );
 		
-		setCollideablesList( &sourceMin, &sourceMax );
+		setCollideablesList( sourceMin, sourceMax );
 		
 		CCSceneCollideable *closestCollision = NULL;
 		
@@ -150,18 +149,18 @@ CCSceneCollideable* CCBasicOctreeCollisionCheck(CCSceneCollideable *sourceObject
 			
 			if( checkingObject != sourceObject )
 			{
-				if( HasFlag( checkingObject->collideableType, flags ) )
+				if( CCHasFlag( checkingObject->collideableType, flags ) )
 				{
 					if( sourceObject->shouldCollide( checkingObject, true ) )
 					{
-						CCVector3 *targetMin = &checkingObject->min;
-						CCVector3 *targetMax = &checkingObject->max;
+						const CCVector3 &targetMin = checkingObject->min;
+						const CCVector3 &targetMax = checkingObject->max;
 						
-						if( HasFlag( checkingObject->collideableType, collision_box ) )
+						if( CCHasFlag( checkingObject->collideableType, collision_box ) )
 						{
 							CCUpdateCollisions( checkingObject );
 							
-							if( CCBasicBoxCollisionCheck( &sourceMin, &sourceMax, targetMin, targetMax ) )
+							if( CCBasicBoxCollisionCheck( sourceMin, sourceMax, targetMin, targetMax ) )
 							{
 								closestCollision = checkingObject;
 								if( requestCollisionReport && closestCollision != NULL )
@@ -186,7 +185,7 @@ CCSceneCollideable* CCBasicOctreeCollisionCheck(CCSceneCollideable *sourceObject
 }
 
 
-CCSceneCollideable* CCOctreeCollisionCheck(const CCVector3 *min, const CCVector3 *max, const CCSceneCollideable *sourceObject, const uint flags)
+CCSceneCollideable* CCOctreeCollisionCheck(const CCVector3 &min, const CCVector3 &max, const CCSceneCollideable *sourceObject, const uint flags)
 {	
 	setCollideablesList( min, max );
 	
@@ -197,12 +196,12 @@ CCSceneCollideable* CCOctreeCollisionCheck(const CCVector3 *min, const CCVector3
 	
 		if( checkingObject != sourceObject )
 		{
-			CCVector3 *targetMin = &checkingObject->min;
-			CCVector3 *targetMax = &checkingObject->max;
+			const CCVector3 &targetMin = checkingObject->min;
+			const CCVector3 &targetMax = checkingObject->max;
 			
-			if( HasFlag( checkingObject->collideableType, collision_box ) )
+			if( CCHasFlag( checkingObject->collideableType, collision_box ) )
 			{
-				if( flags == collision_box || HasFlag( checkingObject->collideableType, flags ) )
+				if( flags == collision_box || CCHasFlag( checkingObject->collideableType, flags ) )
 				{
 					CCUpdateCollisions( checkingObject );
 					
@@ -220,12 +219,12 @@ CCSceneCollideable* CCOctreeCollisionCheck(const CCVector3 *min, const CCVector3
 }
 
 
-CCSceneCollideable* CCMovementOctreeCollisionCheck(CCSceneCollideable *sourceObject, CCVector3 currentPosition, const CCVector3 *targetPosition)
+CCSceneCollideable* CCMovementOctreeCollisionCheck(CCSceneCollideable *sourceObject, CCVector3 currentPosition, const CCVector3 &targetPosition)
 {
 	CCSceneCollideable *collidedWith = NULL;
 	
-	const float velocityX = targetPosition->x - currentPosition.x;
-	const float velocityZ = targetPosition->z - currentPosition.z;
+	const float velocityX = targetPosition.x - currentPosition.x;
+	const float velocityZ = targetPosition.z - currentPosition.z;
 	
 	const float velocityVsBoundingX = velocityX * sourceObject->inverseBoundsLength.x;
 	const float velocityVsBoundingZ = velocityZ * sourceObject->inverseBoundsLength.x;
@@ -400,7 +399,7 @@ CCSceneCollideable* CCBasicLineCollisionCheck(CCSceneCollideable **list,
 		
 		if( checkingObject != sourceObject )
 		{
-            if( checkingObject->enabled && checkingObject->isActive() && HasFlag( checkingObject->collideableType, flags ) )
+            if( checkingObject->enabled && checkingObject->isActive() && CCHasFlag( checkingObject->collideableType, flags ) )
             {
                 CCUpdateCollisions( checkingObject );
                 const CCVector3 &targetMin = checkingObject->min;
@@ -456,8 +455,8 @@ CCSceneCollideable* CCBasicLineCollisionCheck(const CCVector3 &start,
                                               CCSceneCollideable *source)
 {	
     static CCVector3 hitLocation;
-    CCSceneCollideable *hitObject = CCBasicLineCollisionCheck( gEngine->collisionManager->objects,
-                                                               gEngine->collisionManager->length,
+    CCSceneCollideable *hitObject = CCBasicLineCollisionCheck( gEngine->collisionManager.collideables.list,
+                                                               gEngine->collisionManager.collideables.length,
                                                                source,
                                                                start, end,
                                                                &hitLocation,
@@ -472,8 +471,8 @@ CCSceneCollideable* CCBasicLineCollisionCheck(const CCVector3 &start,
         maxStart.set( start.x + width, start.y, start.z + width );
         maxEnd.set( end.x - width, start.y, end.z - width );
 
-        hitObject = CCBasicLineCollisionCheck( gEngine->collisionManager->objects,
-                                               gEngine->collisionManager->length,
+        hitObject = CCBasicLineCollisionCheck( gEngine->collisionManager.collideables.list,
+                                               gEngine->collisionManager.collideables.length,
                                                NULL,
                                                minStart, maxEnd,
                                                &hitLocation,
@@ -483,8 +482,8 @@ CCSceneCollideable* CCBasicLineCollisionCheck(const CCVector3 &start,
 
         if( hitObject == NULL )
         {
-            hitObject = CCBasicLineCollisionCheck( gEngine->collisionManager->objects,
-                                                   gEngine->collisionManager->length,
+            hitObject = CCBasicLineCollisionCheck( gEngine->collisionManager.collideables.list,
+                                                   gEngine->collisionManager.collideables.length,
                                                    NULL,
                                                    maxStart, minEnd,
                                                    &hitLocation,

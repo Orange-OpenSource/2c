@@ -18,6 +18,8 @@
 #include "CCGLView.h"
 #include "CCDeviceControls.h"
 
+#include "CCViewManager.h"
+
 
 CCGLView::CCGLView(QWidget *parent) :
     QGLWidget( parent )
@@ -35,7 +37,6 @@ CCGLView::CCGLView(QWidget *parent) :
     handlingTouchEvent = false;
 
     gView = this;
-    runningGame = paused = engineThreadRunning = false;
 
     //setAutoBufferSwap(false);
     //doneCurrent();
@@ -53,18 +54,15 @@ void CCGLView::initializeGL()
 {
     QGLWidget::initializeGL();
 
-    gEngine = new CCAppEngine();
     gEngine->setupNativeThread();
     gEngine->setupEngineThread();
-    runningGame = true;
-    engineThreadRunning = true;
 }
 
 
 void CCGLView::resizeGL(int width, int height)
 {
     gEngine->renderer->setupScreenSizeParams();
-    gEngine->renderer->setOrientation( 0.0f, true );
+    CCViewManager::SetOrientation( CCViewManager::GetOrientation().target, true );
     gEngine->refreshCameras();
 }
 
@@ -86,16 +84,17 @@ void CCGLView::resizeView(int x1, int y1, int x2, int y2)
 
 void CCGLView::paintGL()
 {
-    if( runningGame )
+    if( gEngine->running )
     {
         gEngine->updateNativeThread();
-        if( paused )
+        if( gEngine->paused )
         {
             // Sleep at 20 fps
             usleep( 50000 );
         }
         else
         {
+            gEngine->updateJobsThread();
             gEngine->updateEngineThread();
         }
 

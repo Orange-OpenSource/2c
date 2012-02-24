@@ -16,6 +16,20 @@
 #import <pthread.h>
 
 
+ThreadMutex::ThreadMutex()
+{
+    pthread_mutexattr_init( &type );
+    pthread_mutexattr_settype( &type, PTHREAD_MUTEX_RECURSIVE );
+    pthread_mutex_init( &mutex, &type );
+}
+
+
+ThreadMutex::~ThreadMutex()
+{
+    pthread_mutex_destroy( &mutex );
+    pthread_mutexattr_destroy( &type );
+}
+
 @implementation CCGLView
 
 // You must implement this method
@@ -34,18 +48,15 @@
 		
 		self.userInteractionEnabled = false;
 		self.hidden = false;
-		
-		runningGame = paused = false;
         
-        pthread_mutexattr_init( &engineThreadMutexType );
-        pthread_mutexattr_settype( &engineThreadMutexType, PTHREAD_MUTEX_RECURSIVE );
-		pthread_mutex_init( &engineThreadMutex, &engineThreadMutexType );
+        nativeThreadMutex = new ThreadMutex();
+        jobsThreadMutex = new ThreadMutex();
 		
 		// Get the layer
 		CAEAGLLayer *eaglLayer = (CAEAGLLayer*)self.layer;
         
         // Set contentScale Factor to 2, to use high resolution
-        if( false && [[UIScreen mainScreen] respondsToSelector:@selector( scale )] && [[UIScreen mainScreen] scale] == 2.0 ) 
+        if( [[UIScreen mainScreen] respondsToSelector:@selector( scale )] && [[UIScreen mainScreen] scale] == 2.0 ) 
         {
             self.contentScaleFactor = 2.0f;
             eaglLayer.contentsScale = 2.0f;
@@ -55,8 +66,7 @@
 		eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
 										[NSNumber numberWithBool:false], kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, NULL];
         
-        gEngine = new CCAppEngine();
-		updateTimer = [NSTimer scheduledTimerWithTimeInterval:0.0f target:self selector:@selector( setup ) userInfo:NULL repeats:false];
+		updateTimer = [NSTimer scheduledTimerWithTimeInterval:0.01f target:self selector:@selector( setup ) userInfo:NULL repeats:false];
 	}
 	
     return self;
@@ -65,9 +75,9 @@
 
 -(void)dealloc 
 {	
-    ASSERT( runningGame == false );
-	pthread_mutex_destroy( &engineThreadMutex );
-    pthread_mutexattr_destroy( &engineThreadMutexType );
+    ASSERT( gEngine == NULL );
+	delete nativeThreadMutex;
+	delete jobsThreadMutex;
 	
     [super dealloc];
 }
@@ -95,22 +105,18 @@ static inline void refreshReleasePool(NSAutoreleasePool **pool, uint *count, con
 }
 
 
-void* PosixGameThread(void* data)
+void* PosixEngineThread(void* data)
 {	
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	gEngine->setupEngineThread();
 	[pool release];
 	pool = [[NSAutoreleasePool alloc] init];
-	
-	CCGLView *view = (CCGLView*)data;
-	view->engineThreadRunning = true;
-	view->runningGame = true;
 	usleep( 0 );
 
 	uint poolRefreshCounter = 0;
 	do
 	{
-		if( view->paused )
+		if( gEngine->paused )
 		{
 			// Sleep at 20 fps
 			usleep( 50000 );
@@ -121,10 +127,40 @@ void* PosixGameThread(void* data)
 		}
 		
 		refreshReleasePool( &pool, &poolRefreshCounter, 1000 );
-	} while( view->runningGame );
+	} while( gEngine->running );
 	[pool release];
 	
-	view->engineThreadRunning = false;
+	gEngine->engineThreadRunning = false;
+	return NULL;
+}
+
+
+void* PosixJobsThread(void* data)
+{	
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	uint poolRefreshCounter = 0;
+	do
+	{
+		if( gEngine->paused )
+		{
+			// Sleep at 20 fps
+			usleep( 50000 );
+		}
+		else
+		{
+			if( gEngine->updateJobsThread() )
+            {
+                usleep( 10 );
+            }
+            else
+            {
+                usleep( 200 );
+            }
+		}
+		
+		refreshReleasePool( &pool, &poolRefreshCounter, 1000 );
+	} while( gEngine->running );
+	[pool release];
 	return NULL;
 }
 
@@ -180,8 +216,9 @@ void createThread(void *(*start_routine)(void*), void *__restrict arg, int prior
 	// iPhone SDK recommends launching an empty NSThread when using POSIX threads with Cocoa applications
 	[NSThread detachNewThreadSelector:@selector( emptyThread ) toTarget:self withObject:NULL]; 
 	
-	// Create the game thread using POSIX routines.
-	createThread( &PosixGameThread, self, 0, +4 );
+	// Create the engine thread using POSIX routines.
+	createThread( &PosixEngineThread, self, 0, +4 );
+	createThread( &PosixJobsThread, self, 1, 0 );
 	
 	// Start the updating of native OS thread
 	[updateTimer invalidate];
@@ -191,7 +228,7 @@ void createThread(void *(*start_routine)(void*), void *__restrict arg, int prior
 
 -(void)updateNativeThread
 {
-	if( runningGame )
+	if( gEngine->running )
 	{	
         static bool firstRun = true;
         if( firstRun )

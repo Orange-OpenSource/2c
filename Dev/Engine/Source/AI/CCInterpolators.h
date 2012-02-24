@@ -45,29 +45,36 @@ protected:
 
 
 
-class CCInterpolatorCurve : public CCInterpolator
+class CCInterpolatorSin2Curve : public CCInterpolator
 {
 public:
-    CCInterpolatorCurve()
+    CCInterpolatorSin2Curve()
     {  
         current = NULL;
         amount = 1.0f;
     }
     
-    CCInterpolatorCurve(float *inCurrent, const float inTarget)
+    CCInterpolatorSin2Curve(float *inCurrent, const float inTarget)
     {
-        setup( inCurrent, inTarget);
+        setup( inCurrent, inTarget, true );
     }
     
     const bool equals(float *inCurrent, const float inTarget);
-    void setup(float *inCurrent, const float inTarget);
+    void setup(float *inCurrent, const float inTarget, const bool force=true);
 
-    void setup(float *inCurrent);
+    void setCurrent(float *inCurrent);
     void setTarget(float inTarget);
     
     // Call when ready to start the interpolation
     void ready();
     
+    const bool incrementAmount(const float delta);
+    void setAmount(const float amount)
+    {
+        this->amount = amount;
+    }
+    virtual const float calculatePercentage();
+    void updateInterpolation(const float percentage);
     virtual const bool update(const float delta);
     
     inline const float* getCurrent() const { return current; }
@@ -84,29 +91,37 @@ protected:
 
 
 
-class CCInterpolatorX2Curve : public CCInterpolatorCurve
+class CCInterpolatorX2Curve : public CCInterpolatorSin2Curve
 {
 public:
-    const bool update(const float delta);
+    const float calculatePercentage();
 };
 
 
-class CCInterpolatorX3Curve : public CCInterpolatorCurve
+class CCInterpolatorX3Curve : public CCInterpolatorSin2Curve
 {
 public:
-    const bool update(const float delta);
+    const float calculatePercentage();
 };
 
 
-class CCInterpolatorSinCurve : public CCInterpolatorCurve
+class CCInterpolatorSinCurve : public CCInterpolatorSin2Curve
 {
 public:
-    const bool update(const float delta);
+    const float calculatePercentage();
+};
+
+
+class CCInterpolatorLinear : public CCInterpolatorSin2Curve
+{
+public:
+    const float calculatePercentage();
 };
 
 
 
-class CCInterpolatorCurveXY : public CCInterpolator
+template <typename T> 
+class CCInterpolatorXY : public CCInterpolator
 {
 public:
     void setup(float *inX, float *inY, const float target)
@@ -117,8 +132,17 @@ public:
     
     void setup(float *inX, float *inY, const float targetX, const float targetY)
     {
-        x.setup( inX, targetX );
-        y.setup( inY, targetY );
+        
+        if( x.getCurrent() != inX || x.getTarget() != targetX )
+        {
+            x.setup( inX, targetX );
+        }
+        
+        
+        if( y.getCurrent() != inY || y.getTarget() != targetY )
+        {
+            y.setup( inY, targetY );
+        }
     }
     
     const bool update(const float delta)
@@ -130,17 +154,18 @@ public:
     }
     
 protected:
-    CCInterpolatorCurve x,y;
+    T x,y;
 };
 
 
 
-template <typename T> class CCInterpolatorCurveV3 : public CCInterpolator
+template <typename T> 
+class CCInterpolatorV3 : public CCInterpolator
 {
 public:
-    CCInterpolatorCurveV3() {}
+    CCInterpolatorV3() {}
     
-    CCInterpolatorCurveV3(CCVector3 *inCurrent, const CCVector3 target)
+    CCInterpolatorV3(CCVector3 *inCurrent, const CCVector3 target)
     {
         setup( inCurrent, target );
     }
@@ -218,64 +243,71 @@ protected:
 
 
 
-class CCInterpolatorCurvesV3 : public CCInterpolator
+template <typename T> 
+class CCInterpolatorListV3 : public CCInterpolator
 {
 public:
-    ~CCInterpolatorCurvesV3()
+    CCInterpolatorListV3()
     {
         interpolators.deleteObjectsAndList();
     }
     
-    const bool pushV3(CCVector3 *inCurrent, const CCVector3 target, const bool replace=false);    
+    const bool pushV3(CCVector3 *inCurrent, const CCVector3 target, const bool replace=false)   
+    {
+        if( interpolators.length > 0 )
+        {
+            if( replace )
+            {
+                bool found = false;
+                for( int i=0; i<interpolators.length; ++i )
+                {
+                    CCInterpolatorV3<T> *interpolator = interpolators.list[i];
+                    if( interpolator->equals( inCurrent, target ) )
+                    {
+                        found = true;
+                        if( i != 0 )
+                        {
+                            interpolator->ready();
+                        }
+                    }
+                    else
+                    {
+                        interpolators.remove( interpolator );
+                        delete interpolator;
+                    }
+                }
+                
+                if( found )
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                for( int i=0; i<interpolators.length; ++i )
+                {
+                    CCInterpolatorV3<T> *interpolator = interpolators.list[i];
+                    if( interpolator->equals( inCurrent, target ) )
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+        
+        if( *inCurrent != target )
+        {
+            interpolators.add( new CCInterpolatorV3<T>( inCurrent, target ) );
+        }
+        return true;
+    }
+    
     const bool update(const float delta);
     
     const bool finished() { return interpolators.length == 0; }
     
 public:
-    CCList< CCInterpolatorCurveV3<CCInterpolatorCurve> > interpolators;
-};
-
-
-
-class CCInterpolatorLinearV3 : public CCInterpolator
-{
-public:
-    CCInterpolatorLinearV3() {}
-    
-    CCInterpolatorLinearV3(CCVector3 *inCurrent, const CCVector3 inTarget, CCLambdaCallback *inCallback=NULL)
-    {
-        setup( inCurrent, inTarget );
-
-        onInterpolated.deleteObjects();
-        if( inCallback != NULL )
-        {
-            onInterpolated.add( inCallback );
-        }
-    }
-    
-    const bool equals(CCVector3 *inCurrent, const CCVector3 inTarget)
-    { 
-        // Ignore if we're already doing this
-        if( current != inCurrent || target != inTarget )
-        {
-            return false;
-        }
-        return true;
-    }
-    
-    void setup(CCVector3 *inCurrent, const CCVector3 inTarget)
-    {
-        current = inCurrent;
-        target = inTarget;
-    }
-    
-    const bool update(const float delta);
-    
-    inline const CCVector3& getTarget() const { return target; }
-    
-protected:
-    CCVector3 *current;
-    CCVector3 target;
+    CCList< CCInterpolatorV3< T > > interpolators;
 };
 
 
@@ -364,78 +396,25 @@ protected:
 
 
 
-class CCInterpolatorLinearsV3 : public CCInterpolator
+class CCTimer : public CCUpdater
 {
 public:
-    ~CCInterpolatorLinearsV3()
+    CCTimer()
     {
-        interpolators.deleteObjectsAndList();
+        time = 0.0f;
+        updating = false;
+        interval = 0.0f;
     }
-
-    void clear()
-    {
-        while( interpolators.length > 0 )
-        {
-            CCInterpolatorLinearV3 *interpolator = interpolators.list[0];
-            interpolators.remove( interpolator );
-            delete interpolator;
-        }
-    }
+    const bool update(const float delta);
+    void start(const float timeout);
+    void stop();
+    void restart();
     
-    // replace: Deletes all the other pending interpolations and pushes this target to the front
-    const bool pushV3(CCVector3 *inCurrent, const CCVector3 target, const bool replace=false, CCLambdaCallback *inCallback=NULL)
-    {
-        if( interpolators.length > 0 )
-        {
-            if( replace )
-            {
-                bool found = false;
-                for( int i=0; i<interpolators.length; ++i )
-                {
-                    CCInterpolatorLinearV3 *interpolator = interpolators.list[0];
-                    if( interpolator->equals( inCurrent, target ) )
-                    {
-                        found = true;
-                    }
-                    else
-                    {
-                        interpolators.remove( interpolator );
-                        delete interpolator;
-                    }
-                }
-                
-                if( found )
-                {
-                    return false ;
-                }
-            }
-        }
-        
-        interpolators.add( new CCInterpolatorLinearV3( inCurrent, target, inCallback ) );
-        return true;
-    }
-    
-    const bool update(const float delta)
-    {
-        if( interpolators.length > 0 )
-        {
-            CCInterpolatorLinearV3 *interpolator = interpolators.list[0];
-            if( interpolator->update( delta * speed ) == false )
-            {
-                interpolators.remove( interpolator );
-                delete interpolator;
-                
-                return interpolators.length > 0;
-            }
-            return true;
-        }
-        return false;
-    }
-    
-    const bool finished() { return interpolators.length == 0; }
-    
-    CCList<CCInterpolatorLinearV3> interpolators;
+    bool updating;
+    float time;
+    float interval;
+    LAMBDA_SIGNAL onTime;
 };
 
 
-#endif // __CCInterpolatorS_H__
+#endif // __CCInterpolators_H__

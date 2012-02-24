@@ -19,7 +19,7 @@ long CCLazyCallback::activeID = 0;
 
 CCLazyCallback::CCLazyCallback()
 {
-    CCEngineThreadLock();
+    CCNativeThreadLock();
     
 #ifdef DEBUGON
     for( int i=0; i<activeCallbacks.length; ++i )
@@ -35,13 +35,13 @@ CCLazyCallback::CCLazyCallback()
     lazyPointer = this;
     lazyID = activeID++;
     activeCallbacks.add( lazyPointer );
-    CCEngineThreadUnlock();
+    CCNativeThreadUnlock();
 }
 
 
 CCLazyCallback::~CCLazyCallback()
 {
-    CCEngineThreadLock();
+    CCNativeThreadLock();
     
     activeCallbacks.remove( this );
     
@@ -56,13 +56,13 @@ CCLazyCallback::~CCLazyCallback()
     }
 #endif
     
-    CCEngineThreadUnlock();
+    CCNativeThreadUnlock();
 }
 
 
 const bool CCLazyCallback::isCallbackActive(void *pendingCallback, const long pendingID)
 {
-    CCEngineThreadLock();
+    CCNativeThreadLock();
     for( int i=0; i<activeCallbacks.length; ++i )
     {
         void *activeCallback = activeCallbacks.list[i];
@@ -73,7 +73,7 @@ const bool CCLazyCallback::isCallbackActive(void *pendingCallback, const long pe
             // Let's cross check with the callback's timestamp
             if( ((CCLazyCallback*)activeCallback)->lazyID == pendingID )
             {
-                CCEngineThreadUnlock();
+                CCNativeThreadUnlock();
                 return true;
             }
             
@@ -91,7 +91,7 @@ const bool CCLazyCallback::isCallbackActive(void *pendingCallback, const long pe
 #endif
         }
     }
-    CCEngineThreadUnlock();
+    CCNativeThreadUnlock();
     return false;
 }
 

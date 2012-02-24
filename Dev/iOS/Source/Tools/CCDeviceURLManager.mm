@@ -182,10 +182,10 @@ const bool CCDeviceURLManager::readyToRequest()
     }
     
 	// Copy over the recieved data
-	CCEngineThreadLock();
+	CCNativeThreadLock();
 	packet->request->state = CCURLRequest::failed;
     packet->request->data.set( (char*)[packet->data bytes], [packet->data length] );
-	CCEngineThreadUnlock();
+	CCNativeThreadUnlock();
     
     // Clear
     currentRequests.remove( packet );
@@ -216,11 +216,11 @@ const bool CCDeviceURLManager::readyToRequest()
 	// Copy over the recieved data
     if( packet->request->state == CCURLRequest::in_flight )
     {
-        CCEngineThreadLock();
+        CCNativeThreadLock();
         packet->request->state = CCURLRequest::succeeded;
         uint length = [packet->data length];
         packet->request->data.set( (char*)[packet->data bytes], length );
-        CCEngineThreadUnlock();
+        CCNativeThreadUnlock();
         
         currentRequests.remove( packet );
         delete packet;

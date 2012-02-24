@@ -104,7 +104,7 @@ void CCTextureFontPage::renderText(const char *text, const uint length,
 	}
 	if( centeredY )
 	{
-        start.y -= max.y * gEngine->renderer->aspectRatio;
+        start.y -= max.y * gEngine->renderer->getAspectRatio();
 	}
 	
     CCPoint currentStart = start;
@@ -139,7 +139,7 @@ void CCTextureFontPage::renderText(const char *text, const uint length,
 				texCoords[6] = letter->end.x;
 				texCoords[7] = letter->end.y;
 			
-				CCRenderSquare2D( currentStart, currentEnd, false );
+				CCRenderSquare( currentStart, currentEnd );
                 currentStart.x += charSize[i].x;
 			}
 		}
@@ -154,13 +154,8 @@ void CCTextureFontPage::renderText3D(const char *text, const uint length,
 #if defined PROFILEON
     CCProfiler profile( "CCTextureFontPage::renderText3D()" );
 #endif
-
-    // TODO: I draw these wrong, please fix me to work with back face culling
-    glCullFace( GL_FRONT );
-
+    
     ASSERT( length < MAX_TEXT_LENGTH );
-
-    bindTexturePage();
 
     // Find out our width so we can center the text
     int lineIndex = 0;
@@ -200,54 +195,98 @@ void CCTextureFontPage::renderText3D(const char *text, const uint length,
     }
     start.y += lineSize[0].y * 0.5f;
 
-    static CCVector3 currentStart, currentEnd;
-    currentStart.x = start.x;
-    currentStart.y = start.y;
-    currentStart.z = -z;
-    currentEnd.z = z;
-
-    CCSetTexCoords( texCoords );
+//    CCColour currentColour = CCGetColour();
+//    CCColour outlineColour = currentColour;
+//    //if( outline )
+//    {
+//        //outlineColour.red *= 1.25f;
+//        //outlineColour.green *= 1.25f;
+//        //outlineColour.blue *= 1.25f;
+//        outlineColour.alpha *= 0.25f;
+//    }
     
-    lineIndex = 0;
-    characterIndex = 0;
-    for( uint i=0; i<length; ++i )
-    {
-        char character = text[i];
-        if( character == '\n' )
+    // TODO: I draw these wrong, please fix me to work with back face culling
+    glCullFace( GL_FRONT );
+    
+    bindTexturePage();
+    
+    GLPushMatrix();
+        GLTranslatef( start.x, start.y, 0.0f );
+        
+        CCVector3 currentStart, currentEnd;
+        currentStart.z = -z;
+        currentEnd.z = z;
+
+        CCSetTexCoords( texCoords );
+        
+        lineIndex = 0;
+        characterIndex = 0;
+        for( uint i=0; i<length; ++i )
         {
-            currentStart.x = start.x;
-            currentStart.y -= lineSize[lineIndex].y;
-            lineIndex++;
-            characterIndex = 0;
-        }
-        else
-        {
-            const Letter *letter = getLetter( character );
-            if( letter != NULL )
+            char character = text[i];
+            if( character == '\n' )
             {
-                CCPoint &size = charSize[lineIndex][characterIndex];
-                
-                // Calculate end point
-                currentEnd.x = currentStart.x + size.x;
-                currentEnd.y = currentStart.y - size.y;
+                currentStart.x = start.x;
+                currentStart.y -= lineSize[lineIndex].y;
+                lineIndex++;
+                characterIndex = 0;
+            }
+            else
+            {
+                const Letter *letter = getLetter( character );
+                if( letter != NULL )
+                {
+                    CCPoint &size = charSize[lineIndex][characterIndex];
+                    
+                    // Calculate end point
+                    currentEnd.x = currentStart.x + size.x;
+                    currentEnd.y = currentStart.y - size.y;
 
-                texCoords[0] = letter->start.x;
-                texCoords[1] = letter->start.y;
-                texCoords[2] = letter->end.x;
-                texCoords[3] = letter->start.y;
-                texCoords[4] = letter->start.x;
-                texCoords[5] = letter->end.y;
-                texCoords[6] = letter->end.x;
-                texCoords[7] = letter->end.y;
+                    texCoords[0] = letter->start.x;
+                    texCoords[1] = letter->start.y;
+                    texCoords[2] = letter->end.x;
+                    texCoords[3] = letter->start.y;
+                    texCoords[4] = letter->start.x;
+                    texCoords[5] = letter->end.y;
+                    texCoords[6] = letter->end.x;
+                    texCoords[7] = letter->end.y;
+                    
+//                    if( outline )
+//                    {
+//                        CCSetColour( outlineColour );
+//                        renderOutline( currentStart, currentEnd, 1.1f );
+//                        CCSetColour( currentColour );
+//                    }
 
-                CCRenderSquare( currentStart, currentEnd );
-                currentStart.x += size.x;
-                characterIndex++;
+                    CCRenderSquare( currentStart, currentEnd );
+                    
+                    currentStart.x += size.x;
+                    characterIndex++;
+                }
             }
         }
-    }
+    GLPopMatrix();
 
     glCullFace( GL_BACK );
+}
+
+
+void CCTextureFontPage::renderOutline(CCVector3 start, CCVector3 end, const float multiple) const
+{
+    const float width = end.x - start.x;
+    const float height = end.y - start.y;
+    
+    const float outlineWidth = width * multiple;
+    const float outlineHeight = height * multiple;
+    
+    start.x += width * 0.5f;
+    start.y += height * 0.5f;
+    end = start;
+    start.x -= outlineWidth * 0.5f;
+    start.y -= outlineHeight * 0.5f;
+    end.x += outlineWidth * 0.5f;
+    end.y += outlineHeight * 0.5f;
+    CCRenderSquare( start, end );
 }
 
 
@@ -258,7 +297,7 @@ void CCTextureFontPage::view() const
     const CCPoint start = CCPoint( 0.0f, 0.4f );
     const CCPoint end = CCPoint( start.x, start.y );
 	
-	CCRenderSquare2D( start, end, false );
+	CCRenderSquare( start, end );
 	
 	gEngine->textureManager->setTextureIndex( 0 );
 }
@@ -272,7 +311,7 @@ const CCTextureFontPage::Letter* CCTextureFontPage::getLetter(const char charact
 	}
 	else if( character == -62 )
     {
-        return &letters[128];
+        return &letters[0];
 	}
 	
 	return NULL;

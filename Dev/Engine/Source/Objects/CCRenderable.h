@@ -37,6 +37,8 @@ public:
     void setPosition(const CCVector3 &vector);
     virtual void setPositionXYZ(const float x, const float y, const float z);
     void setPositionX(const float x);
+    void setPositionY(const float x);
+    void setPositionXY(const float x, const float z);
     void setPositionXZ(const float x, const float z);
 
     void translate(CCVector3 *vector);

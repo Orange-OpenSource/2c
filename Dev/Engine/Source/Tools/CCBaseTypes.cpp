@@ -334,6 +334,26 @@ void CCText::replaceChar(const char search, const char replace)
 }
 
 
+void CCText::replaceChars(const char *token, const char *replace)
+{
+    CCList<char> *tokenSplit = split( token );
+    CCText newText;
+    for( int i=0; i<tokenSplit->length; ++i )
+    {
+        const char *rawData = tokenSplit->list[i];
+        newText += rawData;
+        
+        if( i < tokenSplit->length-1 )
+        {
+            newText += replace;
+        }
+    }
+    DELETE_POINTER( tokenSplit );
+    
+    set( newText.buffer );
+}
+
+
 void CCText::splitBetween(CCText &source, const char *from, const char *to)
 {
     CCList<char> *list1 = source.split( from );

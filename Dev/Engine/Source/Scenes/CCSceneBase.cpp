@@ -60,11 +60,11 @@ void CCSceneBase::deleteLinkedScenesLater()
 }
 
 
-const bool CCSceneBase::handleControls(const CCTime &gameTime)
+const bool CCSceneBase::updateControls(const CCTime &time)
 {
     for( int i=0; i<childScenes.length; ++i )
     {
-        if( childScenes.list[i]->handleControls( gameTime ) )
+        if( childScenes.list[i]->updateControls( time ) )
         {
             return true;
         }
@@ -73,8 +73,10 @@ const bool CCSceneBase::handleControls(const CCTime &gameTime)
 }
 
 
-void CCSceneBase::update(const CCTime &gameTime)
+const bool CCSceneBase::update(const CCTime &time)
 {
+    bool updated = false;
+    
     // Remove any redundant scenes
     for( int i=0; i<childScenes.length; ++i )
     {
@@ -83,39 +85,52 @@ void CCSceneBase::update(const CCTime &gameTime)
         {
             removeChildScene( scene );
             i--;
+            updated = true;
         }
     }
 
     if( enabled )
     {
-        lifetime += gameTime.real;
-
-        updateScene( gameTime );
-        
-        // Update our child scenes
-        for( int i=0; i<childScenes.length; ++i )
-        {
-            CCSceneBase *scene = childScenes.list[i];
-            scene->update( gameTime );
-        }
-        
-        updateCamera( gameTime );
-        for( int i=0; i<childScenes.length; ++i )
-        {
-            childScenes.list[i]->updateCamera( gameTime );
-        }
+        updated |= updateTask( time );
     }
+    
+    return updated;
 }
 
 
-void CCSceneBase::updateScene(const CCTime &gameTime)
+const bool CCSceneBase::updateTask(const CCTime &time)
 {
+    lifetime += time.real;
+    
+    bool updated = updateScene( time );
+    
+    // Update our child scenes
+    for( int i=0; i<childScenes.length; ++i )
+    {
+        CCSceneBase *scene = childScenes.list[i];
+        updated |= scene->update( time );
+    }
+    
+    updateCamera( time );
+    for( int i=0; i<childScenes.length; ++i )
+    {
+        updated |= childScenes.list[i]->updateCamera( time );
+    }
+    
+    return updated;
+}
+
+
+const bool CCSceneBase::updateScene(const CCTime &time)
+{
+    bool updated = false;
+    
     for( int i=0; i<objects.length; ++i )
     {
         CCSceneObject *object = objects.list[i];
         if( object->isActive() )
         {
-            object->update( gameTime );
+            updated |= object->update( time );
         }
         else if( object->deleteMe > 0 )
         {
@@ -129,14 +144,16 @@ void CCSceneBase::updateScene(const CCTime &gameTime)
     
     for( int i=0; i<widgets.length; ++i )
     {
-        widgets.list[i]->update( gameTime );
+        updated |= widgets.list[i]->update( time );
     }
+    
+    return updated;
 }
 
 
-void CCSceneBase::updateCamera(const CCTime &gameTime)
+const bool CCSceneBase::updateCamera(const CCTime &time)
 {
-    
+    return false;
 }
 
 
@@ -145,7 +162,7 @@ const bool CCSceneBase::render(const CCCameraBase *inCamera, const int pass, con
     bool rendered = false;
     if( inCamera->getIndex() == 0 )
 	{
-        renderObjects( pass, alpha );
+        renderObjects( inCamera, pass, alpha );
         rendered = true;
 	}
 
@@ -158,7 +175,7 @@ const bool CCSceneBase::render(const CCCameraBase *inCamera, const int pass, con
 }
 
 
-void CCSceneBase::renderObjects(const int pass, const bool alpha)
+void CCSceneBase::renderObjects(const CCCameraBase *inCamera, const int pass, const bool alpha)
 {
 #if defined PROFILEON
     CCProfiler profile( "CCSceneBase::renderObjects()" );
@@ -171,7 +188,7 @@ void CCSceneBase::renderObjects(const int pass, const bool alpha)
         {
             if( object->isActive() && ( object->octreeRender == false ) )
             {
-                object->render( alpha );
+                object->renderObject( inCamera, alpha );
             }
         }
     }
@@ -182,7 +199,7 @@ void CCSceneBase::renderOctreeObject(CCSceneObject *object, const CCCameraBase *
 {
 	if( inCamera->getIndex() == 0 )
 	{
-        object->render( alpha );
+        object->renderObject( inCamera, alpha );
 	}
 }
 

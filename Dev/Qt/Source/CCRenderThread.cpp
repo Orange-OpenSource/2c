@@ -41,5 +41,7 @@ void QGLRenderThread::run()
         gEngine->updateEngineThread();
 
         glView->swapBuffers();
-    } while( glView->runningGame );
+    } while( gEngine->running );
+
+    gEngine->engineThreadRunning = false;
 }

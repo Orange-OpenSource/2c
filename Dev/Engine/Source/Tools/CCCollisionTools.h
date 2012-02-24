@@ -19,6 +19,7 @@
 
 class CCSceneCollideable;
 typedef struct CCOctree CCOctree;
+#include "CCPathFinderNetwork.h"
 
 struct CCCollisionManager
 {
@@ -26,10 +27,10 @@ struct CCCollisionManager
 	~CCCollisionManager();
 	
 	CCOctree *tree;
-	float pruneTrees;
+	float pruneTreesTimer;
     
-    CCSceneCollideable *objects[MAX_OBJECTS];
-    int length;
+    CCList<CCSceneCollideable> collideables;
+	CCPathFinderNetwork pathFinderNetwork;
 };
 
 

@@ -13,9 +13,7 @@
  *-----------------------------------------------------------
  */
 
-#ifndef QT
 precision mediump float;
-#endif
 
 // Globals
 uniform mat4 u_modelViewProjectionMatrix;
@@ -28,7 +26,7 @@ varying vec2 ps_texCoord;
 #ifdef VERTEX_SHADER
 
 // VS Input
-attribute vec4 vs_position;
+attribute highp vec4 vs_position;
 attribute vec2 vs_texCoord;
 
 void main()

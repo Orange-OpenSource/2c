@@ -70,7 +70,6 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event);
 
 public:
-    bool runningGame, paused, engineThreadRunning;
     bool handlingTouchEvent;
 
     QTime timer;

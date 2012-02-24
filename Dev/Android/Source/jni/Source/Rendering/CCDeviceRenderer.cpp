@@ -70,6 +70,12 @@ static const bool compileShader(GLuint *shader, GLenum type, const char *path)
 }
 
 
+CCDeviceRenderer::~CCDeviceRenderer()
+{
+    frameBufferManager.destoryAllFrameBuffers();
+}
+
+
 const bool CCDeviceRenderer::linkProgram(GLuint &program)
 {
     glLinkProgram( program );
@@ -142,12 +148,9 @@ const bool CCDeviceRenderer::loadShader(CCShader *shader)
 	
     // Bind attribute locations - this needs to be done prior to linking
 	glBindAttribLocation( shader->program, ATTRIB_VERTEX, "vs_position" );
-    DEBUG_OPENGL();
-    
-	glBindAttribLocation( shader->program, ATTRIB_COLOR, "vs_color" );
-    DEBUG_OPENGL();
-    
 	glBindAttribLocation( shader->program, ATTRIB_TEXCOORD, "vs_texCoord" );
+	glBindAttribLocation( shader->program, ATTRIB_COLOUR, "vs_colour" );
+	glBindAttribLocation( shader->program, ATTRIB_NORMAL, "vs_normal" );
     DEBUG_OPENGL();
 	
 	if( !linkProgram( shader->program ) )
@@ -189,14 +192,19 @@ const bool CCDeviceRenderer::loadShader(CCShader *shader)
 }
 
 
+const bool CCDeviceRenderer::createDefaultFrameBuffer(CCFrameBufferObject &fbo)
+{
+    fbo.setFrameBuffer( 0 );
+    fbo.width = gView->getWidth();
+    fbo.height = gView->getHeight();
+    return true;
+}
+
+
 void CCDeviceRenderer::refreshScreenSize()
 {
 	screenSize.width = gView->getWidth();
 	screenSize.height = gView->getHeight();
-
-	// On Android we always use the same back buffer as our view
-    backBufferWidth = screenSize.width;
-    backBufferHeight = screenSize.height;
 }
 
 

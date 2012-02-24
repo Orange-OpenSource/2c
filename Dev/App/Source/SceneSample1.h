@@ -25,16 +25,16 @@ public:
 	virtual void destruct();
     
 protected:
-	virtual void updateScene(const CCTime &gameTime);
-    virtual void updateCamera(const CCTime &gameTime);
+	virtual const bool updateScene(const CCTime &gameTime);
+    virtual const bool updateCamera(const CCTime &gameTime);
     
 public:
 	virtual void renderOctreeObject(CCSceneObject *object, const CCCameraBase *inCamera, const int pass, const bool alpha);
     
 protected:
-    virtual void touchPressed(const CCScreenTouches &touch);
+    virtual const bool touchPressed(const CCScreenTouches &touch);
     virtual const bool touchMoving(const CCScreenTouches &touch, const CCPoint &touchDelta);
-    virtual const bool touchReleased(const CCScreenTouches &touch);
+    virtual const bool touchReleased(const CCScreenTouches &touch, const CCTouchAction touchAction);
 
     virtual const bool touchCameraRotating(const float x, const float y);
 };

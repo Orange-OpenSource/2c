@@ -87,10 +87,9 @@ if( pointer != NULL )               \
     pointer = NULL;                 \
 }
 
-const bool RemoveFromList(const void *object, void **list, int *length);
 
 
-inline const bool HasFlag(const uint source, const uint flag)
+inline const bool CCHasFlag(const uint source, const uint flag)
 {
     const uint result = source & flag;
     if( result != 0 )
@@ -101,25 +100,21 @@ inline const bool HasFlag(const uint source, const uint flag)
     return false;
 }
 
-inline void AddFlag(uint &source, const uint flag)
+inline void CCAddFlag(uint &source, const uint flag)
 {
-    if( HasFlag( source, flag ) == false )
+    if( CCHasFlag( source, flag ) == false )
     {
         source |= flag;
     }
 }
 
-inline void RemoveFlag(uint &source, const uint flag)
+inline void CCRemoveFlag(uint &source, const uint flag)
 {
-    if( HasFlag( source, flag ) )
+    if( CCHasFlag( source, flag ) )
     {
         source ^= flag;
     }
 }
-
-
-extern void CCEngineThreadLock();
-extern void CCEngineThreadUnlock();
 
 
 #endif // __GLOBALTOOLS_H__

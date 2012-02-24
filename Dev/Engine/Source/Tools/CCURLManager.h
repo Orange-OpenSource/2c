@@ -46,7 +46,7 @@ struct CCURLRequest
         priority = 0;
         checkCache = true;
         cacheChecked = false;
-        timeout = 0.0f;
+        timeRequestable = 0.0f;
         timeRequested = -1.0f;
 	}
 
@@ -55,15 +55,15 @@ struct CCURLRequest
         onComplete.deleteObjectsAndList();
     }
 	
-    CCText url;                   // The URL to request
+    CCText url;                 // The URL to request
     int priority;
     LAMBDA_SIGNAL onComplete;   // The on complete callback
     RequestState state;         // The state of the request
-    CCText cacheFile;             // Cache the reply?
-    bool checkCache;            // Should we check the cahce?
+    CCText cacheFile;           // The filename to cache the result
+    bool checkCache;            // Should we check the cache?
     bool cacheChecked;          // Have we checked the cache?
-    float timeout;              // The time we can process this request
-    float timeRequested;        // The time when the request can be and was made
+    float timeRequestable;      // The time we can process this request
+    float timeRequested;        // The time when the request was made
     CCData data;
 
     CCPairList<CCText, CCText> header;

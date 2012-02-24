@@ -11,6 +11,7 @@
 
 #import "CCDefines.h"
 #import "CCDeviceControls.h"
+#include "CCViewManager.h"
 
 
 CCDeviceControls::CCDeviceControls()
@@ -76,7 +77,7 @@ void CCDeviceControls::touchEnd(NSSet *touches, UIEvent *event, CCGLView *view)
 
 void CCDeviceControls::touchHandle(NSSet* touches, CCGLView *view)
 {
-	const CCSize &screenSizeMultiple = gEngine->renderer->screenSizeMultiple;
+	const CCSize &inverseScreenSize = gEngine->renderer->getInverseScreenSize();
 	
  	NSArray *touchesArray = [touches allObjects];
 	for( uint i=0; i<[touchesArray count]; ++i )
@@ -85,8 +86,8 @@ void CCDeviceControls::touchHandle(NSSet* touches, CCGLView *view)
 		
 		CGPoint cgPosition = [touch locationInView:view];
 		CCPoint position( cgPosition.x, cgPosition.y );
-		position.x *= screenSizeMultiple.width;
-		position.y *= screenSizeMultiple.height;
+		position.x *= inverseScreenSize.width;
+		position.y *= inverseScreenSize.height;
 		
 		// Fill in our screen touches
 		for( uint touchIndex=0; touchIndex<numberOfTouches; ++touchIndex )
@@ -95,23 +96,23 @@ void CCDeviceControls::touchHandle(NSSet* touches, CCGLView *view)
 			if( screenTouch.usingTouch == NULL || screenTouch.usingTouch == touch )
 			{	
 				CCPoint screenPosition = position;
-				if( gEngine->renderer->orientation.target == 270.0f )
+				if( CCViewManager::GetOrientation().target == 270.0f )
 				{
 					CCSwapFloat( screenPosition.x, screenPosition.y );
 					screenPosition.y = 1.0f - screenPosition.y;
 				}
-				else if( gEngine->renderer->orientation.target == 90.0f )
+				else if( CCViewManager::GetOrientation().target == 90.0f )
 				{
 					CCSwapFloat( screenPosition.x, screenPosition.y );
 					screenPosition.x = 1.0f - screenPosition.x;
 				}
-				else if( gEngine->renderer->orientation.target == 180.0f )
+				else if( CCViewManager::GetOrientation().target == 180.0f )
 				{
 					screenPosition.x = 1.0f - screenPosition.x;
 					screenPosition.y = 1.0f - screenPosition.y;
 				}
                 
-				CCEngineThreadLock();
+				CCNativeThreadLock();
 				if( screenTouch.usingTouch != NULL )
 				{
 					screenTouch.delta.x += screenPosition.x - screenTouch.position.x;
@@ -134,7 +135,7 @@ void CCDeviceControls::touchHandle(NSSet* touches, CCGLView *view)
 				}
 				screenTouch.position = screenPosition;
 				screenTouch.usingTouch = touch;
-				CCEngineThreadUnlock();
+				CCNativeThreadUnlock();
 				
 				break;
 			}

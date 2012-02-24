@@ -22,6 +22,7 @@ CCDeviceRenderer::CCDeviceRenderer()
 
 CCDeviceRenderer::~CCDeviceRenderer()
 {
+    frameBufferManager.destoryAllFrameBuffers();
 }
 
 
@@ -41,7 +42,7 @@ const bool CCDeviceRenderer::loadShader(CCShader *shader)
     shaderFilename += shader->name;
     shaderFilename += ".fx";
 
-    const char *qtDefines = "#define QT\r\n";
+    const char *qtDefines = "#define QT\r\n#define precision\r\n#define lowp\r\n#define mediump\r\n#define highp\r\n";
 
     QGLShader *vertexShader = new QGLShader( QGLShader::Vertex );
     QGLShader *fragmentShader = new QGLShader( QGLShader::Fragment );
@@ -88,8 +89,9 @@ const bool CCDeviceRenderer::loadShader(CCShader *shader)
     // Bind attribute locations
     // this needs to be done prior to linking
     shader->program->bindAttributeLocation( "vs_position", ATTRIB_VERTEX );
-    shader->program->bindAttributeLocation( "vs_color",	ATTRIB_COLOR );
     shader->program->bindAttributeLocation( "vs_texCoord", ATTRIB_TEXCOORD );
+    shader->program->bindAttributeLocation( "vs_colour",	ATTRIB_COLOUR );
+    shader->program->bindAttributeLocation( "vs_normal", ATTRIB_NORMAL );
 	
     // Link program
     if( !shader->program->link() )
@@ -102,12 +104,22 @@ const bool CCDeviceRenderer::loadShader(CCShader *shader)
 }
 
 
+const bool CCDeviceRenderer::createDefaultFrameBuffer(CCFrameBufferObject &fbo)
+{
+    fbo.setFrameBuffer( NULL );
+    fbo.width = gView->rect().width();
+    fbo.height = gView->rect().height();
+    return true;
+}
+
+
 void CCDeviceRenderer::refreshScreenSize()
 {
     screenSize = CCSize( gView->rect().width(), gView->rect().height() );
 
-    backBufferWidth = screenSize.width;
-    backBufferHeight = screenSize.height;
+    CCFrameBufferObject &fbo = frameBufferManager.defaultFBO;
+    fbo.width = screenSize.width;
+    fbo.height = screenSize.height;
 }
 
 

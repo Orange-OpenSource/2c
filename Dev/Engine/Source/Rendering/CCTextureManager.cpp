@@ -25,7 +25,7 @@ CCTextureHandle::~CCTextureHandle()
 
 CCTextureManager::CCTextureManager()
 {
-	currentTextureHandle = 0;
+	currentGLTexture = 0;
     totalTexturesLoaded = 0;
     totalTextureSpace = 0;
     totalTexturesLoadedThisFrame = 0;
@@ -55,7 +55,7 @@ void CCTextureManager::prepareRender()
     bool cameraMoving = false;
     for( int i=0; i<gEngine->cameras.length; ++i )
     {
-        if( gEngine->cameras.list[i]->updatedPosition )
+        if( gEngine->cameras.list[i]->hasUpdated() )
         {
             cameraMoving = true;
             break;
@@ -73,7 +73,7 @@ void CCTextureManager::prepareRender()
         textureLoadLimit = 2;
     }
     
-    textureLoadingTimeout -= gEngine->gameTime.real;
+    textureLoadingTimeout -= gEngine->time.real;
     if( textureLoadingTimeout <= 0.0f )
     {
         totalTexturesLoadedThisFrame = 0;
@@ -171,7 +171,7 @@ const bool CCTextureManager::loadTexture(CCTextureHandle &textureHandle)
                         {
                             if( handle->texture != NULL )
                             {
-                                const float distance = gEngine->gameTime.lifetime - handle->lastTimeUsed;
+                                const float distance = gEngine->time.lifetime - handle->lastTimeUsed;
                                 if( distance > longestTime )
                                 {
                                     longestTime = distance;
@@ -203,10 +203,10 @@ const bool CCTextureManager::loadTexture(CCTextureHandle &textureHandle)
 
 void CCTextureManager::bindTexture(const uint glName)
 {
-	if( currentTextureHandle != glName )
+	if( currentGLTexture != glName )
 	{
 		glBindTexture( GL_TEXTURE_2D, glName );
-		currentTextureHandle = glName;
+		currentGLTexture = glName;
 	}
 }
 
@@ -237,7 +237,7 @@ const bool CCTextureManager::setTextureIndex(const int handleIndex)
             }
         }
 
-        handle->lastTimeUsed = gEngine->gameTime.lifetime;
+        handle->lastTimeUsed = gEngine->time.lifetime;
         bindTexture( handle->texture->glName );
         return true;
 	}

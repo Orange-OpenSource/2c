@@ -27,10 +27,12 @@ public class CCJNI
 	
 	static CCActivity activity;
 	static String dataPath;
+	static String packageName;
 
     public static void setActivity(CCActivity inActivity)
     {
     	CCJNI.activity = inActivity;
+    	packageName = activity.getPackageName();
     	dataPath = activity.getFilesDir().getAbsolutePath();
     	fileManagerSetPaths( activity.getPackageResourcePath(), dataPath );
     }

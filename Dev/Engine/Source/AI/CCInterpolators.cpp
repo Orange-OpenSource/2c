@@ -23,7 +23,7 @@ void CCInterpolator::setDuration(const float duration)
 
 
 
-const bool CCInterpolatorCurve::equals(float *inCurrent, const float inTarget)
+const bool CCInterpolatorSin2Curve::equals(float *inCurrent, const float inTarget)
 { 
     // Ignore if we're already doing this
     if( current == inCurrent && target == inTarget )
@@ -34,27 +34,30 @@ const bool CCInterpolatorCurve::equals(float *inCurrent, const float inTarget)
 }
 
 
-void CCInterpolatorCurve::setup(float *inCurrent, const float inTarget)
+void CCInterpolatorSin2Curve::setup(float *inCurrent, const float inTarget, const bool force)
 {
-    setup( inCurrent );
-    setTarget( inTarget );
+    if( force || current != inCurrent || target != inTarget )
+    {
+        setCurrent( inCurrent );
+        setTarget( inTarget );
+    }
 }
 
 
-void CCInterpolatorCurve::setup(float *inCurrent)
+void CCInterpolatorSin2Curve::setCurrent(float *inCurrent)
 {
     current = inCurrent;
 }
 
 
-void CCInterpolatorCurve::setTarget(float inTarget)
+void CCInterpolatorSin2Curve::setTarget(float inTarget)
 {
     target = inTarget;
     ready();
 }
 
 
-void CCInterpolatorCurve::ready()
+void CCInterpolatorSin2Curve::ready()
 {
     if( current != NULL )
     {
@@ -65,16 +68,39 @@ void CCInterpolatorCurve::ready()
 }
 
 
-const bool CCInterpolatorCurve::update(const float delta)
+const bool CCInterpolatorSin2Curve::incrementAmount(const float delta)
+{
+    if( CCToTarget( amount, 1.0f, delta * speed ) )
+    {
+        return true;
+    }
+    return false;
+}
+
+
+const float CCInterpolatorSin2Curve::calculatePercentage()
+{
+    static const float interpolationCurveMultiple = 1.0f / sinf( 2.0f );
+    const float percentage = sinf( amount * 2.0f ) * interpolationCurveMultiple;
+    return percentage;
+}
+
+
+void CCInterpolatorSin2Curve::updateInterpolation(const float percentage)
+{
+    const float movement = length * percentage;
+    *current = movement + start;
+}
+
+
+const bool CCInterpolatorSin2Curve::update(const float delta)
 {
     if( current != NULL )
     {
-        if( CCToTarget( amount, 1.0f, delta * speed ) )
+        if( incrementAmount( delta ) )
         {
-            static const float interpolationCurveMultiple = 1.0f / sinf( 2.0f );
-            const float percentage = sinf( amount * 2.0f ) * interpolationCurveMultiple;
-            const float movement = length * percentage;
-            *current = movement + start;
+            const float percentage = calculatePercentage();
+            updateInterpolation( percentage );
             return true;
         }
         else if( *current != target )
@@ -100,120 +126,49 @@ const bool CCInterpolatorCurve::update(const float delta)
 
 
 
-const bool CCInterpolatorX2Curve::update(const float delta)
+const float CCInterpolatorX2Curve::calculatePercentage()
 {
-    if( CCToTarget( amount, 1.0f, delta * speed ) )
-    {
-        const float percentage = amount * amount;
-        const float movement = length * percentage;
-        *current = movement + start;
-        return true;
-    }
-    else if( current && *current != target )
-    {
-        *current = target;
-        return true;
-    }
-    return false;
-}
-
-
-const bool CCInterpolatorX3Curve::update(const float delta)
-{
-    if( CCToTarget( amount, 1.0f, delta * speed ) )
-    {
-        const float sudoAmount = amount - 1.0f;
-        const float percentage = 1.0f + ( sudoAmount * sudoAmount * sudoAmount );
-        const float movement = length * percentage;
-        *current = movement + start;
-        return true;
-    }
-    else if( current && *current != target )
-    {
-        *current = target;
-        return true;
-    }
-    return false;
+    const float percentage = amount * amount;
+    return percentage;
 }
 
 
 
-const bool CCInterpolatorSinCurve::update(const float delta)
+const float CCInterpolatorX3Curve::calculatePercentage()
 {
-    if( CCToTarget( amount, 1.0f, delta * speed ) )
-    {
-        static const float interpolationCurveMultiple = 1.0f / sinf( CC_HPI );
-        const float percentage = sinf( amount * CC_HPI ) * interpolationCurveMultiple;
-        const float movement = length * percentage;
-        *current = movement + start;
-        return true;
-    }
-    else if( current && *current != target )
-    {
-        *current = target;
-        return true;
-    }
-    return false;
+    const float sudoAmount = amount - 1.0f;
+    const float percentage = 1.0f + ( sudoAmount * sudoAmount * sudoAmount );
+    return percentage;
 }
 
 
 
-const bool CCInterpolatorCurvesV3::pushV3(CCVector3 *inCurrent, const CCVector3 target, const bool replace)
+const float CCInterpolatorSinCurve::calculatePercentage()
+{
+    static const float interpolationCurveMultiple = 1.0f / sinf( CC_HPI );
+    const float percentage = sinf( amount * CC_HPI ) * interpolationCurveMultiple;
+    return percentage;
+}
+
+
+
+const float CCInterpolatorLinear::calculatePercentage()
+{
+    return amount;
+}
+
+
+
+template class CCInterpolatorListV3<CCInterpolatorSin2Curve>;
+template class CCInterpolatorListV3<CCInterpolatorLinear>;
+
+
+template <typename T>
+const bool CCInterpolatorListV3<T>::update(const float delta)
 {
     if( interpolators.length > 0 )
     {
-        if( replace )
-        {
-            bool found = false;
-            for( int i=0; i<interpolators.length; ++i )
-            {
-                CCInterpolatorCurveV3<CCInterpolatorCurve> *interpolator = interpolators.list[i];
-                if( interpolator->equals( inCurrent, target ) )
-                {
-                    found = true;
-                    if( i != 0 )
-                    {
-                        interpolator->ready();
-                    }
-                }
-                else
-                {
-                    interpolators.remove( interpolator );
-                    delete interpolator;
-                }
-            }
-            
-            if( found )
-            {
-                return false;
-            }
-        }
-        else
-        {
-            for( int i=0; i<interpolators.length; ++i )
-            {
-                CCInterpolatorCurveV3<CCInterpolatorCurve> *interpolator = interpolators.list[i];
-                if( interpolator->equals( inCurrent, target ) )
-                {
-                    return false;
-                }
-            }
-        }
-    }
-    
-    if( *inCurrent != target )
-    {
-        interpolators.add( new CCInterpolatorCurveV3<CCInterpolatorCurve>( inCurrent, target ) );
-    }
-    return true;
-}
-
-
-const bool CCInterpolatorCurvesV3::update(const float delta)
-{
-    if( interpolators.length > 0 )
-    {
-        CCInterpolatorCurveV3<CCInterpolatorCurve> *interpolator = interpolators.list[0];
+        CCInterpolatorV3<T> *interpolator = interpolators.list[0];
         if( interpolator->update( delta * speed ) == false )
         {
             interpolators.remove( interpolator );
@@ -233,6 +188,7 @@ const bool CCInterpolatorCurvesV3::update(const float delta)
     }
     return false;
 }
+
 
 
 const bool CCInterpolatorLinearColour::update(const float delta)
@@ -269,21 +225,40 @@ const bool CCInterpolatorLinearColour::update(const float delta)
 }
 
 
-const bool CCInterpolatorLinearV3::update(const float delta)
+
+// CCTimer
+const bool CCTimer::update(const float delta)
 {
-    if( current->toTarget( target, delta * speed ) )
+    if( updating )
     {
+        const float real = gEngine->time.real;
+        time -= real;
+        if( time <= 0.0f )
+        {
+            updating = false;
+            LAMBDA_EMIT( onTime );
+        }
         return true;
     }
-    else if( onInterpolated.length > 0 )
-    {
-        LAMBDA_SIGNAL pendingCallbacks;
-        for( int i=0; i<onInterpolated.length; ++i )
-        {
-            pendingCallbacks.add( onInterpolated.list[i] );
-        }
-        onInterpolated.length = 0;
-        LAMBDA_EMIT_ONCE( pendingCallbacks );
-    }
     return false;
+}
+
+
+void CCTimer::start(const float timeout)
+{
+    interval = timeout * 0.001f; // Milliseconds to seconds
+    restart();
+}
+
+
+void CCTimer::stop()
+{
+    updating = false;
+}
+
+
+void CCTimer::restart()
+{
+    time = interval;
+    updating = true;
 }

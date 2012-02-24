@@ -96,7 +96,7 @@ bool CCMatrixInvert(const float m[16], float invOut[16])
 
 // Render functions
 //-----------------
-void CCRenderSquare2D(const CCPoint &start, const CCPoint &end, const bool outline)
+void CCRenderSquare(const CCPoint &start, const CCPoint &end, const bool outline)
 {
 #if defined PROFILEON
     CCProfiler profile( "CCRenderSquare()" );
@@ -183,7 +183,7 @@ void CCRenderRectanglePoint(const CCPoint &position, const float &sizeX, const f
 	end.x = position.x + sizeX;
 	end.y = position.y + sizeY;
 	
-	CCRenderSquare2D( start, end, outline );
+	CCRenderSquare( start, end, outline );
 }
 
 
@@ -197,42 +197,7 @@ void CCRenderLine(const CCVector3 &start, const CCVector3 &end)
 	
     CCSetViewMatrix();
 	GLVertexPointer( 3, GL_FLOAT, 0, vertices );
-	glDrawArrays( GL_LINE_STRIP, 0, 2 );
-}
-
-
-void CCRenderLineTarget()
-{
-#define size 0.5f
-	static const float vertices[] =
-	{
-		-1.0f, size, 0.0f,
-		-1.0f, 1.0f, 0.0f,
-		-1.0f, 1.0f, 0.0f,
-		-1.0f + size, 1.0f, 0.0f,
-		
-		1.0f, size, 0.0f,
-		1.0f, 1.0f, 0.0f,
-		1.0f, 1.0f, 0.0f,
-		1.0f - size, 1.0f, 0.0f,
-		
-		-1.0f, -size, 0.0f,
-		-1.0f, -1.0f, 0.0f,
-		-1.0f, -1.0f, 0.0f,
-		-1.0f + size, -1.0f, 0.0f,
-		
-		1.0f, -size, 0.0f,
-		1.0f, -1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f,
-		1.0f - size, -1.0f, 0.0f,
-		
-	};
-#undef size
-	static const uint numberOfVerts = sizeof( vertices ) / sizeof( float ) / 3;
-	
-    CCSetViewMatrix();
-	GLVertexPointer( 3, GL_FLOAT, 0, vertices );
-	glDrawArrays( GL_LINES, 0, numberOfVerts );
+	glDrawArrays( GL_LINES, 0, 2 );
 }
 
 
@@ -323,6 +288,7 @@ void CCRenderCubeMinMax(const CCVector3 min, const CCVector3 max, const bool out
 // Shader functions
 //-----------------
 static CCColour currentColour = CCColour();
+
 void CCSetColour(const CCColour &colour)
 {
     if( currentColour.equals( colour ) == false )
@@ -333,9 +299,9 @@ void CCSetColour(const CCColour &colour)
 }
 
 
-const bool CCColourHasAlpha()
+const CCColour& CCGetColour()
 {
-	return currentColour.alpha < 1.0f;
+    return currentColour;
 }
 
 
@@ -362,15 +328,28 @@ void CCDefaultTexCoords()
 }
 
 
+void CCInverseTexCoords()
+{
+	static const float texCoords[] = 
+	{
+		0.0f, -1.0f,
+		1.0f, -1.0f,
+		0.0f, 0.0f,
+		1.0f, 0.0f
+	};
+	CCSetTexCoords( texCoords );
+}
+
+
 bool gUseProjectionMatrix = false;
 void CCSetViewMatrix()
 {
-    CCMatrix &modelViewMatrix = pushedMatrix[currentPush];
+    CCMatrix &modelViewMatrix = CCCameraBase::currentCamera->pushedMatrix[CCCameraBase::currentCamera->currentPush];
     static CCMatrix modelViewProjectionMatrix;
     modelViewProjectionMatrix = modelViewMatrix;
     if( gUseProjectionMatrix )
     {
-        CCMatrixMultiply( modelViewProjectionMatrix, modelViewMatrix, gEngine->currentCamera->projectionMatrix );
+        CCMatrixMultiply( modelViewProjectionMatrix, modelViewMatrix, CCCameraBase::currentCamera->getProjectionMatrix() );
     }
     
     const GLint *uniforms = gEngine->renderer->getShader()->uniforms;

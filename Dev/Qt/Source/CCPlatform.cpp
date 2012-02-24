@@ -13,15 +13,24 @@
 #include "CCBaseTypes.h"
 
 
-void CCEngineThreadLock()
+void CCNativeThreadLock()
 {
 }
 
 
-void CCEngineThreadUnlock()
+void CCNativeThreadUnlock()
 {
 }
 
+
+void CCJobsThreadLock()
+{
+}
+
+
+void CCJobsThreadUnlock()
+{
+}
 
 
 #include <QtCore/QCoreApplication>

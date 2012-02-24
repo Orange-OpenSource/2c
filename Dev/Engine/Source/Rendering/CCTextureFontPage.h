@@ -22,6 +22,8 @@
 class CCTextureFontPage
 {
 public:
+    virtual ~CCTextureFontPage() {}
+    
     inline const char* getName() const { return name; }
     const float getWidth(const char *text, const uint length, const float size) const;
     const float getHeight(const char *text, const uint length, const float size) const;
@@ -32,6 +34,8 @@ public:
 
     void renderText3D(const char *text, const uint length, const float x, const float y, const float z,
                       const float height=1.0f, const bool centeredX=true) const;
+    
+    void renderOutline(CCVector3 start, CCVector3 end, const float multiple) const;
     
     void view() const;
 

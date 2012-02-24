@@ -29,6 +29,7 @@ public class CCActivity extends Activity
 {
 	RelativeLayout layout;
     CCGLViewJNI glView = null;
+    //CCGLViewJNIDebug glView = null;
     CCWebViewJNI webView = null;
     CCVideoViewJNI videoView = null;
     
@@ -42,6 +43,7 @@ public class CCActivity extends Activity
         CCJNI.setActivity( this );
         
         glView = new CCGLViewJNI( getApplication() );
+        //glView = new CCGLViewJNIDebug( getApplication() );
         layout = new RelativeLayout( this );
         layout.addView( glView );
         

@@ -18,7 +18,6 @@
 
 
 #define CC_DOUBLE_TAP_THRESHOLD 0.2f
-#define CC_TOUCH_TO_MOVEMENT_THRESHOLD 0.025f
 #define CC_MIN_MOVEMENT_THRESHOLD 0.1f
 
 
@@ -30,6 +29,14 @@ enum CCTouchAction
 	touch_moving,
 	touch_released,
 	touch_lost
+};
+
+
+enum CCTwoTouchAction
+{
+    twotouch_unassigned,
+    twotouch_zooming,
+    twotouch_rotating,
 };
 
 
@@ -47,7 +54,7 @@ struct CCScreenTouches
     CCPoint startPosition, position, delta, totalDelta, lastTotalDelta;
 	float timeHeld, lastTimeReleased;
 	
-    enum { max_last_deltas = 100 };
+    enum { max_last_deltas = 50 };
     struct TimedDelta
     {
         TimedDelta()
@@ -77,19 +84,30 @@ public:
 	void render();
 	
 	// Synchronizes the controls
-	void update(const CCTime &gameTime);
+	void update(const CCTime &time);
+    
+    // Update our touch logic
+    static void UpdateTouch(CCScreenTouches &touch, const CCTime &time);
     
 protected:
    	void unTouch(void *touch);
     
 public:
-	const bool detectZoomTouch();
-    static const bool touchActionMoving(const CCTouchAction touchAction);
+	static const bool DetectZoomGesture(const CCScreenTouches &touch1, const CCScreenTouches &touch2);
+	static const bool DetectRotateGesture(const CCScreenTouches &touch1, const CCScreenTouches &touch2);
+    static const bool TouchActionMoving(const CCTouchAction touchAction);
+    
+    const CCScreenTouches* getScreenTouches() { return screenTouches; }
+    static const CCPoint& GetTouchMovementThreashold() { return touchMovementThreashold; }
+    static void RefreshTouchMovementThreashold();
 	
 public:
-	bool inUse;
 	enum { numberOfTouches = 2 };
+    
+protected:
+	bool inUse;
 	CCScreenTouches screenTouches[numberOfTouches];
+    static CCPoint touchMovementThreashold;
 };
 
 

@@ -11,23 +11,29 @@
 
 #include "CCDefines.h"
 #include "CCObjects.h"
+#include "CCViewManager.h"
+
+
+CCCameraBase *CCCameraBase::currentCamera = NULL;
 
 
 CCCameraBase::CCCameraBase()
 {
-    aspectRatio = 1.0f;
-
     enabled = true;
-    updatedPosition = false;
-    
     index = 0;
+    frameBufferId = -1;
+    
     updating = true;
+    updatedPosition = false;
     updateFOV = false;
+    
+    aspectRatio = 1.0f;
+    perspective = 60.0f;
     zNear = 1.0f;
     zFar = 3000.0f;
-    
-    visiblesList = NULL;
 	
+    CCMatrixLoadIdentity( modelViewMatrix );
+    
     // Initialise frustum
     for( uint x=0; x<6; ++x )
     {
@@ -36,46 +42,69 @@ CCCameraBase::CCCameraBase()
              frustum[x][y] = 0.0f;
         }
     }
-
-    CCMatrixLoadIdentity( modelViewMatrix );
+    
+    visiblesList = NULL;
 }
 
 
-void CCCameraBase::setupViewport(const CCCameraBase *inCamera)
+void CCCameraBase::setupViewport(float x, float y, float width, float height, const int frameBufferId)
 {
-    setupViewport( inCamera->cameraX, inCamera->cameraY, inCamera->cameraW, inCamera->cameraH );
-}
-
-
-void CCCameraBase::setupViewport(const float x, const float y, const float width, const float height)
-{
+    this->frameBufferId = frameBufferId;
+    
+    viewportX = x;
+    viewportY = y;
+    viewportX2 = x+width;
+    viewportY2 = y+height;
+    viewportW = width;
+    viewportH = height;
+    invViewportW = 1.0f / viewportW;
+    invViewportH = 1.0f / viewportH;
+    
+    if( frameBufferId == -1 )
+    {
+        const CCTarget<float> &orientation = CCViewManager::GetOrientation();
+        if( orientation.target == 270.0f )
+        {
+            CCSwapFloat( x, y );
+            CCSwapFloat( width, height );
+            x = 1.0f - width - x;
+        }
+        else if( orientation.target == 90.0f )
+        {
+            CCSwapFloat( x, y );
+            CCSwapFloat( width, height );
+            y = 1.0f - height - y;
+        }
+        else if( orientation.target == 180.0f )
+        {
+            x = 1.0f - width - x;
+            y = 1.0f - height - y;
+        }
+        else
+        {
+        }
+    }
+    
     const float invY = ( 1.0f-height ) - y;
     
-    const float backBufferWidth = gEngine->renderer->getBackBufferWidth();
-    const float backBufferHeight = gEngine->renderer->getBackBufferHeight();
-    const float definedWidth = width * backBufferWidth;
-    const float definedHeight = height * backBufferHeight;
-    viewport[0] = x * backBufferWidth;
-    viewport[1] = invY * backBufferHeight;
+    const float frameBufferWidth = gEngine->renderer->frameBufferManager.getWidth( frameBufferId );
+    const float frameBufferHeight = gEngine->renderer->frameBufferManager.getHeight( frameBufferId );
+    const float definedWidth = width * frameBufferWidth;
+    const float definedHeight = height * frameBufferHeight;
+    viewport[0] = x * frameBufferWidth;
+    viewport[1] = invY * frameBufferHeight;
     viewport[2] = definedWidth;
     viewport[3] = definedHeight;
-
-    cameraX = x;
-    cameraY = y;
-    cameraW = width;
-    cameraH = height;
-    invCameraW = 1.0f / cameraW;
-    invCameraH = 1.0f / cameraH;
     
     aspectRatio = definedWidth / definedHeight;
     
-    GluPerspective( 60.0f, aspectRatio );
+    setPerspective( perspective );
 }
 
 
-void CCCameraBase::refreshViewport()
+void CCCameraBase::recalcViewport()
 {
-    setupViewport( this );
+    setupViewport( viewportX, viewportY, viewportW, viewportH, frameBufferId );
 }
 
 
@@ -87,32 +116,42 @@ void CCCameraBase::setViewport()
 
 
 void CCCameraBase::setNearFar(const float zNear, const float zFar)
-{	
+{
     this->zNear = zNear;
     this->zFar = zFar;
-    GluPerspective( 60.0f, aspectRatio );
+    setPerspective( perspective );
+}
+
+
+void CCCameraBase::setPerspective(const float perspective)
+{
+    this->perspective = perspective;
+    GluPerspective( perspective, aspectRatio );
 }
 
 
 const bool CCCameraBase::project3D(float x, float y)
 {
-    gEngine->renderer->correctOrientation( x, y );
+    if( frameBufferId == -1 )
+    {
+        CCViewManager::CorrectOrientation( x, y );
+    }
 	
 	x *= viewport[2];
 	y *= viewport[3];
     y += viewport[1];
 
-    if( GluUnProject( x, y, 0.0f, projection.vNear ) &&
-        GluUnProject( x, y, 1.0f, projection.vFar ) )
+    if( GluUnProject( x, y, 0.0f, projectionResults.vNear ) &&
+        GluUnProject( x, y, 1.0f, projectionResults.vFar ) )
 	{
 		// Figure out our ray's direction
-        projection.vDirection = projection.vFar;
-        projection.vDirection.sub( projection.vNear );
-        projection.vDirection.unitize();
+        projectionResults.vDirection = projectionResults.vFar;
+        projectionResults.vDirection.sub( projectionResults.vNear );
+        projectionResults.vDirection.unitize();
         
-        projection.vLookAt = projection.vNear;
-        CCVector3 projectionOffset = CCVector3MulResult( projection.vDirection, projection.vNear.z );
-        projection.vLookAt.add( projectionOffset );
+        projectionResults.vLookAt = projectionResults.vNear;
+        CCVector3 projectionOffset = CCVector3MulResult( projectionResults.vDirection, projectionResults.vNear.z );
+        projectionResults.vLookAt.add( projectionOffset );
         
 		return true;
 	}
@@ -128,11 +167,11 @@ void CCCameraBase::project3DY(CCVector3 *result, float x, float y, float offset)
 		// Cast the ray from our near plane
 		if( offset == -1.0f )
 		{
-            offset = projection.vNear.y / fabsf( projection.vDirection.y );
+            offset = projectionResults.vNear.y / fabsf( projectionResults.vDirection.y );
 		}
 	
-        *result = CCVector3MulResult( projection.vDirection, offset );
-        result->add( projection.vNear );
+        *result = CCVector3MulResult( projectionResults.vDirection, offset );
+        result->add( projectionResults.vNear );
 	}
 }
 
@@ -144,11 +183,11 @@ void CCCameraBase::project3DZ(CCVector3 *result, float x, float y, float offset)
         // Cast the ray from our near plane
         if( offset == -1.0f )
         {
-            offset = projection.vNear.z / fabsf( projection.vDirection.z );
+            offset = projectionResults.vNear.z / fabsf( projectionResults.vDirection.z );
         }
 		
-        *result = CCVector3MulResult( projection.vDirection, offset );
-        result->add( projection.vNear );
+        *result = CCVector3MulResult( projectionResults.vDirection, offset );
+        result->add( projectionResults.vNear );
     }
 }
 
@@ -160,7 +199,7 @@ void CCCameraBase::scanFOVBounds()
         if( i == scan_flat )
         {
             CCMatrixLoadIdentity( modelViewMatrix );
-            CCMatrixRotate( modelViewMatrix, gEngine->renderer->orientation.current, 0.0f, 0.0f, 1.0f );
+            CCMatrixRotate( modelViewMatrix, CCViewManager::GetOrientation().current, 0.0f, 0.0f, 1.0f );
             GluLookAt( modelViewMatrix,
                        position.x, position.y, position.z,	// Position
                        lookAt.x, lookAt.y, lookAt.z,		// Looking At
@@ -171,13 +210,13 @@ void CCCameraBase::scanFOVBounds()
         project3DZ( &minPlane, 0.0f, 1.0f );
         project3DZ( &maxPlane, 1.0f, 0.0f );
         
-        FOVScan &fovScan = fovScans[i];
-        fovScan.size.x = fabsf( maxPlane.x - minPlane.x );
-        fovScan.size.y = fabsf( maxPlane.y - minPlane.y );
-        fovScan.min.x = minPlane.x;
-        fovScan.min.y = minPlane.y;
-        fovScan.max.x = maxPlane.x;
-        fovScan.max.y = maxPlane.y;
+        FOVBounds &bounds = fovBounds[i];
+        bounds.size.x = fabsf( maxPlane.x - minPlane.x );
+        bounds.size.y = fabsf( maxPlane.y - minPlane.y );
+        bounds.min.x = minPlane.x;
+        bounds.min.y = minPlane.y;
+        bounds.max.x = maxPlane.x;
+        bounds.max.y = maxPlane.y;
     }
 }
 
@@ -200,7 +239,10 @@ void CCCameraBase::update()
     }
     
 	CCMatrixLoadIdentity( modelViewMatrix );
-    CCMatrixRotate( modelViewMatrix, gEngine->renderer->orientation.current, 0.0f, 0.0f, 1.0f );
+    if( frameBufferId == -1 )
+    {
+        CCMatrixRotate( modelViewMatrix, CCViewManager::GetOrientation().current, 0.0f, 0.0f, 1.0f );
+    }
     GluLookAt( modelViewMatrix,
 			   rotatedPosition.x, rotatedPosition.y, rotatedPosition.z,	// Position
 			   lookAt.x, lookAt.y, lookAt.z,                            // Looking At
@@ -246,10 +288,10 @@ const CCVector3 CCCameraBase::getDirection()
 
 void CCCameraBase::updateControls()
 {
-    CCScreenTouches *screenTouches = (CCScreenTouches*)&gEngine->controls->screenTouches;
+    const CCScreenTouches *screenTouches = gEngine->controls->getScreenTouches();
     for( int i=0; i<CCControls::numberOfTouches; ++i )
     {
-        CCScreenTouches &screenTouch = screenTouches[i];
+        const CCScreenTouches &screenTouch = screenTouches[i];
         CCScreenTouches &cameraTouch = cameraTouches[i];
         cameraTouch = screenTouch;
         
@@ -260,22 +302,22 @@ void CCCameraBase::updateControls()
         }
 #endif
         
-        cameraTouch.startPosition.x -= cameraX;
-        cameraTouch.startPosition.x *= invCameraW;
-        cameraTouch.startPosition.y -= cameraY;
-        cameraTouch.startPosition.y *= invCameraH;
+        cameraTouch.startPosition.x -= viewportX;
+        cameraTouch.startPosition.x *= invViewportW;
+        cameraTouch.startPosition.y -= viewportY;
+        cameraTouch.startPosition.y *= invViewportH;
 
-        cameraTouch.position.x -= cameraX;
-        cameraTouch.position.x *= invCameraW;
-        cameraTouch.position.y -= cameraY;
-        cameraTouch.position.y *= invCameraH;
+        cameraTouch.position.x -= viewportX;
+        cameraTouch.position.x *= invViewportW;
+        cameraTouch.position.y -= viewportY;
+        cameraTouch.position.y *= invViewportH;
 
-        cameraTouch.delta.x *= invCameraW;
-        cameraTouch.delta.y *= invCameraH;
-        cameraTouch.totalDelta.x *= invCameraW;
-        cameraTouch.totalDelta.y *= invCameraH;
-        cameraTouch.lastTotalDelta.x *= invCameraW;
-        cameraTouch.lastTotalDelta.y *= invCameraH;
+        cameraTouch.delta.x *= invViewportW;
+        cameraTouch.delta.y *= invViewportH;
+        cameraTouch.totalDelta.x *= invViewportW;
+        cameraTouch.totalDelta.y *= invViewportH;
+        cameraTouch.lastTotalDelta.x *= invViewportW;
+        cameraTouch.lastTotalDelta.y *= invViewportH;
     }
 }
 
@@ -314,11 +356,16 @@ void CCCameraBase::updateVisibleObjects()
     // Update visible objects
     if( visiblesList )
     {
-        CCScanVisibleCollideables( frustum, *visiblesList );
+        CCScanVisibleCollideables( frustum, *visiblesList, visibleCollideables );
     }
     else
     {
-        CCOctreeScanVisibleCollideables( frustum );
+        CCOctreeScanVisibleCollideables( frustum, visibleCollideables );
+    }
+    
+    for( int i=0; i<visibleCollideables.length; ++i )
+    {
+        sortedVisibleCollideables[i] = i;
     }
 }
 
@@ -524,7 +571,8 @@ static const bool gluProject(float objX, float objY, float objZ,
 							 const float modelMatrix[16], 
 							 const float projMatrix[16],
 							 const int viewport[4],
-							 float *winX, float *winY, float *winZ)
+							 float *winX, float *winY, float *winZ,
+                             const bool correctOrientation=true)
 {
     float in[4];
     float out[4];
@@ -562,7 +610,10 @@ static const bool gluProject(float objX, float objY, float objZ,
 		in[1] *= -1.0f;
 	}
     
-    gEngine->renderer->correctOrientation( in[0], in[1] );
+    if( correctOrientation )
+    {
+        CCViewManager::CorrectOrientation( in[0], in[1] );
+    }
 	
     *winX = in[0];
     *winY = in[1];
@@ -578,7 +629,8 @@ const bool CCCameraBase::GluProject(CCRenderable *object, CCVector3 &result)
 					   getModelViewMatrix().data(),
 					   projectionMatrix.data(),
 					   viewport,
-					   &result.x, &result.y, &result.z );
+					   &result.x, &result.y, &result.z,
+                       frameBufferId==-1 );
 }
 
 
@@ -690,4 +742,56 @@ void CCCameraBase::ExtractFrustum()
 	frustum[frustum_near][1] /= t;
 	frustum[frustum_near][2] /= t;
 	frustum[frustum_near][3] /= t;
+}
+
+
+void GLSetPushMatrix(CCMatrix &matrix)
+{
+    CCCameraBase::currentCamera->currentPush = 0;
+    CCCameraBase::currentCamera->pushedMatrix[CCCameraBase::currentCamera->currentPush] = matrix;
+}
+
+
+void GLPushMatrix()
+{
+    CCCameraBase::currentCamera->currentPush++;
+    CCCameraBase::currentCamera->pushedMatrix[CCCameraBase::currentCamera->currentPush] = CCCameraBase::currentCamera->pushedMatrix[CCCameraBase::currentCamera->currentPush-1];
+    ASSERT( CCCameraBase::currentCamera->currentPush < MAX_PUSHES );
+}
+
+void GLPopMatrix()
+{
+    CCCameraBase::currentCamera->currentPush--;
+}
+
+
+void GLLoadIdentity()
+{
+    CCMatrix identityMatrix;
+    CCMatrixLoadIdentity( identityMatrix );
+    CCCameraBase::currentCamera->pushedMatrix[CCCameraBase::currentCamera->currentPush] = identityMatrix;
+}
+
+
+void GLMultMatrixf(CCMatrix &matrix)
+{
+    CCMatrixMultiply( CCCameraBase::currentCamera->pushedMatrix[CCCameraBase::currentCamera->currentPush], matrix, CCCameraBase::currentCamera->pushedMatrix[CCCameraBase::currentCamera->currentPush] );
+}
+
+
+void GLTranslatef(GLfloat tx, GLfloat ty, GLfloat tz)
+{
+    CCMatrixTranslate( CCCameraBase::currentCamera->pushedMatrix[CCCameraBase::currentCamera->currentPush], tx, ty, tz );
+}
+
+
+void GLScalef(GLfloat sx, GLfloat sy, GLfloat sz)
+{
+    CCMatrixScale( CCCameraBase::currentCamera->pushedMatrix[CCCameraBase::currentCamera->currentPush], sx, sy, sz );
+}
+
+
+void GLRotatef(GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
+{
+    CCMatrixRotate( CCCameraBase::currentCamera->pushedMatrix[CCCameraBase::currentCamera->currentPush], angle, x, y, z );
 }

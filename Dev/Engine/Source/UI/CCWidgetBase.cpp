@@ -96,7 +96,7 @@ const bool CCWidgetBase::handleControls(const CCScreenTouches &screenTouch, cons
 }
 
 
-const bool CCWidgetBase::update(const CCTime &gameTime)
+const bool CCWidgetBase::update(const CCTime &time)
 {	
 	if( enabled )
 	{
@@ -109,14 +109,14 @@ const bool CCWidgetBase::update(const CCTime &gameTime)
 			{
 				if( positionInterpolation )
 				{
-                    const float deltaSpeed = gameTime.delta * movementSpeed;
+                    const float deltaSpeed = time.delta * movementSpeed;
                     CCToTarget( position.x, positionTarget.x, deltaSpeed );
                     CCToTarget( position.y, positionTarget.y, deltaSpeed );
 				}
 		
 				if( sizeInterpolation )
 				{
-                    const float deltaSpeed = gameTime.delta * resizeSpeed;
+                    const float deltaSpeed = time.delta * resizeSpeed;
                     CCToTarget( size.width, sizeTarget.width, deltaSpeed );
                     CCToTarget( size.height, sizeTarget.height, deltaSpeed );
 				}
@@ -126,7 +126,7 @@ const bool CCWidgetBase::update(const CCTime &gameTime)
 			
 			if( colourInterpolation )
 			{
-                colour->toTarget( *colourTarget, gameTime.delta * colourSpeed );
+                colour->toTarget( *colourTarget, time.delta * colourSpeed );
 			}
 			
 			if( interpolating() == false )
@@ -140,7 +140,7 @@ const bool CCWidgetBase::update(const CCTime &gameTime)
 		
 		if( inView && distortEffect )
 		{
-            const float deltaSpeed = gameTime.delta * distortSpeed;
+            const float deltaSpeed = time.delta * distortSpeed;
             if( CCToTarget( distort.x, distortTarget.x, deltaSpeed ) == false )
 			{
 				int random = rand();
@@ -269,7 +269,7 @@ void CCWidgetBase::setSize(const float width, const float height, const bool cor
 	
 	if( correctAspect )
 	{
-		size.height *= gEngine->renderer->heightDivWidth;
+		size.height *= gEngine->renderer->getAspectRatio();
 	}
 	sizeStart = sizeTarget = size;
 }
@@ -288,7 +288,7 @@ void CCWidgetBase::setSizeTarget(const float width, const float height, const bo
 	
 	if( correctAspect )
 	{
-		sizeTarget.height *= gEngine->renderer->heightDivWidth;
+		sizeTarget.height *= gEngine->renderer->getAspectRatio();
 	}
 	
 	if( speed != -1.0f )

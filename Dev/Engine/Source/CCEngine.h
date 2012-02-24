@@ -49,7 +49,7 @@ class CCEngine
 {
 public:
 	CCEngine();
-	~CCEngine();
+	virtual ~CCEngine();
 	
 public:
 	virtual void setupNativeThread();
@@ -66,12 +66,17 @@ public:
     
 	virtual const bool updateNativeThread();
 	virtual void updateEngineThread();
+    virtual const bool updateJobsThread();
     
 protected:
 	virtual void start() = 0;
 	virtual void updateLoop();
 	void renderLoop();
     
+public:
+    void renderFrameBuffer(const int frameBufferId);
+    
+protected:
 	// Finishes a job on the engine thread
 	virtual void finishJobs();
     
@@ -84,32 +89,36 @@ public:
     virtual const bool serialize(const bool saving=false);
     
     // Run on another thread
-    void runOnNativeThread(CCLambdaCallback *lambdaCallback);
-    void runOnEngineThread(CCLambdaCallback *lambdaCallback);
+    void engineToNativeThread(CCLambdaCallback *lambdaCallback);
+    void nativeToEngineThread(CCLambdaCallback *lambdaCallback);
+    void engineToJobsThread(CCLambdaCallback *lambdaCallback, const bool pushToFront=false);
+    void jobsToEngineThread(CCLambdaCallback *lambdaCallback);
 	
 public:
+	bool running, paused, engineThreadRunning;
+    
 	CCRenderer *renderer;
 	CCControls *controls;
 	CCTextureManager *textureManager;
 	CCURLManager *urlManager;
 	
     CCList<CCCameraBase> cameras;
-	CCCameraBase *currentCamera;
     CCDestructList<CCSceneBase> scenes;
 	
     // Our Octree collideables container
-	CCCollisionManager *collisionManager;
+	CCCollisionManager collisionManager;
 
     // Engine level controls used for timers and such
     CCDestructList<CCUpdater> updaters;
 	
-	CCTime gameTime;
+	CCTime time;
 	uint renderFlags;
 	float fpsLimit;
 	
 protected:
     CCList<CCLambdaCallback> nativeThreadCallbacks;
     CCList<CCLambdaCallback> engineThreadCallbacks;
+    CCList<CCLambdaCallback> jobsThreadCallbacks;
 };
 
 
@@ -117,21 +126,21 @@ protected:
 LAMBDA_UNSAFE( ThreadCallback,                                      \
     FUNCTION_CALL                                                   \
 )                                                                   \
-gEngine->runOnNativeThread( new ThreadCallback() );
+gEngine->engineToNativeThread( new ThreadCallback() );
 
 
 #define LAMBDA_RUN_ENGINETHREAD(FUNCTION_CALL)                      \
 LAMBDA_UNSAFE( ThreadCallback,                                      \
    FUNCTION_CALL                                                    \
 )                                                                   \
-gEngine->runOnEngineThread( new ThreadCallback() );                 \
+gEngine->nativeToEngineThread( new ThreadCallback() );              \
 
 #define LAMBDA_CONNECT_NATIVETHREAD(EVENT, FUNCTION_CALL)           \
 LAMBDA_UNSAFE( EventCallback,                                       \
     LAMBDA_UNSAFE( ThreadCallback,                                  \
         FUNCTION_CALL                                               \
     )                                                               \
-    gEngine->runOnNativeThread( new ThreadCallback() );             \
+    gEngine->engineToNativeThread( new ThreadCallback() );          \
 )                                                                   \
 EVENT = new EventCallback();
 
@@ -141,7 +150,7 @@ LAMBDA_UNSAFE( EventCallback,                                       \
     LAMBDA_UNSAFE( ThreadCallback,                                  \
         FUNCTION_CALL                                               \
     )                                                               \
-    gEngine->runOnEngineThread( new ThreadCallback() );             \
+    gEngine->nativeToEngineThread( new ThreadCallback() );          \
 )                                                                   \
 EVENT = new EventCallback();
 

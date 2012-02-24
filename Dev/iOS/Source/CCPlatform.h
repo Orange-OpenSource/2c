@@ -44,6 +44,10 @@ typedef	unsigned int uint;
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
 
+#define glBindVertexArray glBindVertexArrayOES
+#define glGenVertexArrays glGenVertexArraysOES
+#define glDeleteVertexArrays glDeleteVertexArraysOES
+
 //#define _USE_MATH_DEFINES
 //#include <math.h>
 //
@@ -60,8 +64,11 @@ typedef	unsigned int uint;
 //#define MIN(x,y)	((x>=y)?y:x)
 //#endif
 
-extern void CCEngineThreadLock();
-extern void CCEngineThreadUnlock();
+extern void CCNativeThreadLock();
+extern void CCNativeThreadUnlock();
+
+extern void CCJobsThreadLock();
+extern void CCJobsThreadUnlock();
 
 
 #endif // __CCPLATFORM_H__

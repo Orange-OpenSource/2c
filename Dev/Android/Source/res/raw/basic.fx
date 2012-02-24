@@ -13,31 +13,38 @@
  *-----------------------------------------------------------
  */
 
-#ifndef QT
 precision mediump float;
-#endif
 
 // Globals
 uniform mat4 u_modelViewProjectionMatrix;
 uniform vec4 u_modelColour;
 
 // PS Input
-//varying vec4 ps_color;
 varying vec2 ps_texCoord;
+
+#ifdef VERTEX_COLOUR
+varying vec4 ps_colour;
+#endif
 
 
 #ifdef VERTEX_SHADER
 
 // VS Input
-attribute vec4 vs_position;
-//attribute vec4 vs_color;
+attribute highp vec4 vs_position;
 attribute vec2 vs_texCoord;
+
+#ifdef VERTEX_COLOUR
+attribute vec4 vs_colour;
+#endif
 
 void main()
 {
     gl_Position = u_modelViewProjectionMatrix * vs_position;
-//    ps_color = vs_color;
     ps_texCoord = vs_texCoord;
+
+#ifdef VERTEX_COLOUR    
+    ps_colour = vs_colour;
+#endif
 }
 
 #endif
@@ -49,7 +56,13 @@ uniform sampler2D s_diffuseTexture;
 
 void main()
 {
-    gl_FragColor = u_modelColour * texture2D( s_diffuseTexture, ps_texCoord ).rgba;
+    vec4 colour = u_modelColour;
+    
+#ifdef VERTEX_COLOUR 
+    colour *= ps_colour;
+#endif
+    
+    gl_FragColor = colour * texture2D( s_diffuseTexture, ps_texCoord ).rgba;
 }
 
 #endif

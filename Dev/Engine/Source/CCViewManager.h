@@ -16,16 +16,24 @@
 #ifndef __CCVIEWMANAGER_H__
 #define __CCVIEWMANAGER_H__
 
-
-#include "CCGLView.h"
-
 #ifdef IOS
-#import "CCViewController.h"
-#import "CCARView.h"
-#endif
-
-#ifndef ANDROID
-#include "CCVideoView.h"
+    #ifdef __OBJC__
+        #include "CCGLView.h"
+        #include "CCVideoView.h"
+        #import "CCViewController.h"
+        #import "CCARView.h"
+    #else
+        #define CCGLView void
+        #define CCVideoView void
+        #define CCARView void
+        #define CCViewController void
+        #define UIWindow void
+    #endif
+#else
+    #include "CCGLView.h"
+    #ifdef QT
+        #include "CCVideoView.h"
+    #endif
 #endif
 
 class CCViewManager
@@ -38,6 +46,12 @@ public:
     void shutdown();
     void pause();
     void resume();
+    
+    inline static const bool IsPortrait() { return orientation.target == 0.0f || orientation.target == 180.0f; }
+    static void SetOrientation(const float targetOrientation, const bool immediatly=false);
+    static void CorrectOrientation(float &x, float &y);
+    static void UpdateOrientation(const float delta);
+    inline static const CCTarget<float>& GetOrientation() { return orientation; }
     
     void toggleAdverts(const bool toggle);
     const float getAdvertHeight();
@@ -61,7 +75,20 @@ protected:
     
     void toggleBackgroundRender(const bool toggle);
     
+public:
+    static CCViewManager *instance;
+    
 protected:
+    static CCTarget<float> orientation;
+    enum OrientationState
+    {
+        Orientation_Set,
+        Orientation_Updating,
+        Orientation_Setting
+    };
+    static OrientationState orientationState;
+    
+    // Views
     CCGLView *glView;
 
 #ifndef ANDROID
@@ -75,9 +102,6 @@ protected:
 #endif
     
     bool opaqueOpenGLRendering;
-    
-public:
-    static CCViewManager *instance;
 };
 
 

@@ -17,6 +17,6 @@ void CCAppEngine::start()
 {
     addScene( new SceneSample1() );
     
-    AddFlag( gEngine->renderFlags, collision_box );
-    //AddFlag( gEngine->renderFlags, render_collisionTrees );
+    CCAddFlag( gEngine->renderFlags, render_collisionBoxes );
+    //CCAddFlag( gEngine->renderFlags, render_collisionTrees );
 }

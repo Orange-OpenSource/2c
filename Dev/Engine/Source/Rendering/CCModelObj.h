@@ -40,6 +40,9 @@ public:
     const float getHeight() { return height; }
     const float getDepth() { return depth; }
     
+    const CCVector3 getOrigin();
+    void moveVerticesToOrigin();
+    
 protected:
 	uint vertexCount;
     float *modelUVs;
@@ -61,6 +64,16 @@ public:
     const float getWidth() { return primitive->getWidth(); }
     const float getHeight() { return primitive->getHeight(); }
     const float getDepth() { return primitive->getDepth(); }
+    
+    const CCVector3 getOrigin()
+    {
+        return primitive->getOrigin();
+    }
+    
+    void moveVerticesToOrigin()
+    {
+        primitive->moveVerticesToOrigin();
+    }
 
 public:
 	CCPrimitiveObj *primitive;

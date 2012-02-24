@@ -23,7 +23,7 @@ void CCMatrixLoadIdentity(CCMatrix &result)
     result.m[3][3] = 1.0f;
 }
 
-void CCMatrixMultiply(CCMatrix &result, CCMatrix &srcA, CCMatrix &srcB)
+void CCMatrixMultiply(CCMatrix &result, const CCMatrix &srcA, const CCMatrix &srcB)
 {
     static CCMatrix tmp;
     for( int i=0; i<4; ++i )
@@ -111,8 +111,9 @@ void CCMatrixFrustum(CCMatrix &result, float left, float right, float bottom, fl
     frust.m[3][2] = -2.0f * nearZ * farZ / deltaZ;
     frust.m[3][0] = frust.m[3][1] = frust.m[3][3] = 0.0f;
 	
-    CCMatrixMultiply(result, frust, result);
+    CCMatrixMultiply( result, frust, result );
 }
+
 
 void CCMatrixPerspective(CCMatrix &result, float fovy, float aspect, float nearZ, float farZ)
 {
@@ -123,6 +124,7 @@ void CCMatrixPerspective(CCMatrix &result, float fovy, float aspect, float nearZ
 
     CCMatrixFrustum( result, -frustumW, frustumW, -frustumH, frustumH, nearZ, farZ );
 }
+
 
 void CCMatrixOrtho(CCMatrix &result, float left, float right, float bottom, float top, float nearZ, float farZ)
 {
@@ -145,6 +147,7 @@ void CCMatrixOrtho(CCMatrix &result, float left, float right, float bottom, floa
     CCMatrixMultiply( result, ortho, result );
 }
 
+
 void CCMatrixScale(CCMatrix &result, float sx, float sy, float sz)
 {
     result.m[0][0] *= sx;
@@ -163,6 +166,7 @@ void CCMatrixScale(CCMatrix &result, float sx, float sy, float sz)
     result.m[2][3] *= sz;
 }
 
+
 void CCMatrixTranslate(CCMatrix &result, float tx, float ty, float tz)
 {
     result.m[3][0] += (result.m[0][0] * tx + result.m[1][0] * ty + result.m[2][0] * tz);
@@ -170,6 +174,14 @@ void CCMatrixTranslate(CCMatrix &result, float tx, float ty, float tz)
     result.m[3][2] += (result.m[0][2] * tx + result.m[1][2] * ty + result.m[2][2] * tz);
     result.m[3][3] += (result.m[0][3] * tx + result.m[1][3] * ty + result.m[2][3] * tz);
 }
+
+
+void CCMatrixPosition(CCMatrix &result, float tx, float ty, float tz)
+{
+    CCMatrixLoadIdentity( result );
+    CCMatrixTranslate( result, tx, ty, tz );
+}
+
 
 void CCMatrixRotate(CCMatrix &result, float angle, float x, float y, float z)
 {

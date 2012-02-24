@@ -159,21 +159,25 @@ const bool CCSceneObject::shouldCollide(CCSceneCollideable *collideWith, const b
 }
 
 
-void CCSceneObject::update(const CCTime &gameTime)
+const bool CCSceneObject::update(const CCTime &time)
 {
+    bool updated = false;
+    
     for( int i=0; i<updaters.length; ++i )
     {
-        updaters.list[i]->update( gameTime.delta );
+        updated |= updaters.list[i]->update( time.delta );
     }
 
     for( int i=0; i<children.length; ++i )
     {
-        children.list[i]->update( gameTime );
+        updated |= children.list[i]->update( time );
     }
+    
+    return updated;
 }
 
 
-void CCSceneObject::render(const bool alpha)
+void CCSceneObject::renderObject(const CCCameraBase *camera, const bool alpha)
 {	
     if( shouldRender )
     {
@@ -184,14 +188,14 @@ void CCSceneObject::render(const bool alpha)
                 refreshModelMatrix();
                 GLMultMatrixf( modelMatrix );
 
-                for( int i=0; i<children.length; ++i )
-                {
-                    children.list[i]->render( alpha );
-                }
-
                 if( alpha == transparent )
                 {
-                    renderModels( alpha );
+                    render( alpha );
+                }
+                
+                for( int i=0; i<children.length; ++i )
+                {
+                    children.list[i]->renderObject( camera, alpha );
                 }
             }
             GLPopMatrix();
@@ -200,7 +204,7 @@ void CCSceneObject::render(const bool alpha)
 }
 
 
-void CCSceneObject::renderModels(const bool alpha)
+void CCSceneObject::render(const bool alpha)
 {
     if( model )
     {

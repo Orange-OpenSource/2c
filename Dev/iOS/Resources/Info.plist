@@ -12,9 +12,8 @@
 	<string>Icon.png</string>
 	<key>CFBundleIconFiles</key>
 	<array>
-		<string>Icon.png</string>
-		<string>Icon@2x.png</string>
-		<string>Icon.png</string>
+		<string>icon.png</string>
+		<string>icon@2x.png</string>
 	</array>
 	<key>CFBundleIdentifier</key>
 	<string>com.2c</string>

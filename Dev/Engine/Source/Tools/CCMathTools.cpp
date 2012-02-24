@@ -73,6 +73,13 @@ void CCClampFloat(float &value, const float min, const float max)
 }
 
 
+void CCClampInt(int &value, const int min, const int max)
+{
+    value = MAX( min, value );
+    value = MIN( max, value );
+}
+
+
 const bool CCToRotation(float &current, float target, const float amount)
 {
     if( current != target )
@@ -121,7 +128,7 @@ const float CCLengthSquared(const float a, const float b)
 
 const uint CCPowerOf2(const uint value)
 {
-	uint32_t powerOf2 = 2;
+	uint32_t powerOf2 = 1;
 	while( powerOf2 < value )
 	{
 		powerOf2 *= 2;
